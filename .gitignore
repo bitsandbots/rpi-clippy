@@ -93,3 +93,11 @@ out/
 
 trusted-signing-metadata.json
 Microsoft.Trusted.Signing.Client
+
+# Vite production build
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
