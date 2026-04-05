@@ -1,7 +1,7 @@
 /* Default Theme */
 .clippy {
   font-family: Tahoma, Arial, sans-serif;
-  font-size: var(--font-size);
+  font-size: var(--font-size, 14px);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -36,18 +36,18 @@
 
 /* Apply it all */
 
-.clippy > .title-bar,
-.window,
-button,
-input,
-label,
-legend,
-li[role="tab"],
-option,
-select,
-table,
-textarea,
-ul.tree-view {
+.clippy .title-bar,
+.clippy .window,
+.clippy button,
+.clippy input,
+.clippy label,
+.clippy legend,
+.clippy li[role="tab"],
+.clippy option,
+.clippy select,
+.clippy table,
+.clippy textarea,
+.clippy ul.tree-view {
   font-family: inherit !important;
   font-size: inherit !important;
   -webkit-font-smoothing: inherit !important;

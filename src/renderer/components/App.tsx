@@ -11,6 +11,7 @@ import { BubbleViewProvider } from "../contexts/BubbleViewContext";
 import { DebugProvider } from "../contexts/DebugContext";
 import { VoiceProvider } from "../contexts/VoiceContext";
 import { useChat } from "../contexts/ChatContext";
+import { useSharedState } from "../contexts/SharedStateContext";
 
 function ClippyLayout() {
   const { isChatWindowOpen } = useChat();
@@ -56,6 +57,23 @@ function ClippyLayout() {
   );
 }
 
+function ClippyRoot({ children }: { children: React.ReactNode }) {
+  const { settings } = useSharedState();
+  return (
+    <div
+      className="clippy"
+      style={
+        {
+          "--font-size": `${settings.defaultFontSize}px`,
+        } as React.CSSProperties
+      }
+      data-font={settings.defaultFont}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function App() {
   return (
     <DebugProvider>
@@ -63,9 +81,9 @@ export function App() {
         <ChatProvider>
           <VoiceProvider>
             <BubbleViewProvider>
-              <div className="clippy">
+              <ClippyRoot>
                 <ClippyLayout />
-              </div>
+              </ClippyRoot>
             </BubbleViewProvider>
           </VoiceProvider>
         </ChatProvider>

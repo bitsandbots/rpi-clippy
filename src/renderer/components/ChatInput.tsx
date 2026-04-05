@@ -9,7 +9,8 @@ export type ChatInputProps = {
 
 export function ChatInput({ onSend, onAbort }: ChatInputProps) {
   const { status, isModelLoaded } = useChat();
-  const { ttsEnabled, sttEnabled, setTtsEnabled, setSttEnabled, transcribe } = useVoice();
+  const { ttsEnabled, sttEnabled, setTtsEnabled, setSttEnabled, transcribe } =
+    useVoice();
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -102,7 +103,9 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         ? "Record voice input"
         : "Enable mic (Speech-to-Text off)";
 
-  const ttsTitle = ttsEnabled ? "Mute voice responses (TTS on)" : "Unmute voice responses (TTS off)";
+  const ttsTitle = ttsEnabled
+    ? "Mute voice responses (TTS on)"
+    : "Unmute voice responses (TTS off)";
 
   const placeholder = isModelLoaded
     ? "Type a message, press Enter to send..."
@@ -118,7 +121,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         disabled={!isModelLoaded}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        style={{ flex: 1, resize: "vertical", minHeight: "23px", width: 80 }}
+        style={{ flex: 1, resize: "vertical", minHeight: "2em", width: 80 }}
       />
       {/* TTS speaker toggle — always visible */}
       <button
@@ -126,7 +129,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         onClick={() => setTtsEnabled(!ttsEnabled)}
         style={{
           alignSelf: "flex-end",
-          height: "23px",
+          height: "2em",
           minWidth: "28px",
           opacity: ttsEnabled ? 1 : 0.4,
         }}
@@ -140,7 +143,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         onClick={sttEnabled ? toggleMic : () => setSttEnabled(true)}
         style={{
           alignSelf: "flex-end",
-          height: "23px",
+          height: "2em",
           minWidth: "28px",
           opacity: sttEnabled ? 1 : 0.4,
           background: isRecording ? "#c00" : undefined,
@@ -151,7 +154,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
       </button>
       <button
         disabled={!isModelLoaded}
-        style={{ alignSelf: "flex-end", height: "23px" }}
+        style={{ alignSelf: "flex-end", height: "2em" }}
         onClick={handleSendOrAbort}
       >
         {status === "responding" ? "Abort" : "Send"}

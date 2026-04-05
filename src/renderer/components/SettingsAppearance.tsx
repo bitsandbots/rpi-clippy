@@ -30,12 +30,12 @@ export const SettingsAppearance: React.FC = () => {
           <input
             type="range"
             min="8"
-            max="20"
+            max="24"
             step={1}
             value={settings.defaultFontSize}
             onChange={onChangeFontSize}
           />
-          <label>20px</label>
+          <label>24px</label>
         </div>
         <div className="field-row" style={{ width: 300 }}>
           <label htmlFor="defaultFont" style={{ width: 58 }}>

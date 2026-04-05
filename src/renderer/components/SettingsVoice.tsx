@@ -73,7 +73,7 @@ export const SettingsVoice: React.FC = () => {
             style={{ flex: 1 }}
           />
         </div>
-        <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+        <p style={{ fontSize: "0.9em", color: "#888", marginTop: "4px" }}>
           Wake word support requires OpenWakeWord or Porcupine. Configure in a
           future release.
         </p>
@@ -94,12 +94,12 @@ export const SettingsVoice: React.FC = () => {
                 ))}
               </select>
             </div>
-            <p style={{ fontSize: "11px", color: "#555", margin: 0 }}>
+            <p style={{ fontSize: "0.9em", color: "#555", margin: 0 }}>
               {audioDevices.length} output device(s) detected.
             </p>
           </>
         ) : (
-          <p style={{ color: "#888", margin: 0, fontSize: "11px" }}>
+          <p style={{ color: "#888", margin: 0, fontSize: "0.9em" }}>
             No labelled output devices found. Grant microphone permission to
             enumerate devices, or your browser may not support this API.
           </p>
@@ -157,14 +157,18 @@ export const SettingsVoice: React.FC = () => {
           style={{ marginTop: "8px", padding: "8px" }}
         >
           <strong>Download Voices</strong>
-          <p style={{ fontSize: "11px", marginTop: "4px", marginBottom: "6px" }}>
+          <p
+            style={{ fontSize: "0.9em", marginTop: "4px", marginBottom: "6px" }}
+          >
             Run one of the following commands on the Pi to download Piper voice
             models:
           </p>
-          <code style={{ display: "block", fontSize: "11px" }}>
+          <code style={{ display: "block", fontSize: "0.9em" }}>
             bash scripts/setup_voices.sh &nbsp;&nbsp;&nbsp;# starter voices
           </code>
-          <code style={{ display: "block", fontSize: "11px", marginTop: "2px" }}>
+          <code
+            style={{ display: "block", fontSize: "0.9em", marginTop: "2px" }}
+          >
             bash scripts/setup_voices.sh all &nbsp;# all voices
           </code>
           <button style={{ marginTop: "8px" }} onClick={rescan}>
@@ -194,7 +198,7 @@ export const SettingsVoice: React.FC = () => {
             ))}
           </select>
         </div>
-        <p style={{ fontSize: "11px", color: "#555", margin: 0 }}>
+        <p style={{ fontSize: "0.9em", color: "#555", margin: 0 }}>
           <b>tiny</b> (~39 MB) · <b>base</b> (~74 MB) · <b>small</b> (~244 MB).
           Model downloads on first use. Requires <code>ffmpeg</code> in PATH.
         </p>

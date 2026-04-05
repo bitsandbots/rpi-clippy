@@ -47,7 +47,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   topK: 10,
   temperature: 0.7,
   defaultFont: "Tahoma",
-  defaultFontSize: 12,
+  defaultFontSize: 14,
   disableAutoUpdate: false,
 };
 

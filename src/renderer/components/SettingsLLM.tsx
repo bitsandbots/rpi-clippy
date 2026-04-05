@@ -127,7 +127,7 @@ export const SettingsLLM: React.FC = () => {
           <button onClick={handleDiscover} disabled={discovering}>
             {discovering ? "Scanning LAN…" : "Discover Ollama on LAN"}
           </button>
-          <span style={{ marginLeft: "8px", fontSize: "11px", color: "#555" }}>
+          <span style={{ marginLeft: "8px", fontSize: "0.9em", color: "#555" }}>
             Find local and remote Ollama instances
           </span>
         </div>
