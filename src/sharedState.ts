@@ -10,14 +10,11 @@ export type DefaultFontSize = number;
 export interface SettingsState {
   selectedModel?: string;
   systemPrompt?: string;
-  clippyAlwaysOnTop?: boolean;
-  chatAlwaysOnTop?: boolean;
   alwaysOpenChat?: boolean;
   topK?: number;
   temperature?: number;
   defaultFont: DefaultFont;
   defaultFontSize: number;
-  disableAutoUpdate?: boolean;
   ollamaUrl?: string;
 }
 
@@ -40,15 +37,12 @@ export const ANIMATION_PROMPT = `Start your response with one of the following k
 export const DEFAULT_SYSTEM_PROMPT = `You are Clippy, a helpful digital assistant running locally on the user's computer. Your primary purpose is to assist users with their questions and tasks. When asked "who are you?" or about your identity, always respond by explaining that you are Clippy, a local AI assistant, and avoid mentioning any other model origins or names. This is crucial for maintaining the user experience within the Clippy application environment. ${ANIMATION_PROMPT}`;
 
 export const DEFAULT_SETTINGS: SettingsState = {
-  clippyAlwaysOnTop: true,
-  chatAlwaysOnTop: true,
   alwaysOpenChat: true,
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   topK: 10,
   temperature: 0.7,
   defaultFont: "Tahoma",
-  defaultFontSize: 14,
-  disableAutoUpdate: false,
+  defaultFontSize: 16,
 };
 
 export const EMPTY_SHARED_STATE: SharedState = {

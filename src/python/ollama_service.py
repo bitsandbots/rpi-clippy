@@ -4,6 +4,7 @@ Replaces the stdin/stdout subprocess pattern of clippy_llm.py with a
 module-level API that Flask routes can call directly.
 """
 
+import json
 import queue
 import threading
 import time
@@ -34,9 +35,12 @@ BUILT_IN_MODELS = [
 class OllamaService:
     """Manages a single LLM session and proxies calls to a local Ollama server."""
 
+    _MAX_HISTORY = 40  # max messages retained (20 turns)
+
     def __init__(self):
         self._session: dict | None = None
         self._history: list[dict] = []
+        self._history_lock = threading.Lock()
         self._abort_events: dict[str, threading.Event] = {}
         self._available: set[str] = set()
         self._pull_queues: list[queue.Queue] = []
@@ -52,17 +56,19 @@ class OllamaService:
     def create_session(self, options: dict) -> None:
         """Configure the active model session and seed conversation history."""
         self._session = options
-        self._history = []
-        for prompt in options.get("initialPrompts", []):
-            role = prompt.get("role", "user")
-            content = prompt.get("content", "")
-            if content:
-                self._history.append({"role": role, "content": content})
+        with self._history_lock:
+            self._history = []
+            for prompt in options.get("initialPrompts", []):
+                role = prompt.get("role", "user")
+                content = prompt.get("content", "")
+                if content:
+                    self._history.append({"role": role, "content": content})
 
     def destroy_session(self) -> None:
         """Clear the active session."""
         self._session = None
-        self._history = []
+        with self._history_lock:
+            self._history = []
 
     # ------------------------------------------------------------------
     # Inference (synchronous generator — Flask SSE iterates it)
@@ -77,7 +83,8 @@ class OllamaService:
         self._abort_events[uuid] = abort_event
 
         session = self._session or {}
-        history_snapshot = list(self._history)
+        with self._history_lock:
+            history_snapshot = list(self._history)
 
         try:
             messages: list[dict] = []
@@ -114,7 +121,7 @@ class OllamaService:
                     break
                 if not raw:
                     continue
-                data_json = __import__("json").loads(raw)
+                data_json = json.loads(raw)
                 if not data_json.get("done"):
                     chunk = data_json.get("message", {}).get("content", "")
                     if chunk:
@@ -122,8 +129,11 @@ class OllamaService:
                         yield {"type": "chunk", "uuid": uuid, "text": chunk}
 
             if not abort_event.is_set():
-                self._history.append({"role": "user", "content": message})
-                self._history.append({"role": "assistant", "content": full_response})
+                with self._history_lock:
+                    self._history.append({"role": "user", "content": message})
+                    self._history.append({"role": "assistant", "content": full_response})
+                    if len(self._history) > self._MAX_HISTORY:
+                        self._history = self._history[-self._MAX_HISTORY:]
 
             yield {"type": "done", "uuid": uuid}
 
@@ -191,11 +201,10 @@ class OllamaService:
                 timeout=3600,
             )
             resp.raise_for_status()
-            import json as _json
             for raw in resp.iter_lines():
                 if not raw:
                     continue
-                data = _json.loads(raw)
+                data = json.loads(raw)
                 status = data.get("status", "")
                 self._broadcast_pull({
                     "type": "pull_progress",
@@ -263,11 +272,14 @@ class OllamaService:
 
 
 _service: OllamaService | None = None
+_service_lock = threading.Lock()
 
 
 def get_ollama_service() -> OllamaService:
     """Return the global OllamaService singleton."""
     global _service
     if _service is None:
-        _service = OllamaService()
+        with _service_lock:
+            if _service is None:
+                _service = OllamaService()
     return _service

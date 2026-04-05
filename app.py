@@ -12,6 +12,7 @@ Opens on http://localhost:5080 (also accessible from LAN via http://<pi-ip>:5080
 import importlib
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -30,9 +31,16 @@ from stt_manager import get_stt_manager
 
 PORT = 5080
 DIST_DIR = Path(__file__).parent / "dist"
-VERSION = "0.4.3"
+VERSION = "0.5.0"
 
 app = Flask(__name__, static_folder=None)
+
+_CHAT_ID_RE = re.compile(r'^[A-Za-z0-9_\-]+$')
+
+
+def _valid_chat_id(chat_id: str) -> bool:
+    """Reject chat IDs that could escape the chats directory."""
+    return bool(_CHAT_ID_RE.match(chat_id))
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +130,8 @@ def delete_all_chats():
 
 @app.route("/api/chats/<chat_id>", methods=["GET"])
 def get_chat(chat_id):
+    if not _valid_chat_id(chat_id):
+        return jsonify({"error": "invalid chat_id"}), 400
     data = get_chat_manager().get_with_messages(chat_id)
     if data is None:
         return jsonify({"error": "Not found"}), 404
@@ -130,6 +140,8 @@ def get_chat(chat_id):
 
 @app.route("/api/chats/<chat_id>", methods=["POST"])
 def write_chat(chat_id):
+    if not _valid_chat_id(chat_id):
+        return jsonify({"error": "invalid chat_id"}), 400
     body = request.get_json(force=True) or {}
     chat = body.get("chat") or {}
     if not chat.get("id"):
@@ -141,6 +153,8 @@ def write_chat(chat_id):
 
 @app.route("/api/chats/<chat_id>", methods=["DELETE"])
 def delete_chat(chat_id):
+    if not _valid_chat_id(chat_id):
+        return jsonify({"error": "invalid chat_id"}), 400
     get_chat_manager().delete(chat_id)
     return jsonify({"status": "ok"})
 
@@ -331,12 +345,17 @@ def llm_stream():
     message = request.args.get("message", "")
     if not uuid or not message:
         return jsonify({"error": "uuid and message required"}), 400
+    if len(message) > 32_000:
+        return jsonify({"error": "message too long (max 32 000 chars)"}), 413
 
     svc = get_ollama_service()
 
     def generate():
-        for event in svc.prompt_streaming(message, uuid):
-            yield f"data: {json.dumps(event)}\n\n"
+        try:
+            for event in svc.prompt_streaming(message, uuid):
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps({'type': 'error', 'uuid': uuid, 'error': str(exc)})}\n\n"
 
     return Response(generate(), mimetype="text/event-stream",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

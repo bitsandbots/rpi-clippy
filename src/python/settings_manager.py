@@ -5,6 +5,7 @@ Ignores Electron-only keys (clippyAlwaysOnTop, chatAlwaysOnTop, disableAutoUpdat
 
 import json
 import os
+import threading
 from pathlib import Path
 
 ELECTRON_ONLY_KEYS = {"clippyAlwaysOnTop", "chatAlwaysOnTop", "disableAutoUpdate"}
@@ -24,7 +25,7 @@ DEFAULT_SETTINGS = {
     "topK": 10,
     "temperature": 0.7,
     "defaultFont": "Tahoma",
-    "defaultFontSize": 12,
+    "defaultFontSize": 16,
     "selectedModel": None,
     "ollamaUrl": "http://localhost:11434",
 }
@@ -114,13 +115,17 @@ class DebugSettingsManager(SettingsManager):
 
 _settings: SettingsManager | None = None
 _debug: DebugSettingsManager | None = None
+_settings_lock = threading.Lock()
+_debug_lock = threading.Lock()
 
 
 def get_settings() -> SettingsManager:
     """Return the global SettingsManager singleton."""
     global _settings
     if _settings is None:
-        _settings = SettingsManager()
+        with _settings_lock:
+            if _settings is None:
+                _settings = SettingsManager()
     return _settings
 
 
@@ -128,5 +133,7 @@ def get_debug_settings() -> DebugSettingsManager:
     """Return the global DebugSettingsManager singleton."""
     global _debug
     if _debug is None:
-        _debug = DebugSettingsManager()
+        with _debug_lock:
+            if _debug is None:
+                _debug = DebugSettingsManager()
     return _debug

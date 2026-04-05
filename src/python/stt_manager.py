@@ -12,6 +12,7 @@ import base64
 import logging
 import os
 import tempfile
+import threading
 from typing import Optional
 
 log = logging.getLogger(__name__)
@@ -118,16 +119,19 @@ class STTManager:
         return {
             "enabled": self.enabled,
             "model": self.model_size or self._target_model_size,
-            "available_models": ["tiny", "base", "small"],
+            "available_models": sorted(ALLOWED_STT_MODELS),
         }
 
 
 _stt: Optional[STTManager] = None
+_stt_lock = threading.Lock()
 
 
 def get_stt_manager() -> STTManager:
     """Return the global STTManager singleton."""
     global _stt
     if _stt is None:
-        _stt = STTManager()
+        with _stt_lock:
+            if _stt is None:
+                _stt = STTManager()
     return _stt

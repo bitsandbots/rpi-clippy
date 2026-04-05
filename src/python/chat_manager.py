@@ -5,6 +5,7 @@ File format is identical to the Electron version for full compatibility.
 
 import json
 import os
+import threading
 from pathlib import Path
 
 
@@ -93,11 +94,14 @@ class ChatManager:
 
 
 _chat_manager: ChatManager | None = None
+_chat_manager_lock = threading.Lock()
 
 
 def get_chat_manager() -> ChatManager:
     """Return the global ChatManager singleton."""
     global _chat_manager
     if _chat_manager is None:
-        _chat_manager = ChatManager()
+        with _chat_manager_lock:
+            if _chat_manager is None:
+                _chat_manager = ChatManager()
     return _chat_manager

@@ -121,14 +121,23 @@ class TTSManager:
         Synthesize text to WAV bytes. Returns None if no voice is loaded.
         length_scale > 1.0 = slower speech, < 1.0 = faster.
         """
-        if self._loaded_voice is None:
-            # Auto-load the first available voice if none is set
-            if self.registry:
-                result = self.load_voice(next(iter(self.registry)))
-                if "error" in result:
+        with self._lock:
+            if self._loaded_voice is None:
+                # Auto-load the first available voice if none is set
+                if not self.registry:
                     return None
-            else:
-                return None
+                voice_id = next(iter(self.registry))
+                info = self.registry[voice_id]
+                try:
+                    from piper import PiperVoice
+                    self._loaded_voice = PiperVoice.load(
+                        str(info.model_path),
+                        config_path=str(info.config_path) if info.config_path else None,
+                    )
+                    self.current_voice_id = voice_id
+                except Exception as exc:
+                    log.error("Auto-load of voice %r failed: %s", voice_id, exc)
+                    return None
 
         buf = io.BytesIO()
         wav_writer = wave.open(buf, "wb")
@@ -159,11 +168,14 @@ class TTSManager:
 
 
 _tts: Optional[TTSManager] = None
+_tts_lock = threading.Lock()
 
 
 def get_tts_manager() -> TTSManager:
     """Return the global TTSManager singleton."""
     global _tts
     if _tts is None:
-        _tts = TTSManager()
+        with _tts_lock:
+            if _tts is None:
+                _tts = TTSManager()
     return _tts
