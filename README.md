@@ -189,7 +189,7 @@ Settings are persisted to `~/.config/Clippy/settings.json`. The most useful keys
 | `temperature`     | `0.7`            | Sampling temperature                             |
 | `topK`            | `10`             | Top-K sampling                                   |
 | `defaultFont`     | `Tahoma`         | UI font (changeable in Settings → Appearance)    |
-| `defaultFontSize` | `14`             | UI font size in px (8–24, Settings → Appearance) |
+| `defaultFontSize` | `16`             | UI font size in px (8–24, Settings → Appearance) |
 
 ---
 
