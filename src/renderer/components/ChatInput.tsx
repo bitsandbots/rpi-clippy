@@ -1,21 +1,26 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useChat } from "../contexts/ChatContext";
+import { useVoice } from "../contexts/VoiceContext";
+
 export type ChatInputProps = {
   onSend: (message: string) => void;
   onAbort: () => void;
 };
 
 export function ChatInput({ onSend, onAbort }: ChatInputProps) {
-  const { status } = useChat();
+  const { status, isModelLoaded } = useChat();
+  const { sttEnabled, transcribe } = useVoice();
   const [message, setMessage] = useState("");
-  const { isModelLoaded } = useChat();
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const handleSend = useCallback(() => {
-    const trimmedMessage = message.trim();
-
-    if (trimmedMessage) {
-      onSend(trimmedMessage);
+    const trimmed = message.trim();
+    if (trimmed) {
+      onSend(trimmed);
       setMessage("");
     }
   }, [message, onSend]);
@@ -26,44 +31,81 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
   }, [onAbort]);
 
   const handleSendOrAbort = useCallback(() => {
-    if (status === "responding") {
-      handleAbort();
-    } else {
-      handleSend();
-    }
+    if (status === "responding") handleAbort();
+    else handleSend();
   }, [status, handleSend, handleAbort]);
-
-  const buttonStyle: React.CSSProperties = {
-    alignSelf: "flex-end",
-    height: "23px",
-  };
-
-  useEffect(() => {
-    if (isModelLoaded && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isModelLoaded]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      const trimmedMessage = message.trim();
-
-      if (trimmedMessage) {
-        onSend(trimmedMessage);
+      const trimmed = message.trim();
+      if (trimmed) {
+        onSend(trimmed);
         setMessage("");
       }
-
       e.preventDefault();
       e.stopPropagation();
     }
   };
 
+  useEffect(() => {
+    if (isModelLoaded && textareaRef.current) textareaRef.current.focus();
+  }, [isModelLoaded]);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, sampleRate: 16000, echoCancellation: true },
+      });
+      chunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setIsRecording(false);
+        setIsTranscribing(true);
+        try {
+          const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+          const base64 = await blobToBase64(blob);
+          const text = await transcribe(base64);
+          if (text) setMessage((prev) => (prev ? prev + " " + text : text));
+        } finally {
+          setIsTranscribing(false);
+          textareaRef.current?.focus();
+        }
+      };
+      recorder.start(250);
+      recorderRef.current = recorder;
+      setIsRecording(true);
+    } catch {
+      // Mic permission denied or unavailable — silently ignore
+    }
+  }, [transcribe]);
+
+  const stopRecording = useCallback(() => {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+  }, []);
+
+  const toggleMic = useCallback(() => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  }, [isRecording, startRecording, stopRecording]);
+
+  const micLabel = isTranscribing ? "…" : isRecording ? "■" : "🎤";
+  const micTitle = isTranscribing
+    ? "Transcribing…"
+    : isRecording
+      ? "Stop recording"
+      : "Record voice input";
+
   const placeholder = isModelLoaded
     ? "Type a message, press Enter to send..."
-    : "This is your chat input, we're just waiting for a model to load...";
+    : "Waiting for a model to load…";
 
   return (
-    <div style={{ display: "flex", alignItems: "flex-end" }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: "4px" }}>
       <textarea
         rows={1}
         ref={textareaRef}
@@ -72,21 +114,44 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         disabled={!isModelLoaded}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        style={{
-          flex: 1,
-          marginRight: "8px",
-          resize: "vertical",
-          minHeight: "23px",
-          width: 80,
-        }}
+        style={{ flex: 1, resize: "vertical", minHeight: "23px", width: 80 }}
       />
+      {sttEnabled && (
+        <button
+          title={micTitle}
+          disabled={!isModelLoaded || isTranscribing}
+          onClick={toggleMic}
+          style={{
+            alignSelf: "flex-end",
+            height: "23px",
+            minWidth: "28px",
+            background: isRecording ? "#c00" : undefined,
+            color: isRecording ? "#fff" : undefined,
+          }}
+        >
+          {micLabel}
+        </button>
+      )}
       <button
         disabled={!isModelLoaded}
-        style={buttonStyle}
+        style={{ alignSelf: "flex-end", height: "23px" }}
         onClick={handleSendOrAbort}
       >
         {status === "responding" ? "Abort" : "Send"}
       </button>
     </div>
   );
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const commaIdx = result.indexOf(",");
+      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }

@@ -4,6 +4,7 @@ import { Message } from "./Message";
 import { ChatInput } from "./ChatInput";
 import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
+import { useVoice } from "../contexts/VoiceContext";
 import { electronAi } from "../clippyApi";
 
 export type ChatProps = {
@@ -13,6 +14,7 @@ export type ChatProps = {
 export function Chat({ style }: ChatProps) {
   const { setAnimationKey, setStatus, status, messages, addMessage } =
     useChat();
+  const { ttsEnabled, speak } = useVoice();
   const [streamingMessageContent, setStreamingMessageContent] =
     useState<string>("");
   const [lastRequestUUID, setLastRequestUUID] = useState<string>(
@@ -39,58 +41,59 @@ export function Chat({ style }: ChatProps) {
     setStreamingMessageContent("");
     setStatus("thinking");
 
-    try {
-      const requestUUID = crypto.randomUUID();
-      setLastRequestUUID(requestUUID);
+    const requestUUID = crypto.randomUUID();
+    setLastRequestUUID(requestUUID);
 
-      const response = await window.electronAi.promptStreaming(message, {
-        requestUUID,
-      });
+    let fullContent = "";
+    let filteredContent = "";
+    let hasSetAnimationKey = false;
 
-      let fullContent = "";
-      let filteredContent = "";
-      let hasSetAnimationKey = false;
-
-      for await (const chunk of response) {
-        if (fullContent === "") {
-          setStatus("responding");
-        }
-
-        if (!hasSetAnimationKey) {
-          const { text, animationKey } = filterMessageContent(
-            fullContent + chunk,
-          );
-
-          filteredContent = text;
-          fullContent = fullContent + chunk;
-
-          if (animationKey) {
-            setAnimationKey(animationKey);
-            hasSetAnimationKey = true;
+    window.electronAi.promptStreaming(
+      message,
+      { requestUUID },
+      {
+        onChunk: (chunk: string) => {
+          if (fullContent === "") {
+            setStatus("responding");
           }
-        } else {
-          filteredContent += chunk;
-        }
 
-        setStreamingMessageContent(filteredContent);
-      }
+          if (!hasSetAnimationKey) {
+            const { text, animationKey } = filterMessageContent(
+              fullContent + chunk,
+            );
+            filteredContent = text;
+            fullContent = fullContent + chunk;
+            if (animationKey) {
+              setAnimationKey(animationKey);
+              hasSetAnimationKey = true;
+            }
+          } else {
+            filteredContent += chunk;
+            fullContent += chunk;
+          }
 
-      // Once streaming is complete, add the full message to the messages array
-      // and clear the streaming message
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        content: filteredContent,
-        sender: "clippy",
-        createdAt: Date.now(),
-      };
-
-      addMessage(assistantMessage);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setStreamingMessageContent("");
-      setStatus("idle");
-    }
+          setStreamingMessageContent(filteredContent);
+        },
+        onDone: () => {
+          addMessage({
+            id: crypto.randomUUID(),
+            content: filteredContent,
+            sender: "clippy",
+            createdAt: Date.now(),
+          });
+          setStreamingMessageContent("");
+          setStatus("idle");
+          if (ttsEnabled && filteredContent) {
+            speak(filteredContent);
+          }
+        },
+        onError: (error: string) => {
+          console.error("LLM error:", error);
+          setStreamingMessageContent("");
+          setStatus("idle");
+        },
+      },
+    );
   };
 
   return (
