@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { DEFAULT_SETTINGS, SharedState } from "../../sharedState";
 import { clippyApi } from "../clippyApi";
-import { isModelDownloading } from "../../helpers/model-helpers";
+import { subscribePullProgress } from "../api";
 
 const EMPTY_SHARED_STATE: SharedState = {
   models: {},
@@ -22,52 +22,30 @@ export const SharedStateProvider = ({
 }) => {
   const [sharedState, setSharedState] =
     useState<SharedState>(EMPTY_SHARED_STATE);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const fetchState = async () => {
+    const state = await clippyApi.getFullState();
+    setSharedState(state);
+  };
+
+  // Initial fetch + polling every 2 s
   useEffect(() => {
-    const fetchSharedState = async () => {
-      const state = await clippyApi.getFullState();
-      setSharedState(state);
-    };
-
-    fetchSharedState();
-
-    clippyApi.offStateChanged();
-    clippyApi.onStateChanged((state) => {
-      setSharedState(state);
-    });
-
+    fetchState();
+    pollRef.current = setInterval(fetchState, 2000);
     return () => {
-      clippyApi.offStateChanged();
+      if (pollRef.current) clearInterval(pollRef.current);
     };
   }, []);
 
+  // Subscribe to pull-progress SSE — refetch state on each event so the
+  // download progress bar updates in real time
   useEffect(() => {
-    // Check if any model is downloading
-    const isAnyModelDownloading = Object.values(sharedState.models || {}).some(
-      isModelDownloading,
-    );
-
-    // Start interval if any model is downloading
-    if (isAnyModelDownloading && !intervalRef.current) {
-      intervalRef.current = setInterval(() => {
-        clippyApi.updateModelState();
-      }, 250);
-    }
-    // Stop interval if no model is downloading
-    else if (!isAnyModelDownloading && intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [sharedState.models]);
+    const unsubscribe = subscribePullProgress(() => {
+      fetchState();
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <SharedStateContext.Provider value={sharedState}>

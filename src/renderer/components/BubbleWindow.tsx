@@ -1,14 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
-import { clippyApi } from "../clippyApi";
 import { Chat } from "./Chat";
 import { Settings } from "./Settings";
 import { useBubbleView } from "../contexts/BubbleViewContext";
 import { Chats } from "./Chats";
+import { useChat } from "../contexts/ChatContext";
 
 export function Bubble() {
   const { currentView, setCurrentView } = useBubbleView();
-  const [isMaximized, setIsMaximized] = useState(false);
+  const { setIsChatWindowOpen } = useChat();
 
   const containerStyle = {
     width: "calc(100% - 6px)",
@@ -59,9 +59,9 @@ export function Bubble() {
 
   return (
     <div className="bubble-container window" style={containerStyle}>
-      <div className="app-drag title-bar">
+      <div className="title-bar">
         <div className="title-bar-text">Chat with Clippy</div>
-        <div className="title-bar-controls app-no-drag">
+        <div className="title-bar-controls">
           <button
             style={{
               marginRight: "8px",
@@ -83,19 +83,8 @@ export function Bubble() {
             Settings
           </button>
           <button
-            aria-label="Minimize"
-            onClick={() => clippyApi.minimizeChatWindow()}
-          ></button>
-          <button
-            aria-label={isMaximized ? "Restore" : "Maximize"}
-            onClick={() => {
-              clippyApi.maximizeChatWindow();
-              setIsMaximized(!isMaximized);
-            }}
-          ></button>
-          <button
             aria-label="Close"
-            onClick={() => clippyApi.toggleChatWindow()}
+            onClick={() => setIsChatWindowOpen(false)}
           ></button>
         </div>
       </div>

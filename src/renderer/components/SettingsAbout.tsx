@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
-import { Versions } from "../../types/interfaces";
 import { clippyApi } from "../clippyApi";
 
 export const SettingsAbout: React.FC = () => {
-  const [versions, setVersions] = useState<Partial<Versions>>({});
+  const [versions, setVersions] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    clippyApi.getVersions().then((versions) => {
-      setVersions(versions);
-    });
+    clippyApi.getVersions().then(setVersions);
   }, []);
 
   return (
@@ -17,9 +14,9 @@ export const SettingsAbout: React.FC = () => {
       <fieldset>
         <legend>Version</legend>
         <p>
-          Clippy <code>{versions.clippy || "Unknown"}</code> (with Electron{" "}
-          <code>{versions.electron || "Unknown"}</code> and Node-llama-cpp:{" "}
-          <code>{versions.nodeLlamaCpp || "Unknown"})</code>
+          Clippy <code>{versions.clippy || "Unknown"}</code> — Python{" "}
+          <code>{versions.python || "Unknown"}</code>, Flask{" "}
+          <code>{versions.flask || "Unknown"}</code>
         </p>
       </fieldset>
       <p>
@@ -30,29 +27,17 @@ export const SettingsAbout: React.FC = () => {
       </p>
       <h3>Acknowledgments</h3>
       <p>
-        This app was made by{" "}
+        Originally made by{" "}
         <a href="https://github.com/felixrieseberg" target="_blank">
           Felix Rieseberg
-        </a>{" "}
-        using{" "}
-        <a href="https://electronjs.org/" target="_blank">
-          Electron
-        </a>{" "}
-        and{" "}
-        <a href="https://node-llama-cpp.withcat.ai/" target="_blank">
-          node-llama-cpp
         </a>
-        , embedded using{" "}
-        <a href="https://github.com/electron/llm" target="_blank">
-          @electron/llm
-        </a>
-        . The whimsical retro design was made possible by{" "}
+        . Retro design by{" "}
         <a href="https://github.com/jdan" target="_blank">
           Jordan Scales
-        </a>
-        . Quantized GGUF models provided by{" "}
-        <a href="https://www.unsloth.ai" target="_blank">
-          Unsloth
+        </a>{" "}
+        (98.css). Pi 5 / Ollama port by{" "}
+        <a href="https://github.com/CoreConduit" target="_blank">
+          CoreConduit
         </a>
         .
       </p>
@@ -61,13 +46,7 @@ export const SettingsAbout: React.FC = () => {
         <a href="https://www.kevanatteberry.com/" target="_blank">
           Kevan Atteberry
         </a>
-        , who created more than 15 potential characters for Microsoft's Office
-        Assistants. "He's a guy that just wants to help, and he's a little bit
-        too helpful sometimes — and there's something fun and vulnerable about
-        that.", he once said about Clippy.
-      </p>
-      <p>
-        Clippy and all visual assets related to Clippy are owned by Microsoft.
+        . Clippy and all visual assets related to Clippy are owned by Microsoft.
         This app is not affiliated with Microsoft.
       </p>
     </div>

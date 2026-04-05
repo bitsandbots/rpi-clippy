@@ -1,65 +1,27 @@
-import { DEFAULT_SETTINGS, SettingsState } from "../../sharedState";
+import { DEFAULT_SETTINGS } from "../../sharedState";
 import { clippyApi } from "../clippyApi";
 import { useSharedState } from "../contexts/SharedStateContext";
-import { Checkbox } from "./Checkbox";
 
 export const SettingsAppearance: React.FC = () => {
   const { settings } = useSharedState();
 
   const onChangeFontSize = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
-
     if (!isNaN(newSize)) {
       clippyApi.setState("settings.defaultFontSize", newSize);
     }
   };
 
   const onReset = () => {
-    const defaultAppareanceSettings: SettingsState = {
-      defaultFont: DEFAULT_SETTINGS.defaultFont,
-      defaultFontSize: DEFAULT_SETTINGS.defaultFontSize,
-      clippyAlwaysOnTop: DEFAULT_SETTINGS.clippyAlwaysOnTop,
-      chatAlwaysOnTop: DEFAULT_SETTINGS.chatAlwaysOnTop,
-      alwaysOpenChat: DEFAULT_SETTINGS.alwaysOpenChat,
-    };
-
-    for (const key in defaultAppareanceSettings) {
-      clippyApi.setState(
-        `settings.${key}`,
-        defaultAppareanceSettings[key as keyof SettingsState],
-      );
-    }
+    clippyApi.setState("settings.defaultFont", DEFAULT_SETTINGS.defaultFont);
+    clippyApi.setState(
+      "settings.defaultFontSize",
+      DEFAULT_SETTINGS.defaultFontSize,
+    );
   };
 
   return (
     <div>
-      <fieldset>
-        <legend>Window Options</legend>
-        <Checkbox
-          id="clippyAlwaysOnTop"
-          label="Keep Clippy always on top of all other windows"
-          checked={settings.clippyAlwaysOnTop}
-          onChange={(checked) => {
-            clippyApi.setState("settings.clippyAlwaysOnTop", checked);
-          }}
-        />
-        <Checkbox
-          id="chatAlwaysOnTop"
-          label="Keep chat always on top of all other windows"
-          checked={settings.chatAlwaysOnTop}
-          onChange={(checked) => {
-            clippyApi.setState("settings.chatAlwaysOnTop", checked);
-          }}
-        />
-        <Checkbox
-          id="alwaysOpenChat"
-          label="Always open chat when Clippy starts"
-          checked={settings.alwaysOpenChat}
-          onChange={(checked) => {
-            clippyApi.setState("settings.alwaysOpenChat", checked);
-          }}
-        />
-      </fieldset>
       <fieldset>
         <legend>Font Options</legend>
         <div className="field-row" style={{ width: 300 }}>

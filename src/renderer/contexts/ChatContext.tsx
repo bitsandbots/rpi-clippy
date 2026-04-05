@@ -16,12 +16,14 @@ import { useDebugState } from "./DebugContext";
 import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
 import { ErrorLoadModelMessageContent } from "../components/ErrorLoadModelMessageContent";
 
-import type {
-  LanguageModelPrompt,
-  LanguageModelCreateOptions,
-  LanguageModelPromptRole,
-  LanguageModelPromptType,
-} from "@electron/llm";
+// Local replacements for the removed @electron/llm types
+type LanguageModelPromptRole = "user" | "assistant";
+type LanguageModelPromptType = "text";
+interface LanguageModelPrompt {
+  role: LanguageModelPromptRole;
+  type: LanguageModelPromptType;
+  content: string;
+}
 
 type ClippyNamedStatus =
   | "welcome"
@@ -139,8 +141,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     async (initialPrompts: LanguageModelPrompt[] = []) => {
       setIsModelLoaded(false);
 
-      const options: LanguageModelCreateOptions = {
+      const selectedModelData = models[settings.selectedModel];
+      const ollamaTag =
+        (selectedModelData as any)?.ollamaTag ?? settings.selectedModel ?? "";
+
+      const options = {
         modelAlias: settings.selectedModel,
+        ollamaTag,
         systemPrompt: getSystemPrompt(),
         topK: settings.topK,
         temperature: settings.temperature,

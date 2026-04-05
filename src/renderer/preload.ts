@@ -102,3 +102,53 @@ const clippyApi: ClippyApi = {
 };
 
 contextBridge.exposeInMainWorld("clippy", clippyApi);
+
+// ------------------------------------------------------------------
+// electronAi — custom implementation backed by the Python/Ollama bridge
+// ------------------------------------------------------------------
+contextBridge.exposeInMainWorld("electronAi", {
+  create: (options: Record<string, unknown>) =>
+    ipcRenderer.invoke(IpcMessages.LLM_CREATE, options),
+
+  destroy: () => ipcRenderer.invoke(IpcMessages.LLM_DESTROY),
+
+  abortRequest: (uuid: string) =>
+    ipcRenderer.invoke(IpcMessages.LLM_ABORT, uuid),
+
+  /**
+   * Start a streaming prompt. Chunks, completion and errors are delivered
+   * through the callbacks object. The request is fire-and-forget from the
+   * renderer's perspective — the callbacks will be invoked from preload as
+   * IPC events arrive from the main process.
+   */
+  promptStreaming: (
+    message: string,
+    opts: { requestUUID: string },
+    callbacks: {
+      onChunk: (text: string) => void;
+      onDone: () => void;
+      onError: (error: string) => void;
+    },
+  ) => {
+    const { requestUUID } = opts;
+
+    function onChunkEvent(
+      _event: Electron.IpcRendererEvent,
+      data: Record<string, unknown>,
+    ) {
+      if (data.uuid !== requestUUID) return;
+      if (data.type === "chunk") {
+        callbacks.onChunk(data.text as string);
+      } else if (data.type === "done") {
+        ipcRenderer.removeListener(IpcMessages.LLM_CHUNK, onChunkEvent);
+        callbacks.onDone();
+      } else if (data.type === "error") {
+        ipcRenderer.removeListener(IpcMessages.LLM_CHUNK, onChunkEvent);
+        callbacks.onError((data.error as string) ?? "Unknown LLM error");
+      }
+    }
+
+    ipcRenderer.on(IpcMessages.LLM_CHUNK, onChunkEvent);
+    ipcRenderer.send(IpcMessages.LLM_PROMPT_START, message, requestUUID);
+  },
+});

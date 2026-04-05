@@ -15,14 +15,9 @@ export const DebugProvider = ({ children }: { children: React.ReactNode }) => {
     };
     fetchDebugState();
 
-    clippyApi.offDebugStateChanged();
-    clippyApi.onDebugStateChanged((state) => {
-      setDebugState(state);
-    });
-
-    return () => {
-      clippyApi.offDebugStateChanged();
-    };
+    // Poll every 5 s — debug state changes rarely
+    const id = setInterval(fetchDebugState, 5000);
+    return () => clearInterval(id);
   }, []);
 
   return (

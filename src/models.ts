@@ -5,6 +5,8 @@ export interface Model {
   size: number;
   company?: string;
   url?: string;
+  /** Ollama model tag used for inference and `ollama pull`. */
+  ollamaTag?: string;
   description?: string;
   homepage?: string;
 }
@@ -23,41 +25,33 @@ export const BUILT_IN_MODELS: Model[] = [
     name: "Gemma 3 (1B)",
     company: "Google",
     size: 806,
-    url: "https://huggingface.co/unsloth/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf",
+    ollamaTag: "gemma3:1b",
     description:
-      "Gemma 3, Google's new state-of-the-art models come in 1B, 4B, 12B, and 27B sizes. Gemma 3 has a 128K context window, and multilingual support.",
+      "Gemma 3, Google's state-of-the-art models in 1B–27B sizes. 128K context window, multilingual support. Fast on Pi 5.",
   },
   {
     name: "Gemma 3 (4B)",
     company: "Google",
     size: 2490,
-    url: "https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q3_K_M.gguf",
+    ollamaTag: "gemma3:4b",
     description:
-      "Gemma 3, Google's new state-of-the-art models come in 1B, 4B, 12B, and 27B sizes. Gemma 3 has a 128K context window, and multilingual support.",
+      "Gemma 3 4B — better quality than 1B, still runs well on an 8GB Pi 5.",
   },
   {
     name: "Gemma 3 (12B)",
     company: "Google",
     size: 5600,
-    url: "https://huggingface.co/unsloth/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q3_K_M.gguf",
+    ollamaTag: "gemma3:12b",
     description:
-      "Gemma 3,Google's new state-of-the-art models come in 1B,4B,12B,and 27B sizes. Gemma 3 has a 128K context window,and multilingual support.",
-  },
-  {
-    name: "Gemma 3 (27B)",
-    company: "Google",
-    size: 12500,
-    url: "https://huggingface.co/unsloth/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q3_K_M.gguf",
-    description:
-      "Gemma 3,Google's new state-of-the-art models come in 1B,4B,12B,and 27B sizes. Gemma 3 has a 128K context window, and multilingual support.",
+      "Gemma 3 12B — high quality, slow on Pi 5. Recommended only with SSD and patience.",
   },
   {
     name: "Phi-4 Mini (3.8B)",
     company: "Microsoft",
     size: 2490,
-    url: "https://huggingface.co/unsloth/Phi-4-mini-instruct-GGUF/resolve/main/Phi-4-mini-instruct-Q4_K_M.gguf",
+    ollamaTag: "phi4-mini",
     description:
-      "Phi-4-mini is a 3.8B parameter model and a dense, decoder-only transformer featuring grouped-query attention, 200,000 vocabulary, and shared input-output embeddings, designed for speed and efficiency. Despite its compact size, it continues outperforming larger models in text-based tasks, including reasoning, math, coding, instruction-following, and function-calling. Supporting sequences up to 128,000 tokens, it delivers high accuracy and scalability, making it a powerful solution for advanced AI applications.",
+      "Phi-4-mini is a 3.8B dense decoder-only transformer. Strong reasoning and coding ability in a compact size.",
     homepage:
       "https://azure.microsoft.com/en-us/blog/empowering-innovation-the-next-generation-of-the-phi-family/",
   },
@@ -65,18 +59,18 @@ export const BUILT_IN_MODELS: Model[] = [
     name: "Qwen3 (4B)",
     company: "Qwen",
     size: 2500,
-    url: "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
+    ollamaTag: "qwen3:4b",
     description:
-      "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. Built upon extensive training, Qwen3 delivers groundbreaking advancements in reasoning, instruction-following, agent capabilities, and multilingual support, with the following key features",
+      "Qwen3 4B — strong reasoning and multilingual support. A good all-rounder for Pi 5.",
     homepage: "https://qwenlm.github.io/blog/qwen3/",
   },
   {
     name: "Llama 3.2 (1B Instruct)",
     company: "Meta",
     size: 808,
-    url: "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+    ollamaTag: "llama3.2:1b",
     description:
-      "The Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out). The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks. They outperform many of the available open source and closed chat models on common industry benchmarks.",
+      "Llama 3.2 1B — the lightest capable Llama model. Fast responses on Pi 5, good for quick tasks.",
     homepage:
       "https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/",
   },
@@ -84,20 +78,18 @@ export const BUILT_IN_MODELS: Model[] = [
     name: "Llama 3.2 (3B Instruct)",
     company: "Meta",
     size: 2020,
-    url: "https://huggingface.co/unsloth/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+    ollamaTag: "llama3.2:3b",
     description:
-      "The Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out). The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks. They outperform many of the available open source and closed chat models on common industry benchmarks.",
+      "Llama 3.2 3B — best quality-to-speed tradeoff on an 8GB Pi 5. Recommended for most users.",
     homepage:
       "https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/",
   },
   {
-    name: "Llama 3.2 (3B Instruct)",
-    company: "Meta",
-    size: 2020,
-    url: "https://huggingface.co/unsloth/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+    name: "TinyLlama (1.1B)",
+    company: "TinyLlama",
+    size: 637,
+    ollamaTag: "tinyllama",
     description:
-      "The Llama 3.2 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction-tuned generative models in 1B and 3B sizes (text in/text out). The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks. They outperform many of the available open source and closed chat models on common industry benchmarks.",
-    homepage:
-      "https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/",
+      "TinyLlama 1.1B — the fastest model option. Great for testing and very constrained hardware.",
   },
 ];
