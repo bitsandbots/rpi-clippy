@@ -40,11 +40,13 @@ def create_voice_files(voices_dir: Path, voice_id: str, with_meta: bool = False)
 
 
 def make_piper_mock() -> MagicMock:
-    """Return a mock piper module with a PiperVoice.load() factory."""
+    """Return a (mock_piper, mock_config, mock_voice) triple for patching sys.modules."""
     mock_piper = MagicMock()
     mock_voice = MagicMock()
     mock_piper.PiperVoice.load.return_value = mock_voice
-    return mock_piper, mock_voice
+    mock_config = MagicMock()
+    mock_config.SynthesisConfig = MagicMock(return_value=MagicMock())
+    return mock_piper, mock_config, mock_voice
 
 
 # ---------------------------------------------------------------------------
@@ -163,9 +165,9 @@ def test_load_voice_not_in_registry(tmp_path):
 def test_load_voice_success(tmp_path):
     voices = tmp_path / "voices"
     create_voice_files(voices, "en-test")
-    mock_piper, _ = make_piper_mock()
+    mock_piper, mock_config, _ = make_piper_mock()
 
-    with patch.dict(sys.modules, {"piper": mock_piper}):
+    with patch.dict(sys.modules, {"piper": mock_piper, "piper.config": mock_config}):
         mgr = make_manager(voices)
         result = mgr.load_voice("en-test")
 
@@ -176,9 +178,9 @@ def test_load_voice_success(tmp_path):
 def test_load_voice_already_loaded(tmp_path):
     voices = tmp_path / "voices"
     create_voice_files(voices, "en-test2")
-    mock_piper, _ = make_piper_mock()
+    mock_piper, mock_config, _ = make_piper_mock()
 
-    with patch.dict(sys.modules, {"piper": mock_piper}):
+    with patch.dict(sys.modules, {"piper": mock_piper, "piper.config": mock_config}):
         mgr = make_manager(voices)
         mgr.load_voice("en-test2")
         result = mgr.load_voice("en-test2")  # second call
@@ -215,18 +217,18 @@ def test_synthesize_returns_none_with_no_registry(tmp_path):
 def test_synthesize_returns_wav_bytes(tmp_path):
     voices = tmp_path / "voices"
     create_voice_files(voices, "synth-voice")
-    mock_piper, mock_voice = make_piper_mock()
+    mock_piper, mock_config, mock_voice = make_piper_mock()
 
-    # Make synthesize() write a minimal WAV header to the wav_writer
-    def fake_synthesize(text, wav_writer, **kwargs):
+    # Make synthesize_wav() write a minimal WAV header to the wav_writer
+    def fake_synthesize_wav(text, wav_writer, **kwargs):
         wav_writer.setnchannels(1)
         wav_writer.setsampwidth(2)
         wav_writer.setframerate(22050)
         wav_writer.writeframes(b"\x00" * 100)
 
-    mock_voice.synthesize.side_effect = fake_synthesize
+    mock_voice.synthesize_wav.side_effect = fake_synthesize_wav
 
-    with patch.dict(sys.modules, {"piper": mock_piper}):
+    with patch.dict(sys.modules, {"piper": mock_piper, "piper.config": mock_config}):
         mgr = make_manager(voices)
         mgr.load_voice("synth-voice")
         result = mgr.synthesize("Hello world")
@@ -239,18 +241,14 @@ def test_synthesize_returns_wav_bytes(tmp_path):
 def test_synthesize_error_returns_none(tmp_path):
     voices = tmp_path / "voices"
     create_voice_files(voices, "err-voice")
-    mock_piper, mock_voice = make_piper_mock()
+    mock_piper, mock_config, mock_voice = make_piper_mock()
 
-    # Set WAV headers before raising so wave.close() in the finally block succeeds.
-    def _raise_after_headers(text, wav_writer, **kwargs):
-        wav_writer.setnchannels(1)
-        wav_writer.setsampwidth(2)
-        wav_writer.setframerate(22050)
+    def _raise(text, wav_writer, **kwargs):
         raise RuntimeError("synthesis failed")
 
-    mock_voice.synthesize.side_effect = _raise_after_headers
+    mock_voice.synthesize_wav.side_effect = _raise
 
-    with patch.dict(sys.modules, {"piper": mock_piper}):
+    with patch.dict(sys.modules, {"piper": mock_piper, "piper.config": mock_config}):
         mgr = make_manager(voices)
         mgr.load_voice("err-voice")
         result = mgr.synthesize("text")

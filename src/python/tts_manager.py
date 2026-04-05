@@ -133,17 +133,17 @@ class TTSManager:
         buf = io.BytesIO()
         wav_writer = wave.open(buf, "wb")
         try:
-            self._loaded_voice.synthesize(
-                text,
-                wav_writer,
-                length_scale=length_scale,
-                sentence_silence=0.2,
-            )
+            from piper.config import SynthesisConfig
+            syn_config = SynthesisConfig(length_scale=length_scale)
+            self._loaded_voice.synthesize_wav(text, wav_writer, syn_config=syn_config)
         except Exception as exc:
             log.error("TTS synthesis failed: %s", exc)
+            try:
+                wav_writer.close()
+            except Exception:
+                pass
             return None
-        finally:
-            wav_writer.close()  # Don't use context manager — would close buf too
+        wav_writer.close()  # Don't use context manager — would close buf too
         return buf.getvalue()
 
     def list_voices(self) -> dict:

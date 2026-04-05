@@ -333,7 +333,12 @@ def test_speak_whitespace_only_returns_400(client):
     assert resp.status_code == 400
 
 
-def test_speak_no_voice_returns_503(client):
+def test_speak_no_voice_returns_503(client, monkeypatch):
+    import app as app_mod
+    from unittest.mock import MagicMock
+    empty_mgr = MagicMock()
+    empty_mgr.synthesize.return_value = None
+    monkeypatch.setattr(app_mod, "get_tts_manager", lambda: empty_mgr)
     resp = post_json(client, "/api/voice/speak", {"text": "hello"})
     assert resp.status_code == 503
 
