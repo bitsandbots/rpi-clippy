@@ -96,8 +96,8 @@ export function Clippy() {
         className="app-drag"
         style={{
           position: "absolute",
-          height: "93px",
-          width: "124px",
+          height: "140px",
+          width: "186px",
           backgroundColor: enableDragDebug ? "blue" : "transparent",
           opacity: 0.5,
           zIndex: 5,
@@ -107,12 +107,12 @@ export function Clippy() {
           className="app-no-drag"
           style={{
             position: "absolute",
-            height: "80px",
-            width: "45px",
+            height: "120px",
+            width: "68px",
             backgroundColor: enableDragDebug ? "red" : "transparent",
             zIndex: 10,
-            right: "40px",
-            top: "2px",
+            right: "60px",
+            top: "3px",
             cursor: "help",
           }}
           onClick={toggleChat}
@@ -123,6 +123,7 @@ export function Clippy() {
         src={animation.src}
         draggable={false}
         alt="Clippy"
+        style={{ width: "186px" }}
       />
     </div>
   );

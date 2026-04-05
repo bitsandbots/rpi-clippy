@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { TabList } from "./TabList";
 import { BubbleView, useBubbleView } from "../contexts/BubbleViewContext";
 import { SettingsModel } from "./SettingsModel";
+import { SettingsLLM } from "./SettingsLLM";
 import { BubbleWindowBottomBar } from "./BubbleWindowBottomBar";
 import { SettingsAdvanced } from "./SettingsAdvanced";
 import { SettingsAppearance } from "./SettingsAppearance";
@@ -12,6 +13,7 @@ import { SettingsVoice } from "./SettingsVoice";
 
 export type SettingsTab =
   | "appearance"
+  | "llm"
   | "model"
   | "parameters"
   | "voice"
@@ -38,6 +40,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
 
   const tabs = [
     { label: "Appearance", key: "appearance", content: <SettingsAppearance /> },
+    { label: "LLM", key: "llm", content: <SettingsLLM /> },
     { label: "Model", key: "model", content: <SettingsModel /> },
     { label: "Parameters", key: "parameters", content: <SettingsParameters /> },
     { label: "Voice", key: "voice", content: <SettingsVoice /> },
@@ -73,6 +76,7 @@ function bubbleViewToSettingsTab(view: BubbleView): SettingsTab {
   const settingsTab = view.replace(/settings-?/, "");
   const settingsTabs = [
     "appearance",
+    "llm",
     "model",
     "parameters",
     "voice",

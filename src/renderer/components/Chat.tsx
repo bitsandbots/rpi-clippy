@@ -6,6 +6,7 @@ import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
 import { electronAi } from "../clippyApi";
+import { randomUUID } from "../helpers/uuid";
 
 export type ChatProps = {
   style?: React.CSSProperties;
@@ -18,7 +19,7 @@ export function Chat({ style }: ChatProps) {
   const [streamingMessageContent, setStreamingMessageContent] =
     useState<string>("");
   const [lastRequestUUID, setLastRequestUUID] = useState<string>(
-    crypto.randomUUID(),
+    randomUUID(),
   );
 
   const handleAbortMessage = () => {
@@ -31,7 +32,7 @@ export function Chat({ style }: ChatProps) {
     }
 
     const userMessage: Message = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       content: message,
       sender: "user",
       createdAt: Date.now(),
@@ -41,14 +42,14 @@ export function Chat({ style }: ChatProps) {
     setStreamingMessageContent("");
     setStatus("thinking");
 
-    const requestUUID = crypto.randomUUID();
+    const requestUUID = randomUUID();
     setLastRequestUUID(requestUUID);
 
     let fullContent = "";
     let filteredContent = "";
     let hasSetAnimationKey = false;
 
-    window.electronAi.promptStreaming(
+    electronAi.promptStreaming(
       message,
       { requestUUID },
       {
@@ -76,7 +77,7 @@ export function Chat({ style }: ChatProps) {
         },
         onDone: () => {
           addMessage({
-            id: crypto.randomUUID(),
+            id: randomUUID(),
             content: filteredContent,
             sender: "clippy",
             createdAt: Date.now(),

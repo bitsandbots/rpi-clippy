@@ -15,6 +15,7 @@ import { ChatRecord, MessageRecord } from "../../types/interfaces";
 import { useDebugState } from "./DebugContext";
 import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
 import { ErrorLoadModelMessageContent } from "../components/ErrorLoadModelMessageContent";
+import { randomUUID } from "../helpers/uuid";
 
 // Local replacements for the removed @electron/llm types
 type LanguageModelPromptRole = "user" | "assistant";
@@ -58,7 +59,7 @@ export const ChatContext = createContext<ChatContextType | undefined>(
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChatRecord, setCurrentChatRecord] = useState<ChatRecord>({
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     createdAt: Date.now(),
     updatedAt: Date.now(),
     preview: "",
@@ -123,7 +124,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
 
     const newChatRecord = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       preview: "",
@@ -163,7 +164,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         console.error(error);
 
         addMessage({
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           children: <ErrorLoadModelMessageContent error={error} />,
           sender: "clippy",
           createdAt: Date.now(),
@@ -293,7 +294,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setHasPerformedStartupCheck(true);
 
     addMessage({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       children: <WelcomeMessageContent />,
       content: "Welcome to Clippy!",
       sender: "clippy",

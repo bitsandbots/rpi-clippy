@@ -13,6 +13,12 @@ import requests
 
 OLLAMA_BASE = "http://localhost:11434"
 
+
+def set_ollama_base(url: str) -> None:
+    """Update the Ollama base URL at runtime (e.g. when user changes it in settings)."""
+    global OLLAMA_BASE
+    OLLAMA_BASE = url.rstrip("/")
+
 BUILT_IN_MODELS = [
     {"name": "Gemma 3 (1B)",       "company": "Google",    "size": 806,  "ollamaTag": "gemma3:1b"},
     {"name": "Gemma 3 (4B)",       "company": "Google",    "size": 2490, "ollamaTag": "gemma3:4b"},

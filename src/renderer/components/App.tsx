@@ -19,39 +19,38 @@ function ClippyLayout() {
     <div
       style={{
         position: "fixed",
-        bottom: 0,
-        right: 0,
-        width: "100%",
-        height: "100%",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         pointerEvents: "none",
       }}
     >
-      {/* Chat bubble overlay — positioned above the sprite */}
-      {isChatWindowOpen && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "110px",
-            right: "10px",
-            width: "450px",
-            height: "650px",
-            pointerEvents: "auto",
-          }}
-        >
-          <Bubble />
-        </div>
-      )}
-
-      {/* Clippy sprite — always visible */}
       <div
         style={{
-          position: "absolute",
-          bottom: 0,
-          right: 0,
-          pointerEvents: "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          pointerEvents: "none",
         }}
       >
-        <Clippy />
+        {/* Chat bubble — above the sprite */}
+        {isChatWindowOpen && (
+          <div
+            style={{
+              width: "450px",
+              height: "650px",
+              pointerEvents: "auto",
+            }}
+          >
+            <Bubble />
+          </div>
+        )}
+
+        {/* Clippy sprite — always visible */}
+        <div style={{ pointerEvents: "auto" }}>
+          <Clippy />
+        </div>
       </div>
     </div>
   );

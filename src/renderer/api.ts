@@ -110,6 +110,36 @@ export async function deleteAllModels(): Promise<boolean> {
   return r.ok;
 }
 
+// ---------------------------------------------------------------------------
+// Ollama connectivity
+// ---------------------------------------------------------------------------
+
+export interface OllamaStatus {
+  url: string;
+  connected: boolean;
+  activeModel: string | null;
+}
+
+export async function getOllamaStatus(): Promise<OllamaStatus> {
+  const r = await fetch(`${API}/ollama/status`);
+  return r.json();
+}
+
+export async function setOllamaUrl(url: string): Promise<void> {
+  await post("/ollama/url", { url });
+}
+
+export interface OllamaInstance {
+  url: string;
+  ip: string;
+}
+
+export async function discoverOllama(): Promise<OllamaInstance[]> {
+  const r = await fetch(`${API}/ollama/discover`);
+  const data = await r.json();
+  return data.instances ?? [];
+}
+
 /** Subscribe to pull-progress SSE events. Returns an unsubscribe function. */
 export function subscribePullProgress(
   onEvent: (event: Record<string, unknown>) => void,

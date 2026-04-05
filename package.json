@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "prettier --write --ext .ts,.tsx .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "extract-animations": "./tools/extract-animations.sh -j ./assets/animations/clippy/animations.json -s ./assets/animations/clippy/map.png -o src/renderer/images/animations"
   },
   "keywords": [],
@@ -24,9 +26,11 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
     "prettier": "3.5.3",
     "typescript": "~5.8.3",
-    "vite": "^5.4.14"
+    "vite": "^5.4.14",
+    "vitest": "^2.0.0"
   },
   "dependencies": {
     "98.css": "^0.1.21",

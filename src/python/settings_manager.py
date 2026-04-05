@@ -26,6 +26,7 @@ DEFAULT_SETTINGS = {
     "defaultFont": "Tahoma",
     "defaultFontSize": 12,
     "selectedModel": None,
+    "ollamaUrl": "http://localhost:11434",
 }
 
 DEBUG_DEFAULTS = {

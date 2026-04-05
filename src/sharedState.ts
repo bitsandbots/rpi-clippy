@@ -18,6 +18,7 @@ export interface SettingsState {
   defaultFont: DefaultFont;
   defaultFontSize: number;
   disableAutoUpdate?: boolean;
+  ollamaUrl?: string;
 }
 
 export interface SharedState {

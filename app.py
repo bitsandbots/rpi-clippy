@@ -23,7 +23,7 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 sys.path.insert(0, str(Path(__file__).parent / "src" / "python"))
 
 from chat_manager import get_chat_manager
-from ollama_service import get_ollama_service
+from ollama_service import get_ollama_service, set_ollama_base
 from settings_manager import get_debug_settings, get_settings
 from tts_manager import get_tts_manager
 from stt_manager import get_stt_manager
@@ -227,6 +227,79 @@ def pull_progress_sse():
 
 
 # ---------------------------------------------------------------------------
+# Ollama connectivity
+# ---------------------------------------------------------------------------
+
+@app.route("/api/ollama/status")
+def ollama_status():
+    """Return Ollama URL, connection status, and running model tag."""
+    import ollama_service as _osvc
+    import requests as _req
+    url = get_settings().get("ollamaUrl") or _osvc.OLLAMA_BASE
+    connected = False
+    active_model = None
+    try:
+        resp = _req.get(f"{url}/api/ps", timeout=3)
+        if resp.ok:
+            connected = True
+            models = resp.json().get("models", [])
+            if models:
+                active_model = models[0].get("name")
+    except Exception:
+        pass
+    return jsonify({"url": url, "connected": connected, "activeModel": active_model})
+
+
+@app.route("/api/ollama/url", methods=["POST"])
+def set_ollama_url():
+    """Persist a new Ollama base URL and apply it immediately."""
+    body = request.get_json(force=True) or {}
+    url = (body.get("url") or "").strip().rstrip("/")
+    if not url:
+        return jsonify({"error": "url required"}), 400
+    get_settings().set("ollamaUrl", url)
+    set_ollama_base(url)
+    return jsonify({"status": "ok", "url": url})
+
+
+@app.route("/api/ollama/discover")
+def ollama_discover():
+    """Scan the local subnet for Ollama instances (port 11434). Non-blocking."""
+    import ipaddress
+    import socket
+    import requests as _req
+
+    def _get_local_subnet():
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            net = ipaddress.IPv4Network(f"{local_ip}/24", strict=False)
+            return [str(h) for h in net.hosts()]
+        except Exception:
+            return []
+
+    def _probe(ip, results):
+        try:
+            url = f"http://{ip}:11434"
+            resp = _req.get(f"{url}/api/tags", timeout=1)
+            if resp.ok:
+                results.append({"url": url, "ip": ip})
+        except Exception:
+            pass
+
+    hosts = _get_local_subnet()
+    results = []
+    threads = [threading.Thread(target=_probe, args=(h, results), daemon=True) for h in hosts]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=2)
+    return jsonify({"instances": results})
+
+
+# ---------------------------------------------------------------------------
 # LLM
 # ---------------------------------------------------------------------------
 
@@ -390,6 +463,10 @@ def versions():
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    # Apply saved Ollama URL before accepting requests
+    saved_url = get_settings().get("ollamaUrl")
+    if saved_url:
+        set_ollama_base(saved_url)
     print(f"Clippy running at http://localhost:{PORT}")
     print(f"LAN access: http://0.0.0.0:{PORT}")
     app.run(host="0.0.0.0", port=PORT, threaded=True, debug=False)

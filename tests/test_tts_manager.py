@@ -1,0 +1,282 @@
+"""Tests for TTSManager and VoiceInfo."""
+
+import io
+import json
+import sys
+import wave
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from tts_manager import TTSManager, VoiceInfo
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def make_manager(voices_dir: Path) -> TTSManager:
+    return TTSManager(voices_dir=voices_dir)
+
+
+def create_voice_files(voices_dir: Path, voice_id: str, with_meta: bool = False) -> Path:
+    """Create a stub .onnx file (and optionally .meta.json) in voices_dir."""
+    voices_dir.mkdir(parents=True, exist_ok=True)
+    onnx = voices_dir / f"{voice_id}.onnx"
+    onnx.write_bytes(b"\x00" * 4)   # dummy content
+    config = voices_dir / f"{voice_id}.onnx.json"
+    config.write_text('{"key": "value"}')
+    if with_meta:
+        meta = voices_dir / f"{voice_id}.meta.json"
+        meta.write_text(json.dumps({
+            "name": "Test Voice",
+            "language": "fr",
+            "gender": "female",
+            "style": "happy",
+            "description": "A test voice",
+        }))
+    return onnx
+
+
+def make_piper_mock() -> MagicMock:
+    """Return a mock piper module with a PiperVoice.load() factory."""
+    mock_piper = MagicMock()
+    mock_voice = MagicMock()
+    mock_piper.PiperVoice.load.return_value = mock_voice
+    return mock_piper, mock_voice
+
+
+# ---------------------------------------------------------------------------
+# VoiceInfo
+# ---------------------------------------------------------------------------
+
+def test_voice_info_to_dict(tmp_path):
+    onnx = tmp_path / "test.onnx"
+    onnx.write_bytes(b"\x00")
+    info = VoiceInfo("test-voice", onnx, None, {
+        "name": "My Voice",
+        "language": "en",
+        "gender": "male",
+        "style": "neutral",
+        "description": "desc",
+    })
+    d = info.to_dict()
+    assert d["id"] == "test-voice"
+    assert d["name"] == "My Voice"
+    assert d["language"] == "en"
+    assert d["gender"] == "male"
+    assert d["style"] == "neutral"
+    assert d["description"] == "desc"
+
+
+def test_voice_info_defaults_from_id(tmp_path):
+    onnx = tmp_path / "my-voice.onnx"
+    onnx.write_bytes(b"\x00")
+    info = VoiceInfo("my-voice", onnx, None, {})
+    assert info.name == "My Voice"   # title-cased, hyphen removed
+    assert info.language == "en"
+    assert info.gender == "unknown"
+    assert info.style == "neutral"
+
+
+# ---------------------------------------------------------------------------
+# Initial state
+# ---------------------------------------------------------------------------
+
+def test_get_state_initial_no_voices(tmp_path):
+    mgr = make_manager(tmp_path / "voices")
+    state = mgr.get_state()
+    assert state["enabled"] is False
+    assert state["currentVoice"] is None
+    assert state["voices"] == {}
+
+
+def test_scan_empty_directory_gives_empty_registry(tmp_path):
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    mgr = make_manager(voices)
+    assert mgr.registry == {}
+
+
+def test_scan_nonexistent_directory_gives_empty_registry(tmp_path):
+    mgr = make_manager(tmp_path / "does_not_exist")
+    assert mgr.registry == {}
+
+
+# ---------------------------------------------------------------------------
+# Voice discovery (_scan)
+# ---------------------------------------------------------------------------
+
+def test_scan_discovers_onnx_files(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "en-us-amy")
+    mgr = make_manager(voices)
+    assert "en-us-amy" in mgr.registry
+
+
+def test_scan_ignores_onnx_json_files(tmp_path):
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    (voices / "config.onnx.json").write_text("{}")
+    mgr = make_manager(voices)
+    assert "config" not in mgr.registry  # .onnx.json files must be skipped
+
+
+def test_scan_reads_meta_json(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "fr-voice", with_meta=True)
+    mgr = make_manager(voices)
+    info = mgr.registry["fr-voice"]
+    assert info.name == "Test Voice"
+    assert info.language == "fr"
+    assert info.gender == "female"
+
+
+def test_scan_handles_missing_meta(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "no-meta")
+    mgr = make_manager(voices)
+    info = mgr.registry["no-meta"]
+    assert info.language == "en"   # default
+
+
+def test_scan_handles_corrupt_meta(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "bad-meta")
+    (voices / "bad-meta.meta.json").write_text("NOT JSON")
+    mgr = make_manager(voices)
+    assert "bad-meta" in mgr.registry  # still discovered, just uses defaults
+
+
+# ---------------------------------------------------------------------------
+# Voice loading
+# ---------------------------------------------------------------------------
+
+def test_load_voice_not_in_registry(tmp_path):
+    mgr = make_manager(tmp_path / "voices")
+    result = mgr.load_voice("nonexistent")
+    assert "error" in result
+    assert "available" in result
+
+
+def test_load_voice_success(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "en-test")
+    mock_piper, _ = make_piper_mock()
+
+    with patch.dict(sys.modules, {"piper": mock_piper}):
+        mgr = make_manager(voices)
+        result = mgr.load_voice("en-test")
+
+    assert result["status"] == "loaded"
+    assert result["voice"] == "en-test"
+
+
+def test_load_voice_already_loaded(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "en-test2")
+    mock_piper, _ = make_piper_mock()
+
+    with patch.dict(sys.modules, {"piper": mock_piper}):
+        mgr = make_manager(voices)
+        mgr.load_voice("en-test2")
+        result = mgr.load_voice("en-test2")  # second call
+
+    assert result["status"] == "already_loaded"
+    assert result["voice"] == "en-test2"
+
+
+def test_load_voice_error(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "bad-voice")
+    mock_piper = MagicMock()
+    mock_piper.PiperVoice.load.side_effect = RuntimeError("model corrupt")
+
+    with patch.dict(sys.modules, {"piper": mock_piper}):
+        mgr = make_manager(voices)
+        result = mgr.load_voice("bad-voice")
+
+    assert "error" in result
+    assert "model corrupt" in result["error"]
+    assert mgr.current_voice_id is None
+
+
+# ---------------------------------------------------------------------------
+# Synthesis
+# ---------------------------------------------------------------------------
+
+def test_synthesize_returns_none_with_no_registry(tmp_path):
+    mgr = make_manager(tmp_path / "voices")
+    result = mgr.synthesize("hello")
+    assert result is None
+
+
+def test_synthesize_returns_wav_bytes(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "synth-voice")
+    mock_piper, mock_voice = make_piper_mock()
+
+    # Make synthesize() write a minimal WAV header to the wav_writer
+    def fake_synthesize(text, wav_writer, **kwargs):
+        wav_writer.setnchannels(1)
+        wav_writer.setsampwidth(2)
+        wav_writer.setframerate(22050)
+        wav_writer.writeframes(b"\x00" * 100)
+
+    mock_voice.synthesize.side_effect = fake_synthesize
+
+    with patch.dict(sys.modules, {"piper": mock_piper}):
+        mgr = make_manager(voices)
+        mgr.load_voice("synth-voice")
+        result = mgr.synthesize("Hello world")
+
+    assert result is not None
+    assert isinstance(result, bytes)
+    assert len(result) > 0
+
+
+def test_synthesize_error_returns_none(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "err-voice")
+    mock_piper, mock_voice = make_piper_mock()
+
+    # Set WAV headers before raising so wave.close() in the finally block succeeds.
+    def _raise_after_headers(text, wav_writer, **kwargs):
+        wav_writer.setnchannels(1)
+        wav_writer.setsampwidth(2)
+        wav_writer.setframerate(22050)
+        raise RuntimeError("synthesis failed")
+
+    mock_voice.synthesize.side_effect = _raise_after_headers
+
+    with patch.dict(sys.modules, {"piper": mock_piper}):
+        mgr = make_manager(voices)
+        mgr.load_voice("err-voice")
+        result = mgr.synthesize("text")
+
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Rescan
+# ---------------------------------------------------------------------------
+
+def test_rescan_discovers_new_voices(tmp_path):
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    mgr = make_manager(voices)
+    assert mgr.registry == {}
+
+    create_voice_files(voices, "new-voice")
+    mgr.rescan()
+    assert "new-voice" in mgr.registry
+
+
+def test_list_voices_returns_serializable(tmp_path):
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "list-voice", with_meta=True)
+    mgr = make_manager(voices)
+    listing = mgr.list_voices()
+    assert "list-voice" in listing
+    assert "name" in listing["list-voice"]

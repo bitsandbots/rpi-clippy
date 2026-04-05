@@ -9,7 +9,7 @@ export type ChatInputProps = {
 
 export function ChatInput({ onSend, onAbort }: ChatInputProps) {
   const { status, isModelLoaded } = useChat();
-  const { sttEnabled, transcribe } = useVoice();
+  const { ttsEnabled, sttEnabled, setTtsEnabled, setSttEnabled, transcribe } = useVoice();
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -98,7 +98,11 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
     ? "Transcribing…"
     : isRecording
       ? "Stop recording"
-      : "Record voice input";
+      : sttEnabled
+        ? "Record voice input"
+        : "Enable mic (Speech-to-Text off)";
+
+  const ttsTitle = ttsEnabled ? "Mute voice responses (TTS on)" : "Unmute voice responses (TTS off)";
 
   const placeholder = isModelLoaded
     ? "Type a message, press Enter to send..."
@@ -116,22 +120,35 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         placeholder={placeholder}
         style={{ flex: 1, resize: "vertical", minHeight: "23px", width: 80 }}
       />
-      {sttEnabled && (
-        <button
-          title={micTitle}
-          disabled={!isModelLoaded || isTranscribing}
-          onClick={toggleMic}
-          style={{
-            alignSelf: "flex-end",
-            height: "23px",
-            minWidth: "28px",
-            background: isRecording ? "#c00" : undefined,
-            color: isRecording ? "#fff" : undefined,
-          }}
-        >
-          {micLabel}
-        </button>
-      )}
+      {/* TTS speaker toggle — always visible */}
+      <button
+        title={ttsTitle}
+        onClick={() => setTtsEnabled(!ttsEnabled)}
+        style={{
+          alignSelf: "flex-end",
+          height: "23px",
+          minWidth: "28px",
+          opacity: ttsEnabled ? 1 : 0.4,
+        }}
+      >
+        🔊
+      </button>
+      {/* Mic button — always visible; click enables STT then starts recording */}
+      <button
+        title={micTitle}
+        disabled={isTranscribing}
+        onClick={sttEnabled ? toggleMic : () => setSttEnabled(true)}
+        style={{
+          alignSelf: "flex-end",
+          height: "23px",
+          minWidth: "28px",
+          opacity: sttEnabled ? 1 : 0.4,
+          background: isRecording ? "#c00" : undefined,
+          color: isRecording ? "#fff" : undefined,
+        }}
+      >
+        {micLabel}
+      </button>
       <button
         disabled={!isModelLoaded}
         style={{ alignSelf: "flex-end", height: "23px" }}
