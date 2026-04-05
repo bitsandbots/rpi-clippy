@@ -15,18 +15,22 @@ All inference runs locally through [Ollama](https://ollama.com) — no cloud, no
 - One-click model download/delete from the Settings panel
 - Streaming responses with animation cues
 - Chat history saved to disk
+- **Text-to-Speech** via [Piper TTS](https://github.com/rhasspy/piper) — local `.onnx` voice models
+- **Speech-to-Text** via [Faster-Whisper](https://github.com/SYSTRAN/faster-whisper) — offline transcription
+- Configurable font size and family (Settings → Appearance)
 
 ---
 
 ## Requirements
 
-| Dependency                                  | Notes                            |
-| ------------------------------------------- | -------------------------------- |
-| Raspberry Pi 5 (4 GB+ RAM)                  | Also works on Pi 4, other Linux  |
-| [Ollama](https://ollama.com/download/linux) | Must be running (`ollama serve`) |
-| Python 3.11+                                | `flask`, `requests`              |
-| Node.js 20+                                 | For building the frontend        |
-| At least one pulled model                   | e.g. `ollama pull llama3.2:1b`   |
+| Dependency                                  | Notes                                          |
+| ------------------------------------------- | ---------------------------------------------- |
+| Raspberry Pi 5 (4 GB+ RAM)                  | Also works on Pi 4, other Linux                |
+| [Ollama](https://ollama.com/download/linux) | Must be running (`ollama serve`)               |
+| Python 3.11+                                | `flask`, `requests`, `piper-tts`, `faster-whisper` |
+| Node.js 20+                                 | For building the frontend                      |
+| `ffmpeg` + `libespeak-ng1` + `libsndfile1`  | Required for TTS/STT (`install.sh` handles this) |
+| At least one pulled model                   | e.g. `ollama pull llama3.2:1b`                 |
 
 ---
 
@@ -49,15 +53,25 @@ bash install.sh
 
 `install.sh` will:
 
-- Install Python deps (`flask`, `requests`)
+- Install system deps (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
+- Install Python deps (`flask`, `requests`, `piper-tts`, `faster-whisper`)
 - Run `npm install` and `npm run build`
 - Install and start the `clippy` systemd service
 
-### 3. Open in your browser
+### 3. (Optional) Download Piper TTS voices
+
+```bash
+bash scripts/setup_voices.sh        # default voices (~200 MB)
+bash scripts/setup_voices.sh all    # all available voices
+```
+
+Voices are saved to `~/.config/Clippy/voices/`. Enable TTS in **Settings → Voice**.
+
+### 4. Open in your browser
 
 ```
 http://localhost:5080
-# or from another device:
+# or from another device on the LAN:
 http://<your-pi-ip>:5080
 ```
 
@@ -122,18 +136,23 @@ Browser (port 5080)
        └─ src/renderer/api.ts  — fetch + EventSource
 
 Flask app.py (port 5080)
-  ├─ GET  /                    — serves dist/index.html
-  ├─ GET/POST  /api/state      — settings read/write
+  ├─ GET  /                        — serves dist/index.html
+  ├─ GET/POST  /api/state          — settings read/write
   ├─ GET/POST/DELETE /api/chats/<id>
   ├─ POST /api/models/download|delete|refresh
   ├─ GET  /api/models/pull-progress  — SSE stream (download progress)
   ├─ POST /api/llm/create|destroy|abort
-  └─ GET  /api/llm/stream      — SSE stream (inference chunks)
+  ├─ GET  /api/llm/stream          — SSE stream (inference chunks)
+  ├─ POST /api/voice/speak         — TTS: text → WAV bytes
+  ├─ POST /api/voice/transcribe    — STT: base64 audio → text
+  └─ GET/POST /api/voice/*         — voice state, toggle, load, rescan
 
 src/python/
   ├─ ollama_service.py   — LLM sessions, model management, Ollama HTTP client
   ├─ chat_manager.py     — chat JSON files (~/.config/Clippy/chats/)
-  └─ settings_manager.py — settings JSON (~/.config/Clippy/settings.json)
+  ├─ settings_manager.py — settings JSON (~/.config/Clippy/settings.json)
+  ├─ tts_manager.py      — Piper TTS, lazy-loads .onnx voice models
+  └─ stt_manager.py      — Faster-Whisper STT, lazy-loads Whisper model
 ```
 
 Streaming uses **Server-Sent Events (SSE)** — one persistent connection per active stream, no websockets needed.
@@ -151,6 +170,10 @@ All data lives in `~/.config/Clippy/`:
   chats/
     chats.json         — chat index
     <id>.json          — one file per conversation
+  voices/
+    <voice-id>.onnx          — Piper TTS voice model
+    <voice-id>.onnx.json     — voice config (required by Piper)
+    <voice-id>.meta.json     — display metadata (optional)
 ```
 
 ---
@@ -165,8 +188,8 @@ Settings are persisted to `~/.config/Clippy/settings.json`. The most useful keys
 | `systemPrompt`    | (Clippy persona) | System prompt sent to the LLM    |
 | `temperature`     | `0.7`            | Sampling temperature             |
 | `topK`            | `10`             | Top-K sampling                   |
-| `defaultFont`     | `Tahoma`         | UI font                          |
-| `defaultFontSize` | `12`             | UI font size (px)                |
+| `defaultFont`     | `Tahoma`         | UI font (changeable in Settings → Appearance) |
+| `defaultFontSize` | `14`             | UI font size in px (8–24, Settings → Appearance) |
 
 ---
 
