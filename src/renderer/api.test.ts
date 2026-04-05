@@ -71,10 +71,13 @@ describe("setState", () => {
   it("calls POST /api/state with key and value", async () => {
     mockFetch({ status: "ok" });
     await setState("topK", 42);
-    expect(fetch).toHaveBeenCalledWith("/api/state", expect.objectContaining({
-      method: "POST",
-      body: JSON.stringify({ key: "topK", value: 42 }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/state",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ key: "topK", value: 42 }),
+      }),
+    );
   });
 });
 
@@ -90,10 +93,13 @@ describe("setDebugState", () => {
   it("calls POST /api/debug-state", async () => {
     mockFetch({ status: "ok" });
     await setDebugState("simulateDownload", true);
-    expect(fetch).toHaveBeenCalledWith("/api/debug-state", expect.objectContaining({
-      method: "POST",
-      body: JSON.stringify({ key: "simulateDownload", value: true }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/debug-state",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ key: "simulateDownload", value: true }),
+      }),
+    );
   });
 });
 
@@ -136,9 +142,12 @@ describe("writeChatWithMessages", () => {
       messages: [],
     };
     await writeChatWithMessages(cwm);
-    expect(fetch).toHaveBeenCalledWith("/api/chats/c1", expect.objectContaining({
-      method: "POST",
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/chats/c1",
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
   });
 });
 
@@ -146,9 +155,12 @@ describe("deleteChat", () => {
   it("calls DELETE /api/chats/:id", async () => {
     mockFetch({ status: "ok" });
     await deleteChat("c1");
-    expect(fetch).toHaveBeenCalledWith("/api/chats/c1", expect.objectContaining({
-      method: "DELETE",
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/chats/c1",
+      expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
   });
 });
 
@@ -156,9 +168,12 @@ describe("deleteAllChats", () => {
   it("calls DELETE /api/chats", async () => {
     mockFetch({ status: "ok" });
     await deleteAllChats();
-    expect(fetch).toHaveBeenCalledWith("/api/chats", expect.objectContaining({
-      method: "DELETE",
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/chats",
+      expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
   });
 });
 
@@ -170,9 +185,12 @@ describe("updateModelState", () => {
   it("calls POST /api/models/refresh", async () => {
     mockFetch({});
     await updateModelState();
-    expect(fetch).toHaveBeenCalledWith("/api/models/refresh", expect.objectContaining({
-      method: "POST",
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/models/refresh",
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
   });
 });
 
@@ -393,7 +411,9 @@ describe("setVoice", () => {
     await setVoice("en-us-amy");
     expect(fetch).toHaveBeenCalledWith(
       "/api/voice/set-voice",
-      expect.objectContaining({ body: JSON.stringify({ voiceId: "en-us-amy" }) }),
+      expect.objectContaining({
+        body: JSON.stringify({ voiceId: "en-us-amy" }),
+      }),
     );
   });
 });
@@ -492,7 +512,9 @@ describe("subscribePullProgress", () => {
   it("opens an EventSource to /api/models/pull-progress", () => {
     const unsubscribe = subscribePullProgress(vi.fn());
     expect(MockEventSource.instances).toHaveLength(1);
-    expect(MockEventSource.instances[0].url).toContain("/api/models/pull-progress");
+    expect(MockEventSource.instances[0].url).toContain(
+      "/api/models/pull-progress",
+    );
     unsubscribe();
   });
 
@@ -501,7 +523,10 @@ describe("subscribePullProgress", () => {
     subscribePullProgress(cb);
     const es = MockEventSource.instances[0];
     es.emit({ type: "pull_progress", tag: "tinyllama" });
-    expect(cb).toHaveBeenCalledWith({ type: "pull_progress", tag: "tinyllama" });
+    expect(cb).toHaveBeenCalledWith({
+      type: "pull_progress",
+      tag: "tinyllama",
+    });
   });
 
   it("unsubscribe closes the EventSource", () => {

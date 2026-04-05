@@ -6,7 +6,10 @@
  * to crypto.getRandomValues(), which is available everywhere.
  */
 export function randomUUID(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   // RFC 4122 v4 via getRandomValues (available in non-secure contexts)

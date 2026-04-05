@@ -18,9 +18,7 @@ export function Chat({ style }: ChatProps) {
   const { ttsEnabled, speak } = useVoice();
   const [streamingMessageContent, setStreamingMessageContent] =
     useState<string>("");
-  const [lastRequestUUID, setLastRequestUUID] = useState<string>(
-    randomUUID(),
-  );
+  const [lastRequestUUID, setLastRequestUUID] = useState<string>(randomUUID());
 
   const handleAbortMessage = () => {
     electronAi.abortRequest(lastRequestUUID);

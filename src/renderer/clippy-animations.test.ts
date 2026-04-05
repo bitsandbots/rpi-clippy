@@ -26,7 +26,9 @@ describe("ANIMATIONS", () => {
   });
 
   it("contains idle animations", () => {
-    const idleKeys = Object.keys(ANIMATIONS).filter((k) => k.startsWith("Idle"));
+    const idleKeys = Object.keys(ANIMATIONS).filter((k) =>
+      k.startsWith("Idle"),
+    );
     expect(idleKeys.length).toBeGreaterThanOrEqual(4);
   });
 

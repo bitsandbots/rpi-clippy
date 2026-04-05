@@ -23,14 +23,14 @@ All inference runs locally through [Ollama](https://ollama.com) — no cloud, no
 
 ## Requirements
 
-| Dependency                                  | Notes                                          |
-| ------------------------------------------- | ---------------------------------------------- |
-| Raspberry Pi 5 (4 GB+ RAM)                  | Also works on Pi 4, other Linux                |
-| [Ollama](https://ollama.com/download/linux) | Must be running (`ollama serve`)               |
+| Dependency                                  | Notes                                              |
+| ------------------------------------------- | -------------------------------------------------- |
+| Raspberry Pi 5 (4 GB+ RAM)                  | Also works on Pi 4, other Linux                    |
+| [Ollama](https://ollama.com/download/linux) | Must be running (`ollama serve`)                   |
 | Python 3.11+                                | `flask`, `requests`, `piper-tts`, `faster-whisper` |
-| Node.js 20+                                 | For building the frontend                      |
-| `ffmpeg` + `libespeak-ng1` + `libsndfile1`  | Required for TTS/STT (`install.sh` handles this) |
-| At least one pulled model                   | e.g. `ollama pull llama3.2:1b`                 |
+| Node.js 20+                                 | For building the frontend                          |
+| `ffmpeg` + `libespeak-ng1` + `libsndfile1`  | Required for TTS/STT (`install.sh` handles this)   |
+| At least one pulled model                   | e.g. `ollama pull llama3.2:1b`                     |
 
 ---
 
@@ -182,13 +182,13 @@ All data lives in `~/.config/Clippy/`:
 
 Settings are persisted to `~/.config/Clippy/settings.json`. The most useful keys:
 
-| Key               | Default          | Description                      |
-| ----------------- | ---------------- | -------------------------------- |
-| `selectedModel`   | `null`           | Display name of the active model |
-| `systemPrompt`    | (Clippy persona) | System prompt sent to the LLM    |
-| `temperature`     | `0.7`            | Sampling temperature             |
-| `topK`            | `10`             | Top-K sampling                   |
-| `defaultFont`     | `Tahoma`         | UI font (changeable in Settings → Appearance) |
+| Key               | Default          | Description                                      |
+| ----------------- | ---------------- | ------------------------------------------------ |
+| `selectedModel`   | `null`           | Display name of the active model                 |
+| `systemPrompt`    | (Clippy persona) | System prompt sent to the LLM                    |
+| `temperature`     | `0.7`            | Sampling temperature                             |
+| `topK`            | `10`             | Top-K sampling                                   |
+| `defaultFont`     | `Tahoma`         | UI font (changeable in Settings → Appearance)    |
 | `defaultFontSize` | `14`             | UI font size in px (8–24, Settings → Appearance) |
 
 ---

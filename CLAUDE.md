@@ -69,6 +69,7 @@ src/python/
 ### Streaming
 
 SSE (Server-Sent Events) for both LLM inference and model pull progress:
+
 - `GET /api/llm/stream?uuid=&message=` — inference chunks
 - `GET /api/models/pull-progress` — pull events (fan-out queue per subscriber)
 
@@ -77,6 +78,7 @@ SSE (Server-Sent Events) for both LLM inference and model pull progress:
 ### Frontend
 
 State is managed via React Context — no Redux or Zustand:
+
 - `ChatContext.tsx` — active messages, model loading, chat CRUD
 - `SharedStateContext.tsx` — models list, global settings (2s polling + SSE pull events)
 - `BubbleViewContext.tsx` — bubble/settings tab switching
@@ -111,12 +113,12 @@ Uses **98.css** for the Windows 95/98 aesthetic. Custom styles live in `src/rend
 
 ## Key Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `98.css` | Windows 95/98 UI styling |
-| `react-markdown` | Markdown rendering in chat messages |
-| `flask` | HTTP server, SSE streaming |
-| `requests` | Ollama REST API calls |
-| `piper-tts` | Local TTS synthesis from .onnx voice models |
-| `faster-whisper` | Local STT transcription (CTranslate2 backend) |
-| `ffmpeg` (system) | Audio format conversion for STT input |
+| Package           | Purpose                                       |
+| ----------------- | --------------------------------------------- |
+| `98.css`          | Windows 95/98 UI styling                      |
+| `react-markdown`  | Markdown rendering in chat messages           |
+| `flask`           | HTTP server, SSE streaming                    |
+| `requests`        | Ollama REST API calls                         |
+| `piper-tts`       | Local TTS synthesis from .onnx voice models   |
+| `faster-whisper`  | Local STT transcription (CTranslate2 backend) |
+| `ffmpeg` (system) | Audio format conversion for STT input         |

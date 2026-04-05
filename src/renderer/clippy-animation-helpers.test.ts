@@ -74,7 +74,9 @@ describe("getRandomAnimation", () => {
     const keys = ["Alert", "GoodBye", "Wave"];
     for (let i = 0; i < 10; i++) {
       const result = getRandomAnimation(keys);
-      expect(keys.map((k) => ANIMATIONS[k as keyof typeof ANIMATIONS])).toContain(result);
+      expect(
+        keys.map((k) => ANIMATIONS[k as keyof typeof ANIMATIONS]),
+      ).toContain(result);
     }
   });
 

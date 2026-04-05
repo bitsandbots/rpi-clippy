@@ -20,9 +20,18 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div style={{ fontFamily: "monospace", padding: 20, color: "red", background: "#fff" }}>
+        <div
+          style={{
+            fontFamily: "monospace",
+            padding: 20,
+            color: "red",
+            background: "#fff",
+          }}
+        >
           <b>Clippy crashed:</b>
-          <pre style={{ whiteSpace: "pre-wrap" }}>{this.state.error.message}</pre>
+          <pre style={{ whiteSpace: "pre-wrap" }}>
+            {this.state.error.message}
+          </pre>
         </div>
       );
     }

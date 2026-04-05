@@ -12,7 +12,10 @@ import { vi, beforeEach } from "vitest";
 // crypto polyfill (jsdom does not implement getRandomValues)
 // ---------------------------------------------------------------------------
 
-if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.getRandomValues) {
+if (
+  typeof globalThis.crypto === "undefined" ||
+  !globalThis.crypto.getRandomValues
+) {
   Object.defineProperty(globalThis, "crypto", {
     value: {
       getRandomValues: <T extends ArrayBufferView>(array: T): T => {
@@ -22,7 +25,8 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.getRandomValu
         }
         return array;
       },
-      randomUUID: undefined as unknown as () => `${string}-${string}-${string}-${string}-${string}`,
+      randomUUID:
+        undefined as unknown as () => `${string}-${string}-${string}-${string}-${string}`,
     },
     writable: true,
     configurable: true,
@@ -54,7 +58,9 @@ export class MockEventSource {
   /** Helper for tests: simulate a server-sent message. */
   emit(data: unknown) {
     if (this.onmessage) {
-      this.onmessage(new MessageEvent("message", { data: JSON.stringify(data) }));
+      this.onmessage(
+        new MessageEvent("message", { data: JSON.stringify(data) }),
+      );
     }
   }
 
