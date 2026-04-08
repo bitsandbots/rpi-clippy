@@ -120,9 +120,9 @@ export const clippyApi: ClippyApi = {
   offStateChanged: noopSync,
   onStateChanged: noopSync,
   getFullState,
-  getState: async (key) => {
+  getState: async (key: string) => {
     const state = await getFullState();
-    return (state as Record<string, unknown>)[key];
+    return (state as unknown as Record<string, unknown>)[key];
   },
   setState,
   openStateInEditor: noop,
@@ -130,9 +130,9 @@ export const clippyApi: ClippyApi = {
   offDebugStateChanged: noopSync,
   onDebugStateChanged: noopSync,
   getFullDebugState,
-  getDebugState: async (key) => {
+  getDebugState: async (key: string) => {
     const state = await getFullDebugState();
-    return (state as Record<string, unknown>)[key];
+    return (state as unknown as Record<string, unknown>)[key];
   },
   setDebugState,
   openDebugStateInEditor: noop,

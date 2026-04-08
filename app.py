@@ -36,11 +36,34 @@ VERSION = "0.5.0"
 app = Flask(__name__, static_folder=None)
 
 _CHAT_ID_RE = re.compile(r'^[A-Za-z0-9_\-]+$')
+_MAX_MESSAGES_PER_CHAT = 1000
+_MAX_PAYLOAD_SIZE = 10_000_000  # 10MB limit for chat write
 
 
 def _valid_chat_id(chat_id: str) -> bool:
     """Reject chat IDs that could escape the chats directory."""
     return bool(_CHAT_ID_RE.match(chat_id))
+
+
+def _validate_chat_payload(body: dict) -> tuple[bool, str]:
+    """Validate chat payload size and message count.
+    Returns (is_valid, error_message).
+    """
+    try:
+        # Check total payload size
+        payload_size = len(json.dumps(body))
+        if payload_size > _MAX_PAYLOAD_SIZE:
+            return False, f"payload too large ({payload_size} > {_MAX_PAYLOAD_SIZE} bytes)"
+
+        # Check message count
+        chat = body.get("chat", {})
+        messages = body.get("messages", [])
+        if len(messages) > _MAX_MESSAGES_PER_CHAT:
+            return False, f"too many messages ({len(messages)} > {_MAX_MESSAGES_PER_CHAT})"
+
+        return True, ""
+    except Exception:
+        return False, "payload validation error"
 
 
 # ---------------------------------------------------------------------------
@@ -147,6 +170,12 @@ def write_chat(chat_id):
     if not chat.get("id"):
         chat["id"] = chat_id
         body["chat"] = chat
+
+    # Validate payload
+    is_valid, error_msg = _validate_chat_payload(body)
+    if not is_valid:
+        return jsonify({"error": error_msg}), 413
+
     get_chat_manager().write(body)
     return jsonify({"status": "ok"})
 

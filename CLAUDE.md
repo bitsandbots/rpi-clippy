@@ -31,9 +31,28 @@ bash install.sh
 bash scripts/setup_voices.sh            # default voices
 bash scripts/setup_voices.sh all        # all available voices
 bash scripts/setup_voices.sh <voice_id> # one specific voice
+
+# Documentation
+open docs/README.md     # Start here
+open docs/overview.md   # Project overview
+open docs/architecture.md  # Technical architecture
+open docs/api-reference.md # API reference
 ```
 
-No test suite exists — linting is the only automated check.
+## Documentation
+
+Comprehensive documentation is available in the `docs/` folder:
+
+| Document | Description |
+|----------|-------------|
+| [README.md](docs/README.md) | Quick start guide |
+| [overview.md](docs/overview.md) | Project purpose and goals |
+| [architecture.md](docs/architecture.md) | High-level design and data flow |
+| [tech-stack.md](docs/tech-stack.md) | Technologies and versions |
+| [installation.md](docs/installation.md) | Setup and running instructions |
+| [api-reference.md](docs/api-reference.md) | Backend API documentation |
+| [frontend-components.md](docs/frontend-components.md) | React component docs |
+| [voice-features.md](docs/voice-features.md) | TTS and STT setup guide |
 
 ```bash
 # Smoke-test the Flask API (requires Ollama running)

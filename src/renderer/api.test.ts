@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MockEventSource } from "../test/setup";
+import type { LlmCreateOptions } from "./api";
 
 import {
   getFullState,
@@ -38,6 +39,7 @@ import {
   getVersions,
   subscribePullProgress,
 } from "./api";
+import type { MessageRecord } from "../types/interfaces";
 
 // ---------------------------------------------------------------------------
 // Helper: build a successful fetch mock response
@@ -117,7 +119,7 @@ describe("getChatRecords", () => {
 
 describe("getChatWithMessages", () => {
   it("returns JSON for a known chat", async () => {
-    const chat = { chat: { id: "abc" }, messages: [] };
+    const chat = { chat: { id: "abc" }, messages: [] as MessageRecord[] };
     mockFetch(chat, true, 200);
     const result = await getChatWithMessages("abc");
     expect(result).toEqual(chat);
@@ -137,7 +139,7 @@ describe("getChatWithMessages", () => {
 describe("writeChatWithMessages", () => {
   it("POSTs to /api/chats/:id", async () => {
     mockFetch({ status: "ok" });
-    const cwm = {
+    const cwm: { chat: any; messages: MessageRecord[] } = {
       chat: { id: "c1", createdAt: 0, updatedAt: 0, preview: "" },
       messages: [],
     };
@@ -248,13 +250,13 @@ describe("deleteAllModels", () => {
 describe("llmCreate", () => {
   it("POSTs options to /api/llm/create", async () => {
     mockFetch({ status: "ok" });
-    const opts = {
+    const opts: LlmCreateOptions = {
       modelAlias: "TinyLlama",
       ollamaTag: "tinyllama",
       systemPrompt: "Be helpful",
       topK: 10,
       temperature: 0.7,
-      initialPrompts: [],
+      initialPrompts: [] as any[],
     };
     await llmCreate(opts);
     expect(fetch).toHaveBeenCalledWith(

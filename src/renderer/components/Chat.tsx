@@ -2,7 +2,10 @@ import { useState } from "react";
 
 import { Message } from "./Message";
 import { ChatInput } from "./ChatInput";
-import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
+import {
+  ANIMATION_KEYS,
+  ANIMATION_KEYS_BRACKETS,
+} from "../clippy-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
 import { electronAi } from "../clippyApi";
@@ -133,12 +136,25 @@ function filterMessageContent(content: string): {
   } else if (/^\[[A-Za-z]*$/m.test(content)) {
     text = content.replace(/^\[[A-Za-z]*$/m, "").trim();
   } else {
-    // Check for animation keys in brackets
+    // Check for animation keys in brackets (preferred format)
     for (const key of ANIMATION_KEYS_BRACKETS) {
       if (content.startsWith(key)) {
         animationKey = key.slice(1, -1);
         text = content.slice(key.length).trim();
         break;
+      }
+    }
+
+    // Fallback: check for animation keys without brackets but followed by colon
+    // This handles cases where LLM doesn't follow the bracket format exactly
+    if (!animationKey) {
+      for (const key of ANIMATION_KEYS) {
+        const keyWithColon = `${key}:`;
+        if (content.startsWith(keyWithColon)) {
+          animationKey = key;
+          text = content.slice(keyWithColon.length).trim();
+          break;
+        }
       }
     }
   }
