@@ -11,6 +11,17 @@ The app was converted from Electron to a Flask+React SPA to eliminate the displa
 ## Commands
 
 ```bash
+# Run Python test suite
+pytest -q                           # all tests, quiet
+pytest tests/test_routes.py -q      # specific module
+
+# Run frontend tests (Vitest)
+npm run test                        # one-shot
+npm run test:watch                  # watch mode
+
+# Install Python dev dependencies
+pip install -r requirements-dev.txt
+
 # Start Flask server (production)
 python3 app.py
 
@@ -43,16 +54,16 @@ open docs/api-reference.md # API reference
 
 Comprehensive documentation is available in the `docs/` folder:
 
-| Document | Description |
-|----------|-------------|
-| [README.md](docs/README.md) | Quick start guide |
-| [overview.md](docs/overview.md) | Project purpose and goals |
-| [architecture.md](docs/architecture.md) | High-level design and data flow |
-| [tech-stack.md](docs/tech-stack.md) | Technologies and versions |
-| [installation.md](docs/installation.md) | Setup and running instructions |
-| [api-reference.md](docs/api-reference.md) | Backend API documentation |
-| [frontend-components.md](docs/frontend-components.md) | React component docs |
-| [voice-features.md](docs/voice-features.md) | TTS and STT setup guide |
+| Document                                              | Description                     |
+| ----------------------------------------------------- | ------------------------------- |
+| [README.md](docs/README.md)                           | Quick start guide               |
+| [overview.md](docs/overview.md)                       | Project purpose and goals       |
+| [architecture.md](docs/architecture.md)               | High-level design and data flow |
+| [tech-stack.md](docs/tech-stack.md)                   | Technologies and versions       |
+| [installation.md](docs/installation.md)               | Setup and running instructions  |
+| [api-reference.md](docs/api-reference.md)             | Backend API documentation       |
+| [frontend-components.md](docs/frontend-components.md) | React component docs            |
+| [voice-features.md](docs/voice-features.md)           | TTS and STT setup guide         |
 
 ```bash
 # Smoke-test the Flask API (requires Ollama running)
@@ -103,10 +114,18 @@ State is managed via React Context — no Redux or Zustand:
 - `BubbleViewContext.tsx` — bubble/settings tab switching
 - `VoiceContext.tsx` — TTS/STT state, audio playback, mic recording
 - `DebugContext.tsx` — debug flag (5s polling)
+- `WindowContext.tsx` — window/panel resize and layout state
 
 UI entry: `renderer.tsx` → `App.tsx` → CSS-positioned `BubbleWindow.tsx` / `Clippy.tsx`
 
 IPC is gone. `clippyApi.tsx` is a shim re-exporting from `api.ts` — no call sites needed updating.
+
+### Utilities
+
+`src/renderer/helpers/` — shared frontend utilities:
+
+- `convert-download-speed.ts` — formats Ollama pull byte/s to human-readable rate
+- `uuid.ts` — UUID generation for chat and session IDs
 
 ### Voice
 
