@@ -76,8 +76,11 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectVoice = useCallback(async (voiceId: string) => {
-    await setVoice(voiceId);
-    setCurrentVoice(voiceId);
+    const result = await setVoice(voiceId);
+    // Only update state if the voice was successfully loaded
+    if (!result.error) {
+      setCurrentVoice(voiceId);
+    }
   }, []);
 
   const changeSttModel = useCallback(async (model: string) => {
