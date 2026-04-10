@@ -101,3 +101,7 @@ dist/
 __pycache__/
 *.py[cod]
 *.pyo
+
+# Claude Code session artifacts
+session-*.md
+*command-message*
