@@ -81,9 +81,11 @@ Browser (localhost:5080)
 Flask app.py (port 5080, 0.0.0.0 for LAN access)
   ├─ GET /              → serves dist/index.html (React build)
   ├─ GET /assets/*      → Vite static assets
-  ├─ /api/state         → SharedState JSON
+  ├─ /api/state         → SharedState JSON (GET/POST)
+  ├─ /api/debug-state   → debug flag (GET/POST)
   ├─ /api/chats/*       → conversation CRUD
   ├─ /api/models/*      → Ollama model management
+  ├─ /api/ollama/*      → Ollama connection status, URL config, discovery
   ├─ /api/llm/*         → LLM session + SSE streaming
   ├─ /api/voice/*       → Piper TTS + Faster-Whisper STT
   └─ /api/versions      → version info
@@ -92,16 +94,19 @@ src/python/
   ├─ ollama_service.py  — OllamaService: Ollama REST API, model pull fan-out
   ├─ chat_manager.py    — ChatManager: JSON files at ~/.config/Clippy/chats/
   ├─ settings_manager.py — SettingsManager: ~/.config/Clippy/settings.json
+  │                     └ DebugSettingsManager (same file): debug flag (5s polling)
   ├─ tts_manager.py     — TTSManager: Piper TTS, lazy-loaded .onnx voices
   └─ stt_manager.py     — STTManager: Faster-Whisper, lazy-loaded Whisper model
 ```
 
 ### Streaming
 
-SSE (Server-Sent Events) for both LLM inference and model pull progress:
+SSE (Server-Sent Events) for LLM inference and model pull progress:
 
 - `GET /api/llm/stream?uuid=&message=` — inference chunks
 - `GET /api/models/pull-progress` — pull events (fan-out queue per subscriber)
+
+TTS audio: `POST /api/voice/speak` returns `audio/wav` bytes (not SSE).
 
 `POST /api/llm/abort` sets a `threading.Event` the SSE generator checks per chunk.
 
@@ -117,6 +122,10 @@ State is managed via React Context — no Redux or Zustand:
 - `WindowContext.tsx` — window/panel resize and layout state
 
 UI entry: `renderer.tsx` → `App.tsx` → CSS-positioned `BubbleWindow.tsx` / `Clippy.tsx`
+
+`src/renderer/clippy-animation-helpers.tsx` — sprite frame and timing logic for Clippy animations.
+`src/renderer/clippy-animations.tsx` — animation definitions (idle, wave, think, etc.).
+`src/renderer/logging.tsx` — client-side debug logging utility.
 
 IPC is gone. `clippyApi.tsx` is a shim re-exporting from `api.ts` — no call sites needed updating.
 
@@ -134,20 +143,40 @@ IPC is gone. `clippyApi.tsx` is a shim re-exporting from `api.ts` — no call si
 
 ### Storage
 
-- Chats: `~/.config/Clippy/chats/{id}.json` + `chats.json` index
-- Settings: `~/.config/Clippy/settings.json`
-- Voices: `~/.config/Clippy/voices/*.onnx` + `*.onnx.json`
-- Models: managed by Ollama (`~/.ollama/models/`)
+All app data under `~/.config/Clippy/`: chats (`chats/`), settings (`settings.json`), voices (`voices/`). Models managed by Ollama in `~/.ollama/models/`.
 
 ### Styling
 
-Uses **98.css** for the Windows 95/98 aesthetic. Custom styles live in `src/renderer/` alongside components.
+Uses **98.css** for the Windows 95/98 aesthetic. Custom styles in `src/renderer/components/css/`.
+
+### Code Style
+
+- Python: type hints on all signatures, docstrings on public functions, black formatting
+- TypeScript: Prettier formatting (`npm run lint`), semicolons used
+- All Python singletons use double-checked locking for thread safety (Flask `threaded=True`)
+- New API routes must use `_validate_chat_payload()` for writes
 
 ### Build System
 
 - **Vite** unified browser build (`vite.config.ts`) — `npm run build` → `dist/`
 - Dev proxy: Vite `:5173` → Flask `:5080` for `/api/*`
 - No Electron Forge, no native modules
+
+### Dev Dependencies
+
+| Package             | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| `pytest>=8.0`       | Backend test runner (151 tests in `tests/`)        |
+| `pytest-mock>=3.12` | Mock fixtures for unit tests                       |
+| `pytest-flask>=1.3` | Flask test client fixtures                         |
+| `vitest>=2.0`       | Frontend test runner (77 tests in `src/renderer/`) |
+
+## Gotchas
+
+- **Animation key fallback**: Chat.tsx handles `Key: text` colon format when the LLM omits bracket syntax. If you modify message rendering, preserve this fallback or animated responses will break.
+- **Payload limits**: `app.py` enforces a 10MB body cap and 1000-message limit on chat writes (HTTP 413 on violation). Don't bypass `_validate_chat_payload()`.
+- **SSE abort**: `POST /api/llm/abort` sets a `threading.Event` checked per chunk — not a socket close. If adding new SSE endpoints, use the same pattern.
+- **clippyApi.tsx shim**: This file re-exports from `api.ts` for backward compat. New code should import from `api.ts` directly.
 
 ## Key Dependencies
 
