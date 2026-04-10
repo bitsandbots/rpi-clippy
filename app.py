@@ -473,6 +473,29 @@ def rescan_voices():
     return jsonify(get_tts_manager().get_state())
 
 
+@app.route("/api/voice/import", methods=["POST"])
+def import_voice():
+    """Import a custom voice from uploaded .onnx and optional config files."""
+    if "model" not in request.files:
+        return jsonify({"error": "model file (.onnx) required"}), 400
+
+    model_file = request.files["model"]
+    config_file = request.files.get("config")
+    meta_file = request.files.get("meta")
+
+    if not model_file.filename.endswith(".onnx"):
+        return jsonify({"error": "model file must have .onnx extension"}), 400
+
+    model_bytes = model_file.read()
+    config_bytes = config_file.read() if config_file else None
+    meta_bytes = meta_file.read() if meta_file else None
+
+    result = get_tts_manager().import_voice(model_bytes, config_bytes, meta_bytes)
+    if "error" in result:
+        return jsonify(result), 422
+    return jsonify(result)
+
+
 @app.route("/api/voice/speak", methods=["POST"])
 def speak():
     """Synthesize text to WAV. Returns audio/wav bytes."""

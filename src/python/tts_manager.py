@@ -83,6 +83,13 @@ class TTSManager:
                     meta = json.loads(meta_path.read_text())
                 except Exception:
                     pass
+            # Check if file is valid by checking its size (corrupted files are often 0 or very small)
+            file_size = f.stat().st_size
+            if file_size < 1024:  # Less than 1KB is likely corrupted
+                log.warning(
+                    "Skipping voice %s: file too small (%d bytes)", voice_id, file_size
+                )
+                continue
             self.registry[voice_id] = VoiceInfo(
                 voice_id,
                 f,
@@ -97,6 +104,79 @@ class TTSManager:
         # Clear stale voice if it was removed from disk
         if self.current_voice_id and self.current_voice_id not in self.registry:
             self.current_voice_id = None
+
+    def import_voice(
+        self, model_bytes: bytes, config_bytes: bytes | None, meta_bytes: bytes | None
+    ) -> dict:
+        """Import a voice from uploaded files. Returns status dict with voice_id or error."""
+        import uuid
+
+        # Generate a unique voice ID for the imported file
+        voice_id = f"custom-{uuid.uuid4().hex[:8]}"
+
+        model_path = self.voices_dir / f"{voice_id}.onnx"
+        config_path = self.voices_dir / f"{voice_id}.onnx.json"
+        meta_path = self.voices_dir / f"{voice_id}.meta.json"
+
+        try:
+            # Write the model file
+            model_path.write_bytes(model_bytes)
+
+            # Write config if provided
+            if config_bytes:
+                config_path.write_bytes(config_bytes)
+
+            # Write metadata
+            meta = {}
+            if meta_bytes:
+                try:
+                    meta = json.loads(meta_bytes.decode("utf-8"))
+                except Exception:
+                    pass
+
+            # Generate default metadata if not provided
+            if not meta:
+                meta = {
+                    "name": voice_id,
+                    "description": "Custom imported voice",
+                    "language": "en",
+                    "gender": "unknown",
+                    "style": "neutral",
+                }
+
+            meta_path.write_text(json.dumps(meta, indent=2))
+
+            # Validate the voice can actually be loaded
+            try:
+                from piper import PiperVoice
+
+                PiperVoice.load(
+                    str(model_path),
+                    config_path=str(config_path) if config_path.exists() else None,
+                )
+            except Exception as exc:
+                # Remove the files if validation fails
+                model_path.unlink(missing_ok=True)
+                config_path.unlink(missing_ok=True)
+                meta_path.unlink(missing_ok=True)
+                return {"error": f"Invalid voice model: {exc}"}
+
+            # Re-scan to add the new voice
+            self.rescan()
+
+            return {
+                "status": "imported",
+                "voice": voice_id,
+                "name": meta.get("name", voice_id),
+            }
+
+        except Exception as exc:
+            # Cleanup on failure
+            model_path.unlink(missing_ok=True)
+            config_path.unlink(missing_ok=True)
+            meta_path.unlink(missing_ok=True)
+            log.error("Failed to import voice: %s", exc)
+            return {"error": str(exc)}
 
     def load_voice(self, voice_id: str) -> dict:
         """Load (or hot-swap) a Piper voice model. Returns status dict."""

@@ -11,31 +11,39 @@ import pytest
 
 from tts_manager import TTSManager, VoiceInfo
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_manager(voices_dir: Path) -> TTSManager:
     return TTSManager(voices_dir=voices_dir)
 
 
-def create_voice_files(voices_dir: Path, voice_id: str, with_meta: bool = False) -> Path:
+def create_voice_files(
+    voices_dir: Path, voice_id: str, with_meta: bool = False
+) -> Path:
     """Create a stub .onnx file (and optionally .meta.json) in voices_dir."""
     voices_dir.mkdir(parents=True, exist_ok=True)
     onnx = voices_dir / f"{voice_id}.onnx"
-    onnx.write_bytes(b"\x00" * 4)   # dummy content
+    onnx.write_bytes(
+        b"\x00" * 2048
+    )  # dummy content (minimum valid size for _scan validation)
     config = voices_dir / f"{voice_id}.onnx.json"
     config.write_text('{"key": "value"}')
     if with_meta:
         meta = voices_dir / f"{voice_id}.meta.json"
-        meta.write_text(json.dumps({
-            "name": "Test Voice",
-            "language": "fr",
-            "gender": "female",
-            "style": "happy",
-            "description": "A test voice",
-        }))
+        meta.write_text(
+            json.dumps(
+                {
+                    "name": "Test Voice",
+                    "language": "fr",
+                    "gender": "female",
+                    "style": "happy",
+                    "description": "A test voice",
+                }
+            )
+        )
     return onnx
 
 
@@ -53,16 +61,22 @@ def make_piper_mock() -> MagicMock:
 # VoiceInfo
 # ---------------------------------------------------------------------------
 
+
 def test_voice_info_to_dict(tmp_path):
     onnx = tmp_path / "test.onnx"
     onnx.write_bytes(b"\x00")
-    info = VoiceInfo("test-voice", onnx, None, {
-        "name": "My Voice",
-        "language": "en",
-        "gender": "male",
-        "style": "neutral",
-        "description": "desc",
-    })
+    info = VoiceInfo(
+        "test-voice",
+        onnx,
+        None,
+        {
+            "name": "My Voice",
+            "language": "en",
+            "gender": "male",
+            "style": "neutral",
+            "description": "desc",
+        },
+    )
     d = info.to_dict()
     assert d["id"] == "test-voice"
     assert d["name"] == "My Voice"
@@ -76,7 +90,7 @@ def test_voice_info_defaults_from_id(tmp_path):
     onnx = tmp_path / "my-voice.onnx"
     onnx.write_bytes(b"\x00")
     info = VoiceInfo("my-voice", onnx, None, {})
-    assert info.name == "My Voice"   # title-cased, hyphen removed
+    assert info.name == "My Voice"  # title-cased, hyphen removed
     assert info.language == "en"
     assert info.gender == "unknown"
     assert info.style == "neutral"
@@ -85,6 +99,7 @@ def test_voice_info_defaults_from_id(tmp_path):
 # ---------------------------------------------------------------------------
 # Initial state
 # ---------------------------------------------------------------------------
+
 
 def test_get_state_initial_no_voices(tmp_path):
     mgr = make_manager(tmp_path / "voices")
@@ -109,6 +124,7 @@ def test_scan_nonexistent_directory_gives_empty_registry(tmp_path):
 # ---------------------------------------------------------------------------
 # Voice discovery (_scan)
 # ---------------------------------------------------------------------------
+
 
 def test_scan_discovers_onnx_files(tmp_path):
     voices = tmp_path / "voices"
@@ -140,7 +156,7 @@ def test_scan_handles_missing_meta(tmp_path):
     create_voice_files(voices, "no-meta")
     mgr = make_manager(voices)
     info = mgr.registry["no-meta"]
-    assert info.language == "en"   # default
+    assert info.language == "en"  # default
 
 
 def test_scan_handles_corrupt_meta(tmp_path):
@@ -154,6 +170,7 @@ def test_scan_handles_corrupt_meta(tmp_path):
 # ---------------------------------------------------------------------------
 # Voice loading
 # ---------------------------------------------------------------------------
+
 
 def test_load_voice_not_in_registry(tmp_path):
     mgr = make_manager(tmp_path / "voices")
@@ -208,6 +225,7 @@ def test_load_voice_error(tmp_path):
 # Synthesis
 # ---------------------------------------------------------------------------
 
+
 def test_synthesize_returns_none_with_no_registry(tmp_path):
     mgr = make_manager(tmp_path / "voices")
     result = mgr.synthesize("hello")
@@ -259,6 +277,7 @@ def test_synthesize_error_returns_none(tmp_path):
 # ---------------------------------------------------------------------------
 # Rescan
 # ---------------------------------------------------------------------------
+
 
 def test_rescan_discovers_new_voices(tmp_path):
     voices = tmp_path / "voices"

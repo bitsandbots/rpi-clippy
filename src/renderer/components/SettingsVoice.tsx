@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useVoice } from "../contexts/VoiceContext";
 
 export const SettingsVoice: React.FC = () => {
@@ -17,10 +17,29 @@ export const SettingsVoice: React.FC = () => {
     speak,
     stopSpeaking,
     rescan,
+    importVoice,
   } = useVoice();
 
   const voiceList = Object.values(voices);
+  console.log(
+    "[SettingsVoice] Render - currentVoice:",
+    currentVoice,
+    "ttsEnabled:",
+    ttsEnabled,
+    "voices count:",
+    Object.keys(voices).length,
+    "voiceList:",
+    voiceList.map((v) => v.id).join(", "),
+  );
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+
+  // Log when component mounts/unmounts
+  useEffect(() => {
+    console.log("[SettingsVoice] Component mounted");
+    return () => {
+      console.log("[SettingsVoice] Component unmounted");
+    };
+  }, []);
 
   // Enumerate browser audio output devices
   useEffect(() => {
@@ -118,7 +137,13 @@ export const SettingsVoice: React.FC = () => {
               <select
                 id="voiceSelect"
                 value={currentVoice ?? ""}
-                onChange={(e) => selectVoice(e.target.value)}
+                onChange={(e) => {
+                  console.log(
+                    "[SettingsVoice] onChange fired, selected:",
+                    e.target.value,
+                  );
+                  selectVoice(e.target.value);
+                }}
                 disabled={!ttsEnabled}
                 style={{ flex: 1 }}
               >
@@ -151,30 +176,8 @@ export const SettingsVoice: React.FC = () => {
           </p>
         )}
 
-        {/* Download Voices */}
-        <div
-          className="sunken-panel"
-          style={{ marginTop: "8px", padding: "8px" }}
-        >
-          <strong>Download Voices</strong>
-          <p
-            style={{ fontSize: "0.9em", marginTop: "4px", marginBottom: "6px" }}
-          >
-            Run one of the following commands on the Pi to download Piper voice
-            models:
-          </p>
-          <code style={{ display: "block", fontSize: "0.9em" }}>
-            bash scripts/setup_voices.sh &nbsp;&nbsp;&nbsp;# starter voices
-          </code>
-          <code
-            style={{ display: "block", fontSize: "0.9em", marginTop: "2px" }}
-          >
-            bash scripts/setup_voices.sh all &nbsp;# all voices
-          </code>
-          <button style={{ marginTop: "8px" }} onClick={rescan}>
-            Rescan after download
-          </button>
-        </div>
+        {/* Import Custom Voice */}
+        <ImportVoiceSection importVoice={importVoice} />
       </fieldset>
 
       {/* ── Speech-to-Text ────────────────────────────── */}
@@ -206,3 +209,165 @@ export const SettingsVoice: React.FC = () => {
     </div>
   );
 };
+
+// ── Import Custom Voice ──────────────────────────────────────────────────────
+
+interface ImportVoiceSectionProps {
+  importVoice: (
+    model: File,
+    config?: File,
+    meta?: File,
+  ) => Promise<{
+    status?: string;
+    voice?: string;
+    name?: string;
+    error?: string;
+  }>;
+}
+
+function ImportVoiceSection({ importVoice }: ImportVoiceSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [status, setStatus] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = useCallback(
+    async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+
+      const onnxFile = Array.from(files).find((f) => f.name.endsWith(".onnx"));
+      if (!onnxFile) {
+        setStatus({
+          type: "error",
+          message: "Please select a .onnx voice model file",
+        });
+        return;
+      }
+
+      const configFile = Array.from(files).find((f) =>
+        f.name.endsWith(".onnx.json"),
+      );
+      const metaFile = Array.from(files).find((f) =>
+        f.name.endsWith(".meta.json"),
+      );
+
+      setIsLoading(true);
+      setStatus(null);
+
+      try {
+        const result = await importVoice(onnxFile, configFile, metaFile);
+        if (result.error) {
+          setStatus({ type: "error", message: result.error });
+        } else {
+          setStatus({
+            type: "success",
+            message: `Imported "${result.name}" successfully! Select it from the voice dropdown above.`,
+          });
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+      } catch (err) {
+        setStatus({ type: "error", message: `Import failed: ${err}` });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [importVoice],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      handleFiles(e.dataTransfer.files);
+    },
+    [handleFiles],
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  return (
+    <div className="sunken-panel" style={{ marginTop: "8px", padding: "8px" }}>
+      <div
+        style={{ cursor: "pointer", userSelect: "none" }}
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <strong>{isExpanded ? "▼" : "▶"} Import Custom Voice</strong>
+      </div>
+
+      {isExpanded && (
+        <div style={{ marginTop: "8px" }}>
+          <p
+            style={{ fontSize: "0.9em", marginTop: "4px", marginBottom: "6px" }}
+          >
+            Drop <code>.onnx</code> voice model files here, or click to select.
+            You can also include optional <code>.onnx.json</code> config and{" "}
+            <code>.meta.json</code> metadata files.
+          </p>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".onnx,.onnx.json,.meta.json"
+            multiple
+            style={{ display: "none" }}
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              border: `2px dashed ${isDragging ? "#2b7de9" : "#888"}`,
+              borderRadius: "4px",
+              padding: "16px",
+              textAlign: "center",
+              cursor: "pointer",
+              background: isDragging ? "rgba(43,125,233,0.1)" : "transparent",
+              transition: "background 0.2s, border-color 0.2s",
+            }}
+          >
+            {isLoading ? (
+              <span>Importing...</span>
+            ) : (
+              <span style={{ color: "#555" }}>
+                Drop files here or click to browse
+              </span>
+            )}
+          </div>
+
+          {status && (
+            <p
+              style={{
+                fontSize: "0.9em",
+                marginTop: "8px",
+                marginBottom: 0,
+                color:
+                  status.type === "error"
+                    ? "#cc0000"
+                    : status.type === "success"
+                      ? "#008800"
+                      : "#555",
+              }}
+            >
+              {status.message}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

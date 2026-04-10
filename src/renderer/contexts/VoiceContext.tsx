@@ -16,6 +16,7 @@ import {
   transcribeAudio,
   setSttModel,
   rescanVoices,
+  importVoice,
   type VoiceInfo,
 } from "../api";
 
@@ -35,6 +36,16 @@ type VoiceContextType = {
   transcribe: (audioBase64: string) => Promise<string>;
   stopSpeaking: () => void;
   rescan: () => Promise<void>;
+  importVoice: (
+    model: File,
+    config?: File,
+    meta?: File,
+  ) => Promise<{
+    status?: string;
+    voice?: string;
+    name?: string;
+    error?: string;
+  }>;
 };
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined);
@@ -53,15 +64,32 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioBlobRef = useRef<string | null>(null);
+  const currentVoiceRef = useRef<string | null>(null);
+  currentVoiceRef.current = currentVoice;
 
   useEffect(() => {
     getVoiceState().then((state) => {
+      console.log("[VoiceContext] Initial state loaded:", state);
       setTtsEnabledState(state.tts.enabled);
       setSttEnabledState(state.stt.enabled);
-      setCurrentVoice(state.tts.currentVoice);
+      // Only set currentVoice from API if not already set (e.g., by user selection)
+      // This prevents the initial API load from overriding user selections
+      if (currentVoiceRef.current === null && state.tts.currentVoice) {
+        setCurrentVoice(state.tts.currentVoice);
+        console.log(
+          "[VoiceContext] Set initial currentVoice from API:",
+          state.tts.currentVoice,
+        );
+      }
       setVoices(state.tts.voices);
       setSttModelState(state.stt.model);
       setAvailableSttModels(state.stt.available_models);
+      console.log(
+        "[VoiceContext] After initial load - currentVoice:",
+        currentVoiceRef.current,
+        "voices count:",
+        Object.keys(state.tts.voices).length,
+      );
     });
   }, []);
 
@@ -76,10 +104,30 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectVoice = useCallback(async (voiceId: string) => {
+    console.log("[VoiceContext] selectVoice called with:", voiceId);
+    console.log(
+      "[VoiceContext] currentVoice BEFORE API call:",
+      currentVoiceRef.current,
+    );
     const result = await setVoice(voiceId);
+    console.log("[VoiceContext] selectVoice result:", result);
+    console.log(
+      "[VoiceContext] result.error:",
+      result.error,
+      "result.status:",
+      result.status,
+    );
     // Only update state if the voice was successfully loaded
-    if (!result.error) {
+    // Check for both error AND successful status
+    if (!result.error && result.status === "loaded") {
+      console.log("[VoiceContext] Calling setCurrentVoice to:", voiceId);
       setCurrentVoice(voiceId);
+      console.log(
+        "[VoiceContext] currentVoice AFTER setCurrentVoice:",
+        voiceId,
+      );
+    } else {
+      console.log("[VoiceContext] Voice load failed, not updating state");
     }
   }, []);
 
@@ -149,6 +197,19 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     if (state.currentVoice) setCurrentVoice(state.currentVoice);
   }, []);
 
+  const importVoice = useCallback(
+    async (model: File, config?: File, meta?: File) => {
+      const result = await importVoice(model, config, meta);
+      if (!result.error) {
+        // Refresh the voice list
+        const state = await rescanVoices();
+        setVoices(state.voices);
+      }
+      return result;
+    },
+    [rescanVoices],
+  );
+
   return (
     <VoiceContext.Provider
       value={{
@@ -167,6 +228,7 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         transcribe,
         stopSpeaking,
         rescan,
+        importVoice,
       }}
     >
       {children}
