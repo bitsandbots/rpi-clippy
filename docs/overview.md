@@ -10,14 +10,14 @@ Clippy is a revival of Microsoft Office 97's iconic animated assistant, reimagin
 
 ## Key Goals
 
-| Goal | Status |
-|------|--------|
+| Goal                           | Status      |
+| ------------------------------ | ----------- |
 | Local LLM inference via Ollama | ✅ Complete |
-| Windows 98-style UI | ✅ Complete |
-| Text-to-Speech (TTS) | ✅ Complete |
-| Speech-to-Text (STT) | ✅ Complete |
-| Persistent chat history | ✅ Complete |
-| Systemd auto-start | ✅ Complete |
+| Windows 98-style UI            | ✅ Complete |
+| Text-to-Speech (TTS)           | ✅ Complete |
+| Speech-to-Text (STT)           | ✅ Complete |
+| Persistent chat history        | ✅ Complete |
+| Systemd auto-start             | ✅ Complete |
 
 ## Architecture Overview
 
@@ -73,22 +73,22 @@ Clippy is a revival of Microsoft Office 97's iconic animated assistant, reimagin
 
 Clippy uses **Server-Sent Events (SSE)** for real-time communication:
 
-| Stream Type | Endpoint | Purpose |
-|-------------|----------|---------|
-| Inference | `GET /api/llm/stream` | LLM response chunks |
-| Download Progress | `GET /api/models/pull-progress` | Model pull status |
-| Keepalive | `: keepalive` | Prevent connection timeout |
+| Stream Type       | Endpoint                        | Purpose                    |
+| ----------------- | ------------------------------- | -------------------------- |
+| Inference         | `GET /api/llm/stream`           | LLM response chunks        |
+| Download Progress | `GET /api/models/pull-progress` | Model pull status          |
+| Keepalive         | `: keepalive`                   | Prevent connection timeout |
 
 ### State Management
 
 State is shared between frontend and backend:
 
-| State Type | Location | Sync Mechanism |
-|------------|----------|----------------|
-| Models list | Backend (Python) | SSE push on changes |
-| Settings | Backend (Python) | Polling (2s) + SSE |
-| Chat messages | Backend (JSON) | CRUD API |
-| Voice state | Backend (Python) | SSE push |
+| State Type    | Location         | Sync Mechanism      |
+| ------------- | ---------------- | ------------------- |
+| Models list   | Backend (Python) | SSE push on changes |
+| Settings      | Backend (Python) | Polling (2s) + SSE  |
+| Chat messages | Backend (JSON)   | CRUD API            |
+| Voice state   | Backend (Python) | SSE push            |
 
 ## Storage
 

@@ -36,13 +36,13 @@ ollama pull llama3.2:1b
 
 Voices are stored in `~/.config/Clippy/voices/`
 
-| Voice | Gender | Description | File Size |
-|-------|--------|-------------|-----------|
-| `en_US-amy-medium` | Female | Clear American English | ~63 MB |
-| `en_US-lessac-medium` | Male | Warm American English | ~63 MB |
-| `en_US-ryan-high` | Male | High-quality, slower | ~63 MB |
-| `en_US-kusal-medium` | Male | Friendly American | ~63 MB |
-| `en_GB-alan-medium` | Male | British English | ~63 MB |
+| Voice                 | Gender | Description            | File Size |
+| --------------------- | ------ | ---------------------- | --------- |
+| `en_US-amy-medium`    | Female | Clear American English | ~63 MB    |
+| `en_US-lessac-medium` | Male   | Warm American English  | ~63 MB    |
+| `en_US-ryan-high`     | Male   | High-quality, slower   | ~63 MB    |
+| `en_US-kusal-medium`  | Male   | Friendly American      | ~63 MB    |
+| `en_GB-alan-medium`   | Male   | British English        | ~63 MB    |
 
 ### Download Voices
 
@@ -74,6 +74,7 @@ curl -X POST http://localhost:5080/api/voice/speak \
 ```
 
 **Length Scale**:
+
 - `< 1.0` - Faster speech
 - `= 1.0` - Normal speed (default)
 - `> 1.0` - Slower speech
@@ -89,13 +90,13 @@ curl -X POST http://localhost:5080/api/voice/speak \
 
 ### Whisper Models
 
-| Model | Size | Accuracy | Speed |
-|-------|------|----------|-------|
-| `tiny` | ~39 MB | Basic | Fastest |
-| `base` | ~74 MB | Good | Fast |
-| `small` | ~243 MB | Good | Medium |
-| `medium` | ~769 MB | High | Slow |
-| `large` | ~1550 MB | Highest | Slowest |
+| Model    | Size     | Accuracy | Speed   |
+| -------- | -------- | -------- | ------- |
+| `tiny`   | ~39 MB   | Basic    | Fastest |
+| `base`   | ~74 MB   | Good     | Fast    |
+| `small`  | ~243 MB  | Good     | Medium  |
+| `medium` | ~769 MB  | High     | Slow    |
+| `large`  | ~1550 MB | Highest  | Slowest |
 
 ### Configure STT
 
@@ -214,10 +215,12 @@ alsamixer
 ### Adjust Voice Settings
 
 **Speed Control**:
+
 - In code: `length_scale` parameter in `synthesize()`
 - In UI: Modify `settings_manager.py` DEFAULT_SETTINGS
 
 **Voice Priority**:
+
 - Voices loaded on first access
 - First available voice auto-loads if none selected
 
@@ -225,17 +228,17 @@ alsamixer
 
 ### TTS Performance
 
-| Model | Memory | CPU Usage | Latency |
-|-------|--------|-----------|---------|
-| Piper (.onnx) | ~50 MB | Low | < 1s |
+| Model         | Memory | CPU Usage | Latency |
+| ------------- | ------ | --------- | ------- |
+| Piper (.onnx) | ~50 MB | Low       | < 1s    |
 
 ### STT Performance
 
-| Model | Memory | CPU Usage | Latency |
-|-------|--------|-----------|---------|
-| Whisper tiny | ~150 MB | Low-Medium | ~2x audio |
-| Whisper base | ~300 MB | Medium | ~1.5x audio |
-| Whisper small | ~600 MB | Medium-High | ~1x audio |
+| Model         | Memory  | CPU Usage   | Latency     |
+| ------------- | ------- | ----------- | ----------- |
+| Whisper tiny  | ~150 MB | Low-Medium  | ~2x audio   |
+| Whisper base  | ~300 MB | Medium      | ~1.5x audio |
+| Whisper small | ~600 MB | Medium-High | ~1x audio   |
 
 ### Optimization Tips
 
@@ -294,10 +297,10 @@ print(result["text"])
 
 ## Related Files
 
-| File | Purpose |
-|------|---------|
-| `src/python/tts_manager.py` | TTS voice management |
-| `src/python/stt_manager.py` | STT transcription |
-| `src/renderer/contexts/VoiceContext.tsx` | Voice state |
-| `src/renderer/components/SettingsVoice.tsx` | Voice settings UI |
-| `scripts/setup_voices.sh` | Voice download script |
+| File                                        | Purpose               |
+| ------------------------------------------- | --------------------- |
+| `src/python/tts_manager.py`                 | TTS voice management  |
+| `src/python/stt_manager.py`                 | STT transcription     |
+| `src/renderer/contexts/VoiceContext.tsx`    | Voice state           |
+| `src/renderer/components/SettingsVoice.tsx` | Voice settings UI     |
+| `scripts/setup_voices.sh`                   | Voice download script |

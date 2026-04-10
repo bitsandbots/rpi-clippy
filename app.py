@@ -460,8 +460,9 @@ def set_voice():
     if not voice_id:
         return jsonify({"error": "voiceId required"}), 400
     result = get_tts_manager().load_voice(voice_id)
-    if "error" not in result:
-        get_settings().set("selectedVoice", voice_id)
+    if "error" in result:
+        return jsonify(result), 422
+    get_settings().set("selectedVoice", voice_id)
     return jsonify(result)
 
 

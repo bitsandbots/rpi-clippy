@@ -62,6 +62,7 @@ class OllamaService:
 ```
 
 **Key Features**:
+
 - Streaming inference via `requests` with `stream=True`
 - SSE fan-out via `queue.Queue` for pull progress
 - Double-checked locking for thread safety
@@ -81,6 +82,7 @@ class ChatManager:
 ```
 
 **Storage Format**:
+
 ```json
 {
   "chat": {
@@ -112,6 +114,7 @@ class SettingsManager:
 ```
 
 **Settings**:
+
 - `selectedModel` - Current LLM model
 - `systemPrompt` - Clippy persona definition
 - `temperature`, `topK` - LLM sampling parameters
@@ -131,6 +134,7 @@ class TTSManager:
 ```
 
 **Features**:
+
 - Lazy loading (first use only)
 - Auto-load first available voice if none selected
 - Synthesis config for speed control
@@ -148,6 +152,7 @@ class STTManager:
 ```
 
 **Features**:
+
 - Lazy loading (tiny/base/small models)
 - CTranslate2 backend for CPU inference
 - Temporary file handling for audio conversion
@@ -156,13 +161,13 @@ class STTManager:
 
 #### React Contexts
 
-| Context | Purpose | State |
-|---------|---------|-------|
-| ChatContext | Chat messages, status, CRUD | messages, status, animationKey |
-| SharedStateContext | Global state (models, settings) | models, settings |
-| BubbleViewContext | UI tab switching | activeView |
-| VoiceContext | TTS/STT state | ttsEnabled, sttEnabled, voices |
-| DebugContext | Debug flags | debug settings |
+| Context            | Purpose                         | State                          |
+| ------------------ | ------------------------------- | ------------------------------ |
+| ChatContext        | Chat messages, status, CRUD     | messages, status, animationKey |
+| SharedStateContext | Global state (models, settings) | models, settings               |
+| BubbleViewContext  | UI tab switching                | activeView                     |
+| VoiceContext       | TTS/STT state                   | ttsEnabled, sttEnabled, voices |
+| DebugContext       | Debug flags                     | debug settings                 |
 
 #### API Layer (api.ts)
 
@@ -181,16 +186,19 @@ speakText(), transcribeAudio(), ...
 #### Components
 
 **Core UI**:
+
 - `Clippy.tsx` - Animated sprite with CSS position
 - `BubbleWindow.tsx` - Chat bubble container
 - `App.tsx` - Root component with all providers
 
 **Chat Interface**:
+
 - `Chat.tsx` - Message list + input
 - `ChatInput.tsx` - Textarea + mic + mic button
 - `Message.tsx` - Individual message rendering
 
 **Settings**:
+
 - `Settings.tsx` - Main settings panel
 - `SettingsAppearance.tsx` - Font size/family
 - `SettingsVoice.tsx` - TTS/STT configuration
@@ -235,7 +243,9 @@ def llm_stream():
 ```typescript
 // Frontend (api.ts)
 function llmPromptStreaming(message, options, callbacks) {
-  const es = new EventSource(`${API}/llm/stream?uuid=${uuid}&message=${message}`);
+  const es = new EventSource(
+    `${API}/llm/stream?uuid=${uuid}&message=${message}`,
+  );
   es.onmessage = (e) => {
     const data = JSON.parse(e.data);
     if (data.type === "chunk") callbacks.onChunk(data.text);
@@ -277,11 +287,11 @@ def get_tts_manager() -> TTSManager:
 
 ### Lock Usage
 
-| Resource | Lock Type | Purpose |
-|----------|-----------|---------|
-| `_history` | `_history_lock` (threading.Lock) | Prevent race in chat history |
-| `_loaded_voice` | `_lock` (threading.Lock) | Prevent concurrent TTS synthesis |
-| `_pull_queues` | `_pull_lock` (threading.Lock) | Thread-safe queue management |
+| Resource        | Lock Type                        | Purpose                          |
+| --------------- | -------------------------------- | -------------------------------- |
+| `_history`      | `_history_lock` (threading.Lock) | Prevent race in chat history     |
+| `_loaded_voice` | `_lock` (threading.Lock)         | Prevent concurrent TTS synthesis |
+| `_pull_queues`  | `_pull_lock` (threading.Lock)    | Thread-safe queue management     |
 
 ## Build Pipeline
 
@@ -306,28 +316,28 @@ export default defineConfig({
   plugins: [react()],
   build: { outDir: "dist" },
   server: {
-    proxy: { "/api": "http://127.0.0.1:5080" }
-  }
+    proxy: { "/api": "http://127.0.0.1:5080" },
+  },
 });
 ```
 
 ## Security Considerations
 
-| Concern | Mitigation |
-|---------|-----------|
-| Path traversal | `_valid_chat_id()` uses regex `^[A-Za-z0-9_-]+$` |
-| Payload size | 32KB message limit, 10MB chat write limit |
-| Input validation | Length checks before processing |
-| No secrets in code | Settings from `~/.config/Clippy/` |
+| Concern            | Mitigation                                       |
+| ------------------ | ------------------------------------------------ |
+| Path traversal     | `_valid_chat_id()` uses regex `^[A-Za-z0-9_-]+$` |
+| Payload size       | 32KB message limit, 10MB chat write limit        |
+| Input validation   | Length checks before processing                  |
+| No secrets in code | Settings from `~/.config/Clippy/`                |
 
 ## Performance Characteristics
 
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Startup time | < 3s |Lazy-loaded models|
-| Chat streaming | 20-50 tokens/s | Depends on model size|
-| TTS latency | < 2s | First call (model load)|
-| STT latency | < 3s | Depends on audio length|
+| Metric         | Target         | Notes                   |
+| -------------- | -------------- | ----------------------- |
+| Startup time   | < 3s           | Lazy-loaded models      |
+| Chat streaming | 20-50 tokens/s | Depends on model size   |
+| TTS latency    | < 2s           | First call (model load) |
+| STT latency    | < 3s           | Depends on audio length |
 
 ## Scaling Considerations
 

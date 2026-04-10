@@ -25,13 +25,13 @@ App (root)
 
 ### React Context Providers
 
-| Provider | File | State Managed |
-|----------|------|---------------|
-| DebugProvider | DebugContext.tsx | Debug flags, polling interval |
-| SharedStateContext | SharedStateContext.tsx | Models list, settings |
-| ChatProvider | ChatContext.tsx | Messages, chat history, animation |
-| VoiceProvider | VoiceContext.tsx | TTS/STT state, audio playback |
-| BubbleViewProvider | BubbleViewContext.tsx | Active settings tab |
+| Provider           | File                   | State Managed                     |
+| ------------------ | ---------------------- | --------------------------------- |
+| DebugProvider      | DebugContext.tsx       | Debug flags, polling interval     |
+| SharedStateContext | SharedStateContext.tsx | Models list, settings             |
+| ChatProvider       | ChatContext.tsx        | Messages, chat history, animation |
+| VoiceProvider      | VoiceContext.tsx       | TTS/STT state, audio playback     |
+| BubbleViewProvider | BubbleViewContext.tsx  | Active settings tab               |
 
 ## Core Components
 
@@ -42,6 +42,7 @@ App (root)
 The animated Clippy sprite with mouse hover effects.
 
 **Props**:
+
 ```typescript
 type ClippyProps = {
   style?: React.CSSProperties;
@@ -50,6 +51,7 @@ type ClippyProps = {
 ```
 
 **Key Features**:
+
 - CSS-based animations via `animation` property
 - Mouse hover triggers animation change
 - Click opens/closes chat bubble
@@ -61,6 +63,7 @@ type ClippyProps = {
 The main chat interface with message list and input.
 
 **Props**:
+
 ```typescript
 type ChatProps = {
   style?: React.CSSProperties;
@@ -68,11 +71,13 @@ type ChatProps = {
 ```
 
 **State**:
+
 - `status`: "idle" | "thinking" | "responding"
 - `streamingMessageContent`: Text being streamed
 - `lastRequestUUID`: Current request ID
 
 **Callbacks**:
+
 - `handleSendMessage(message: string)` - Send user message
 - `handleAbortMessage()` - Stop streaming
 
@@ -83,6 +88,7 @@ type ChatProps = {
 Text input area with TTS toggle, mic button, and send button.
 
 **Props**:
+
 ```typescript
 type ChatInputProps = {
   onSend: (message: string) => void;
@@ -91,6 +97,7 @@ type ChatInputProps = {
 ```
 
 **Controls**:
+
 - Textarea - Message input
 - TTS toggle - Mute/unmute voice responses
 - Mic button - Record voice (if STT enabled)
@@ -103,6 +110,7 @@ type ChatInputProps = {
 Renders individual messages with markdown support.
 
 **Props**:
+
 ```typescript
 type MessageProps = {
   message: {
@@ -116,6 +124,7 @@ type MessageProps = {
 ```
 
 **Features**:
+
 - `react-markdown` for message content
 - Different styles for user vs clippy
 - Timestamp display
@@ -127,10 +136,12 @@ type MessageProps = {
 Main settings modal with tab navigation.
 
 **State**:
+
 - `activeTab`: "appearance" | "voice" | "llm" | "advanced" | "about"
 - `showBubbleView`: bubble view state
 
 **Tabs**:
+
 1. **Appearance** - Font size/family, bubble toggle
 2. **Voice** - TTS/STT enable, voice selection, STT model
 3. **LLM** - Model selection, temperature, topK, system prompt
@@ -144,6 +155,7 @@ Main settings modal with tab navigation.
 Font size slider (8-24px) and font family selector.
 
 **Controls**:
+
 - Font size slider with preview
 - Font family dropdown
 - "Live preview" - Changes apply immediately
@@ -153,6 +165,7 @@ Font size slider (8-24px) and font family selector.
 TTS and STT configuration.
 
 **Controls**:
+
 - TTS toggle (enabled/disabled)
 - Voice selector dropdown
 - "Test Voice" button
@@ -165,6 +178,7 @@ TTS and STT configuration.
 LLM model and generation settings.
 
 **Controls**:
+
 - Model selector (with download status)
 - Temperature slider (0.0-1.0)
 - TopK slider (1-100)
@@ -177,6 +191,7 @@ LLM model and generation settings.
 The chat bubble container window.
 
 **State**:
+
 - `isChatWindowOpen`: Toggle visibility
 - `bubbleView`: "chat" or "settings"
 
@@ -187,6 +202,7 @@ The chat bubble container window.
 Root component with theming.
 
 **Features**:
+
 - Sets `--font-size` CSS variable
 - Sets `data-font` attribute for font family
 - Scopes styles to `.clippy` class
@@ -199,22 +215,22 @@ Access chat state and actions.
 
 ```typescript
 const {
-  messages,           // Message[]
-  addMessage,         // (message: Message) => Promise<void>
-  setMessages,        // (messages: Message[]) => void
-  animationKey,       // string (e.g., "Wave")
-  setAnimationKey,    // (key: string) => void
-  status,             // "idle" | "thinking" | "responding"
-  setStatus,          // (status: ClippyNamedStatus) => void
-  isModelLoaded,      // boolean
-  isChatWindowOpen,   // boolean
-  setIsChatWindowOpen,// (open: boolean) => void
-  chatRecords,        // Record<string, ChatRecord>
-  currentChatRecord,  // ChatRecord
-  selectChat,         // (chatId: string) => Promise<void>
-  startNewChat,       // () => Promise<void>
-  deleteChat,         // (chatId: string) => Promise<void>
-  deleteAllChats      // () => Promise<void>
+  messages, // Message[]
+  addMessage, // (message: Message) => Promise<void>
+  setMessages, // (messages: Message[]) => void
+  animationKey, // string (e.g., "Wave")
+  setAnimationKey, // (key: string) => void
+  status, // "idle" | "thinking" | "responding"
+  setStatus, // (status: ClippyNamedStatus) => void
+  isModelLoaded, // boolean
+  isChatWindowOpen, // boolean
+  setIsChatWindowOpen, // (open: boolean) => void
+  chatRecords, // Record<string, ChatRecord>
+  currentChatRecord, // ChatRecord
+  selectChat, // (chatId: string) => Promise<void>
+  startNewChat, // () => Promise<void>
+  deleteChat, // (chatId: string) => Promise<void>
+  deleteAllChats, // () => Promise<void>
 } = useChat();
 ```
 
@@ -224,21 +240,21 @@ Access voice state and actions.
 
 ```typescript
 const {
-  ttsEnabled,         // boolean
-  sttEnabled,         // boolean
-  currentVoice,       // string | null
-  voices,             // Record<string, VoiceInfo>
-  sttModel,           // string
+  ttsEnabled, // boolean
+  sttEnabled, // boolean
+  currentVoice, // string | null
+  voices, // Record<string, VoiceInfo>
+  sttModel, // string
   availableSttModels, // string[]
-  isSpeaking,         // boolean
-  setTtsEnabled,      // (enabled: boolean) => Promise<void>
-  setSttEnabled,      // (enabled: boolean) => Promise<void>
-  selectVoice,        // (voiceId: string) => Promise<void>
-  changeSttModel,     // (model: string) => Promise<void>
-  speak,              // (text: string) => Promise<void>
-  transcribe,         // (audioBase64: string) => Promise<string>
-  stopSpeaking,       // () => void
-  rescan              // () => Promise<void>
+  isSpeaking, // boolean
+  setTtsEnabled, // (enabled: boolean) => Promise<void>
+  setSttEnabled, // (enabled: boolean) => Promise<void>
+  selectVoice, // (voiceId: string) => Promise<void>
+  changeSttModel, // (model: string) => Promise<void>
+  speak, // (text: string) => Promise<void>
+  transcribe, // (audioBase64: string) => Promise<string>
+  stopSpeaking, // () => void
+  rescan, // () => Promise<void>
 } = useVoice();
 ```
 
@@ -248,8 +264,8 @@ Access global state (models + settings).
 
 ```typescript
 const {
-  models,     // ModelState
-  settings    // SettingsState
+  models, // ModelState
+  settings, // SettingsState
 } = useSharedState();
 ```
 
@@ -259,14 +275,14 @@ const {
 
 Animations are controlled by keywords in LLM responses:
 
-| Keyword | Animation |
-|---------|-----------|
-| `[Wave]` | Waving hand |
-| `[Idle]` | Standing still |
-| `[Thinking]` | Thinking bubble |
-| `[Happy]` | Happy expression |
-| `[Sad]` | Sad expression |
-| `[Listen]` | Listening pose |
+| Keyword      | Animation        |
+| ------------ | ---------------- |
+| `[Wave]`     | Waving hand      |
+| `[Idle]`     | Standing still   |
+| `[Thinking]` | Thinking bubble  |
+| `[Happy]`    | Happy expression |
+| `[Sad]`      | Sad expression   |
+| `[Listen]`   | Listening pose   |
 
 ### Animation Helpers
 
@@ -308,37 +324,39 @@ import { clippyApi, electronAi } from "./clippyApi";
 ```
 
 **clippyApi Interface**:
+
 ```typescript
 {
   // Models
-  updateModelState: () => Promise<void>
-  downloadModelByName: (name: string) => Promise<void>
-  deleteModelByName: (name: string) => Promise<boolean>
-  deleteAllModels: () => Promise<boolean>
-  
+  updateModelState: () => Promise<void>;
+  downloadModelByName: (name: string) => Promise<void>;
+  deleteModelByName: (name: string) => Promise<boolean>;
+  deleteAllModels: () => Promise<boolean>;
+
   // State
-  getFullState: () => Promise<SharedState>
-  getState: (key: string) => Promise<unknown>
-  setState: (key: string, value: unknown) => Promise<void>
-  
+  getFullState: () => Promise<SharedState>;
+  getState: (key: string) => Promise<unknown>;
+  setState: (key: string, value: unknown) => Promise<void>;
+
   // Chats
-  getChatRecords: () => Promise<Record<string, ChatRecord>>
-  getChatWithMessages: (id: string) => Promise<ChatWithMessages | null>
-  writeChatWithMessages: (data) => Promise<void>
-  deleteChat: (id: string) => Promise<void>
-  deleteAllChats: () => Promise<void>
-  
+  getChatRecords: () => Promise<Record<string, ChatRecord>>;
+  getChatWithMessages: (id: string) => Promise<ChatWithMessages | null>;
+  writeChatWithMessages: (data) => Promise<void>;
+  deleteChat: (id: string) => Promise<void>;
+  deleteAllChats: () => Promise<void>;
+
   // LLM
-  llmCreate: (options) => Promise<void>
-  llmDestroy: () => Promise<void>
-  llmAbort: (uuid: string) => Promise<void>
-  
+  llmCreate: (options) => Promise<void>;
+  llmDestroy: () => Promise<void>;
+  llmAbort: (uuid: string) => Promise<void>;
+
   // Versions
-  getVersions: () => Promise<Record<string, string>>
+  getVersions: () => Promise<Record<string, string>>;
 }
 ```
 
 **electronAi Interface**:
+
 ```typescript
 {
   create: (options) => Promise<void>

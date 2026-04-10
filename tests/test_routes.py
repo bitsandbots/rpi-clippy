@@ -11,24 +11,27 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def post_json(client, url, body=None):
-    return client.post(url, data=json.dumps(body or {}),
-                       content_type="application/json")
+    return client.post(
+        url, data=json.dumps(body or {}), content_type="application/json"
+    )
 
 
 def delete_json(client, url, body=None):
-    return client.delete(url, data=json.dumps(body or {}),
-                         content_type="application/json")
+    return client.delete(
+        url, data=json.dumps(body or {}), content_type="application/json"
+    )
 
 
 # ---------------------------------------------------------------------------
 # SPA serving
 # ---------------------------------------------------------------------------
+
 
 def test_root_returns_html_or_placeholder(client):
     resp = client.get("/")
@@ -48,6 +51,7 @@ def test_api_path_returns_json_not_html(client):
 # GET /api/state
 # ---------------------------------------------------------------------------
 
+
 def test_get_state_returns_models_and_settings(client):
     resp = client.get("/api/state")
     assert resp.status_code == 200
@@ -65,6 +69,7 @@ def test_get_state_settings_has_topk(client):
 # ---------------------------------------------------------------------------
 # POST /api/state
 # ---------------------------------------------------------------------------
+
 
 def test_set_state_missing_key_returns_400(client):
     resp = post_json(client, "/api/state", {"value": 99})
@@ -85,6 +90,7 @@ def test_set_state_returns_ok(client):
 # ---------------------------------------------------------------------------
 # GET/POST /api/debug-state
 # ---------------------------------------------------------------------------
+
 
 def test_get_debug_state_returns_dict(client):
     resp = client.get("/api/debug-state")
@@ -108,6 +114,7 @@ def test_set_debug_state_updates_value(client):
 # Chats
 # ---------------------------------------------------------------------------
 
+
 def test_get_chats_empty_initially(client):
     resp = client.get("/api/chats")
     assert resp.status_code == 200
@@ -117,7 +124,9 @@ def test_get_chats_empty_initially(client):
 def test_write_and_read_chat(client):
     body = {
         "chat": {"id": "chat-1", "createdAt": 1, "updatedAt": 1, "preview": "Hi"},
-        "messages": [{"id": "m1", "sender": "user", "content": "Hello", "createdAt": 1}],
+        "messages": [
+            {"id": "m1", "sender": "user", "content": "Hello", "createdAt": 1}
+        ],
     }
     resp = post_json(client, "/api/chats/chat-1", body)
     assert resp.get_json()["status"] == "ok"
@@ -157,7 +166,9 @@ def test_delete_all_chats(client):
     for cid in ["x1", "x2"]:
         body = {
             "chat": {"id": cid},
-            "messages": [{"id": "m1", "sender": "user", "content": "x", "createdAt": 1}],
+            "messages": [
+                {"id": "m1", "sender": "user", "content": "x", "createdAt": 1}
+            ],
         }
         post_json(client, f"/api/chats/{cid}", body)
     resp = delete_json(client, "/api/chats")
@@ -168,7 +179,7 @@ def test_delete_all_chats(client):
 def test_write_chat_auto_assigns_id(client):
     """If chat body has no id, the URL chat_id is used."""
     body = {
-        "chat": {},   # no id field
+        "chat": {},  # no id field
         "messages": [{"id": "m1", "sender": "user", "content": "hi", "createdAt": 1}],
     }
     post_json(client, "/api/chats/auto-id", body)
@@ -179,6 +190,7 @@ def test_write_chat_auto_assigns_id(client):
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
+
 
 def test_get_models_returns_model_state(client):
     resp = client.get("/api/models")
@@ -244,6 +256,7 @@ def test_refresh_models_returns_model_state(client):
 # LLM
 # ---------------------------------------------------------------------------
 
+
 def test_llm_create_returns_ok(client):
     resp = post_json(client, "/api/llm/create", {"ollamaTag": "tinyllama"})
     assert resp.status_code == 200
@@ -280,6 +293,7 @@ def test_llm_stream_missing_uuid_returns_400(client):
 # ---------------------------------------------------------------------------
 # Voice
 # ---------------------------------------------------------------------------
+
 
 def test_voice_state_returns_tts_and_stt(client):
     resp = client.get("/api/voice/state")
@@ -319,7 +333,7 @@ def test_set_voice_missing_voice_id_returns_400(client):
 
 def test_set_voice_unknown_id_returns_error(client):
     resp = post_json(client, "/api/voice/set-voice", {"voiceId": "nonexistent"})
-    assert resp.status_code == 200
+    assert resp.status_code == 422
     assert "error" in resp.get_json()
 
 
@@ -336,6 +350,7 @@ def test_speak_whitespace_only_returns_400(client):
 def test_speak_no_voice_returns_503(client, monkeypatch):
     import app as app_mod
     from unittest.mock import MagicMock
+
     empty_mgr = MagicMock()
     empty_mgr.synthesize.return_value = None
     monkeypatch.setattr(app_mod, "get_tts_manager", lambda: empty_mgr)
@@ -375,6 +390,7 @@ def test_rescan_voices_returns_state(client):
 # ---------------------------------------------------------------------------
 # Versions
 # ---------------------------------------------------------------------------
+
 
 def test_versions_returns_expected_keys(client):
     resp = client.get("/api/versions")

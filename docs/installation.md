@@ -4,11 +4,11 @@
 
 ### Hardware
 
-| Device | RAM | Notes |
-|--------|-----|-------|
-| Raspberry Pi 5 | 4GB+ | Recommended 8GB |
-| Raspberry Pi 4 | 4GB+ | Works, slower inference |
-| Other Linux | - | Any system with Python 3.11+ |
+| Device         | RAM  | Notes                        |
+| -------------- | ---- | ---------------------------- |
+| Raspberry Pi 5 | 4GB+ | Recommended 8GB              |
+| Raspberry Pi 4 | 4GB+ | Works, slower inference      |
+| Other Linux    | -    | Any system with Python 3.11+ |
 
 ### Software
 
@@ -59,6 +59,7 @@ bash install.sh
 ```
 
 The `install.sh` script will:
+
 1. Install system dependencies (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
 2. Install Python dependencies
 3. Install npm dependencies

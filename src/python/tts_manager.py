@@ -196,5 +196,7 @@ def get_tts_manager() -> TTSManager:
                 voice_id = settings.get("selectedVoice")
                 if voice_id and voice_id in tts.registry:
                     tts.current_voice_id = voice_id
+                    # Auto-load the persisted voice on startup
+                    tts.load_voice(voice_id)
                 _tts = tts
     return _tts

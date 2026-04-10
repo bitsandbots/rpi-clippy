@@ -15,6 +15,7 @@ curl http://localhost:5080/api/state
 ```
 
 **Response**:
+
 ```json
 {
   "models": {
@@ -48,8 +49,9 @@ curl -X POST http://localhost:5080/api/state \
 ```
 
 **Response**:
+
 ```json
-{"status": "ok"}
+{ "status": "ok" }
 ```
 
 ### Chats
@@ -63,6 +65,7 @@ curl http://localhost:5080/api/chats
 ```
 
 **Response**:
+
 ```json
 {
   "chat-uuid-1": {
@@ -154,6 +157,7 @@ curl -N http://localhost:5080/api/models/pull-progress
 ```
 
 **Events**:
+
 ```json
 {"type": "pull_progress", "tag": "gemma3:1b", "status": "Downloading", "total": 1000000, "completed": 500000, "elapsed": 1.2}
 {"type": "pull_done", "tag": "gemma3:1b"}
@@ -165,6 +169,7 @@ curl -N http://localhost:5080/api/models/pull-progress
 SSE stream for LLM inference chunks.
 
 **Query Parameters**:
+
 - `uuid` - Request UUID
 - `message` - User message
 
@@ -173,6 +178,7 @@ curl -N "http://localhost:5080/api/llm/stream?uuid=req-123&message=Hello"
 ```
 
 **Events**:
+
 ```json
 {"type": "chunk", "uuid": "req-123", "text": "Hello"}
 {"type": "chunk", "uuid": "req-123", "text": " there"}
@@ -224,6 +230,7 @@ curl http://localhost:5080/api/ollama/status
 ```
 
 **Response**:
+
 ```json
 {
   "url": "http://localhost:11434",
@@ -251,11 +258,12 @@ curl http://localhost:5080/api/ollama/discover
 ```
 
 **Response**:
+
 ```json
 {
   "instances": [
-    {"url": "http://192.168.1.100:11434", "ip": "192.168.1.100"},
-    {"url": "http://192.168.1.105:11434", "ip": "192.168.1.105"}
+    { "url": "http://192.168.1.100:11434", "ip": "192.168.1.100" },
+    { "url": "http://192.168.1.105:11434", "ip": "192.168.1.105" }
   ]
 }
 ```
@@ -271,6 +279,7 @@ curl http://localhost:5080/api/voice/state
 ```
 
 **Response**:
+
 ```json
 {
   "tts": {
@@ -346,8 +355,9 @@ curl -X POST http://localhost:5080/api/voice/transcribe \
 ```
 
 **Response**:
+
 ```json
-{"text": "Hello world", "language": "en", "probability": 0.99}
+{ "text": "Hello world", "language": "en", "probability": 0.99 }
 ```
 
 #### POST `/api/voice/stt-model`
@@ -371,6 +381,7 @@ curl http://localhost:5080/api/versions
 ```
 
 **Response**:
+
 ```json
 {
   "clippy": "0.5.0",
@@ -381,21 +392,21 @@ curl http://localhost:5080/api/versions
 
 ## Error Responses
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | `invalid chat_id` | Chat ID contains invalid characters |
-| 400 | `key required` | POST without key field |
-| 400 | `uuid and message required` | Missing SSE stream params |
-| 400 | `name required` | Missing model name |
-| 400 | `voiceId required` | Missing voice ID |
-| 400 | `audio (base64) required` | Missing audio in transcribe |
-| 400 | `text required` | Missing text in speak |
-| 400 | `model required` | Missing STT model |
-| 413 | `payload too large` | Request exceeds size limit |
-| 413 | `message too long` | Message exceeds 32000 chars |
-| 413 | `audio payload too large` | Audio exceeds ~7MB |
-| 500 | `<exception>` | Internal error |
-| 503 | `TTS not available` | No voice loaded |
+| Status | Error                       | Description                         |
+| ------ | --------------------------- | ----------------------------------- |
+| 400    | `invalid chat_id`           | Chat ID contains invalid characters |
+| 400    | `key required`              | POST without key field              |
+| 400    | `uuid and message required` | Missing SSE stream params           |
+| 400    | `name required`             | Missing model name                  |
+| 400    | `voiceId required`          | Missing voice ID                    |
+| 400    | `audio (base64) required`   | Missing audio in transcribe         |
+| 400    | `text required`             | Missing text in speak               |
+| 400    | `model required`            | Missing STT model                   |
+| 413    | `payload too large`         | Request exceeds size limit          |
+| 413    | `message too long`          | Message exceeds 32000 chars         |
+| 413    | `audio payload too large`   | Audio exceeds ~7MB                  |
+| 500    | `<exception>`               | Internal error                      |
+| 503    | `TTS not available`         | No voice loaded                     |
 
 ## Frontend API (clippyApi.tsx)
 
@@ -417,7 +428,7 @@ await clippyApi.llmCreate({
   systemPrompt: "You are Clippy...",
   topK: 10,
   temperature: 0.7,
-  initialPrompts: []
+  initialPrompts: [],
 });
 
 // Start streaming prompt
@@ -427,8 +438,8 @@ electronAi.promptStreaming(
   {
     onChunk: (text) => console.log(text),
     onDone: () => console.log("done"),
-    onError: (error) => console.error(error)
-  }
+    onError: (error) => console.error(error),
+  },
 );
 ```
 
@@ -436,26 +447,26 @@ electronAi.promptStreaming(
 
 ### Pull Progress Events
 
-| Type | Fields | Description |
-|------|--------|-------------|
+| Type            | Fields                                 | Description                |
+| --------------- | -------------------------------------- | -------------------------- |
 | `pull_progress` | tag, status, total, completed, elapsed | Model download in progress |
-| `pull_done` | tag | Model download completed |
-| `pull_error` | tag, error | Model download failed |
+| `pull_done`     | tag                                    | Model download completed   |
+| `pull_error`    | tag, error                             | Model download failed      |
 
 ### LLM Stream Events
 
-| Type | Fields | Description |
-|------|--------|-------------|
-| `chunk` | uuid, text | Inference chunk |
-| `done` | uuid | Inference completed |
-| `error` | uuid, error | Inference error |
+| Type    | Fields      | Description         |
+| ------- | ----------- | ------------------- |
+| `chunk` | uuid, text  | Inference chunk     |
+| `done`  | uuid        | Inference completed |
+| `error` | uuid, error | Inference error     |
 
 ### Voice State Events
 
-| Field | Type | Description |
-|-------|------|-------------|
-| enabled | boolean | TTS/STT enabled |
-| currentVoice | string | Active TTS voice ID |
-| voices | object | Available voices |
-| model | string | Active STT model |
-| available_models | array | Available STT models |
+| Field            | Type    | Description          |
+| ---------------- | ------- | -------------------- |
+| enabled          | boolean | TTS/STT enabled      |
+| currentVoice     | string  | Active TTS voice ID  |
+| voices           | object  | Available voices     |
+| model            | string  | Active STT model     |
+| available_models | array   | Available STT models |
