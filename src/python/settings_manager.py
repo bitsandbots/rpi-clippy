@@ -15,7 +15,7 @@ DEFAULT_SETTINGS = {
     "systemPrompt": (
         "You are Clippy, a helpful digital assistant running locally on the user's computer. "
         "Your primary purpose is to assist users with their questions and tasks. "
-        "When asked \"who are you?\" or about your identity, always respond by explaining that "
+        'When asked "who are you?" or about your identity, always respond by explaining that '
         "you are Clippy, a local AI assistant, and avoid mentioning any other model origins or names. "
         "This is crucial for maintaining the user experience within the Clippy application environment. "
         "Start your response with one of the following keywords matching the users request: "
@@ -28,6 +28,10 @@ DEFAULT_SETTINGS = {
     "defaultFontSize": 16,
     "selectedModel": None,
     "ollamaUrl": "http://localhost:11434",
+    "ttsEnabled": False,
+    "sttEnabled": False,
+    "selectedVoice": None,
+    "sttModel": "tiny",
 }
 
 DEBUG_DEFAULTS = {

@@ -23,8 +23,9 @@ VOICES_DIR = Path.home() / ".config" / "Clippy" / "voices"
 class VoiceInfo:
     """Lightweight metadata for a discovered voice — no model loaded yet."""
 
-    def __init__(self, voice_id: str, model_path: Path,
-                 config_path: Optional[Path], meta: dict):
+    def __init__(
+        self, voice_id: str, model_path: Path, config_path: Optional[Path], meta: dict
+    ):
         self.id = voice_id
         self.model_path = model_path
         self.config_path = config_path
@@ -55,10 +56,10 @@ class TTSManager:
     def __init__(self, voices_dir: Path = VOICES_DIR):
         self.voices_dir = voices_dir
         self.registry: dict[str, VoiceInfo] = {}
-        self._loaded_voice = None          # PiperVoice instance
+        self._loaded_voice = None  # PiperVoice instance
         self.current_voice_id: Optional[str] = None
-        self.enabled: bool = False         # Off by default until user enables
-        self._lock = threading.Lock()      # Guards _loaded_voice across Flask threads
+        self.enabled: bool = False  # Off by default until user enables
+        self._lock = threading.Lock()  # Guards _loaded_voice across Flask threads
         self._scan()
 
     def _scan(self) -> None:
@@ -83,7 +84,8 @@ class TTSManager:
                 except Exception:
                     pass
             self.registry[voice_id] = VoiceInfo(
-                voice_id, f,
+                voice_id,
+                f,
                 config if config.exists() else None,
                 meta,
             )
@@ -92,6 +94,9 @@ class TTSManager:
         """Re-scan voices dir (called after setup_voices.sh)."""
         self.registry.clear()
         self._scan()
+        # Clear stale voice if it was removed from disk
+        if self.current_voice_id and self.current_voice_id not in self.registry:
+            self.current_voice_id = None
 
     def load_voice(self, voice_id: str) -> dict:
         """Load (or hot-swap) a Piper voice model. Returns status dict."""
@@ -105,7 +110,10 @@ class TTSManager:
                 }
             info = self.registry[voice_id]
             try:
-                from piper import PiperVoice  # lazy import — only load piper if TTS used
+                from piper import (
+                    PiperVoice,
+                )  # lazy import — only load piper if TTS used
+
                 self._loaded_voice = PiperVoice.load(
                     str(info.model_path),
                     config_path=str(info.config_path) if info.config_path else None,
@@ -130,6 +138,7 @@ class TTSManager:
                 info = self.registry[voice_id]
                 try:
                     from piper import PiperVoice
+
                     self._loaded_voice = PiperVoice.load(
                         str(info.model_path),
                         config_path=str(info.config_path) if info.config_path else None,
@@ -143,6 +152,7 @@ class TTSManager:
         wav_writer = wave.open(buf, "wb")
         try:
             from piper.config import SynthesisConfig
+
             syn_config = SynthesisConfig(length_scale=length_scale)
             self._loaded_voice.synthesize_wav(text, wav_writer, syn_config=syn_config)
         except Exception as exc:
@@ -177,5 +187,14 @@ def get_tts_manager() -> TTSManager:
     if _tts is None:
         with _tts_lock:
             if _tts is None:
-                _tts = TTSManager()
+                tts = TTSManager()
+                # Restore persisted voice preferences
+                from settings_manager import get_settings
+
+                settings = get_settings()
+                tts.enabled = bool(settings.get("ttsEnabled"))
+                voice_id = settings.get("selectedVoice")
+                if voice_id and voice_id in tts.registry:
+                    tts.current_voice_id = voice_id
+                _tts = tts
     return _tts

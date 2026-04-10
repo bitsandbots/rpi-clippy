@@ -27,7 +27,7 @@ class STTManager:
         self._model = None
         self.model_size: Optional[str] = None
         self.threads = threads
-        self.enabled: bool = False           # Off by default until user enables
+        self.enabled: bool = False  # Off by default until user enables
         self._target_model_size = model_size  # Load this on first use
 
     def _ensure_loaded(self) -> bool:
@@ -36,6 +36,7 @@ class STTManager:
             return True
         try:
             from faster_whisper import WhisperModel  # lazy import
+
             self._model = WhisperModel(
                 self._target_model_size,
                 device="cpu",
@@ -45,17 +46,22 @@ class STTManager:
             self.model_size = self._target_model_size
             return True
         except Exception as exc:
-            log.error("Failed to load Whisper model %r: %s", self._target_model_size, exc)
+            log.error(
+                "Failed to load Whisper model %r: %s", self._target_model_size, exc
+            )
             return False
 
     def load_model(self, model_size: str) -> dict:
         """Explicitly load or swap the transcription model."""
         if model_size not in ALLOWED_STT_MODELS:
-            return {"error": f"invalid model {model_size!r}; allowed: {sorted(ALLOWED_STT_MODELS)}"}
+            return {
+                "error": f"invalid model {model_size!r}; allowed: {sorted(ALLOWED_STT_MODELS)}"
+            }
         if model_size == self.model_size and self._model is not None:
             return {"status": "already_loaded", "model": model_size}
         try:
             from faster_whisper import WhisperModel
+
             self._model = WhisperModel(
                 model_size,
                 device="cpu",
@@ -92,8 +98,7 @@ class STTManager:
         except Exception as exc:
             return {"error": str(exc)}
 
-    def transcribe_base64(self, audio_b64: str,
-                          language: Optional[str] = None) -> dict:
+    def transcribe_base64(self, audio_b64: str, language: Optional[str] = None) -> dict:
         """
         Decode a base64-encoded audio blob (e.g. WebM from browser MediaRecorder),
         write to a temp file, transcribe, then clean up.
@@ -133,5 +138,14 @@ def get_stt_manager() -> STTManager:
     if _stt is None:
         with _stt_lock:
             if _stt is None:
-                _stt = STTManager()
+                stt = STTManager()
+                # Restore persisted voice preferences
+                from settings_manager import get_settings
+
+                settings = get_settings()
+                stt.enabled = bool(settings.get("sttEnabled"))
+                stt_model = settings.get("sttModel")
+                if stt_model and stt_model in ALLOWED_STT_MODELS:
+                    stt._target_model_size = stt_model
+                _stt = stt
     return _stt

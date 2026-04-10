@@ -35,7 +35,7 @@ VERSION = "0.5.0"
 
 app = Flask(__name__, static_folder=None)
 
-_CHAT_ID_RE = re.compile(r'^[A-Za-z0-9_\-]+$')
+_CHAT_ID_RE = re.compile(r"^[A-Za-z0-9_\-]+$")
 _MAX_MESSAGES_PER_CHAT = 1000
 _MAX_PAYLOAD_SIZE = 10_000_000  # 10MB limit for chat write
 
@@ -53,13 +53,19 @@ def _validate_chat_payload(body: dict) -> tuple[bool, str]:
         # Check total payload size
         payload_size = len(json.dumps(body))
         if payload_size > _MAX_PAYLOAD_SIZE:
-            return False, f"payload too large ({payload_size} > {_MAX_PAYLOAD_SIZE} bytes)"
+            return (
+                False,
+                f"payload too large ({payload_size} > {_MAX_PAYLOAD_SIZE} bytes)",
+            )
 
         # Check message count
         chat = body.get("chat", {})
         messages = body.get("messages", [])
         if len(messages) > _MAX_MESSAGES_PER_CHAT:
-            return False, f"too many messages ({len(messages)} > {_MAX_MESSAGES_PER_CHAT})"
+            return (
+                False,
+                f"too many messages ({len(messages)} > {_MAX_MESSAGES_PER_CHAT})",
+            )
 
         return True, ""
     except Exception:
@@ -69,6 +75,7 @@ def _validate_chat_payload(body: dict) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 # SPA serving
 # ---------------------------------------------------------------------------
+
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -97,15 +104,18 @@ def serve_spa(path):
 # State
 # ---------------------------------------------------------------------------
 
+
 @app.route("/api/state", methods=["GET"])
 def get_state():
     """Return full SharedState (models + settings)."""
     svc = get_ollama_service()
     settings = get_settings()
-    return jsonify({
-        "models": svc.get_model_state(),
-        "settings": settings.get_all(),
-    })
+    return jsonify(
+        {
+            "models": svc.get_model_state(),
+            "settings": settings.get_all(),
+        }
+    )
 
 
 @app.route("/api/state", methods=["POST"])
@@ -139,6 +149,7 @@ def set_debug_state():
 # ---------------------------------------------------------------------------
 # Chats
 # ---------------------------------------------------------------------------
+
 
 @app.route("/api/chats", methods=["GET"])
 def get_chats():
@@ -191,6 +202,7 @@ def delete_chat(chat_id):
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
+
 
 @app.route("/api/models", methods=["GET"])
 def get_models():
@@ -265,19 +277,24 @@ def pull_progress_sse():
         finally:
             svc.unsubscribe_pull_events(q)
 
-    return Response(generate(), mimetype="text/event-stream",
-                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------------------------------------------------------------------------
 # Ollama connectivity
 # ---------------------------------------------------------------------------
 
+
 @app.route("/api/ollama/status")
 def ollama_status():
     """Return Ollama URL, connection status, and running model tag."""
     import ollama_service as _osvc
     import requests as _req
+
     url = get_settings().get("ollamaUrl") or _osvc.OLLAMA_BASE
     connected = False
     active_model = None
@@ -334,7 +351,9 @@ def ollama_discover():
 
     hosts = _get_local_subnet()
     results = []
-    threads = [threading.Thread(target=_probe, args=(h, results), daemon=True) for h in hosts]
+    threads = [
+        threading.Thread(target=_probe, args=(h, results), daemon=True) for h in hosts
+    ]
     for t in threads:
         t.start()
     for t in threads:
@@ -345,6 +364,7 @@ def ollama_discover():
 # ---------------------------------------------------------------------------
 # LLM
 # ---------------------------------------------------------------------------
+
 
 @app.route("/api/llm/create", methods=["POST"])
 def llm_create():
@@ -386,21 +406,27 @@ def llm_stream():
         except Exception as exc:
             yield f"data: {json.dumps({'type': 'error', 'uuid': uuid, 'error': str(exc)})}\n\n"
 
-    return Response(generate(), mimetype="text/event-stream",
-                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------------------------------------------------------------------------
 # Voice — TTS (Piper) + STT (Faster-Whisper)
 # ---------------------------------------------------------------------------
 
+
 @app.route("/api/voice/state")
 def voice_state():
     """Return combined TTS + STT state."""
-    return jsonify({
-        "tts": get_tts_manager().get_state(),
-        "stt": get_stt_manager().get_state(),
-    })
+    return jsonify(
+        {
+            "tts": get_tts_manager().get_state(),
+            "stt": get_stt_manager().get_state(),
+        }
+    )
 
 
 @app.route("/api/voice/tts-toggle", methods=["POST"])
@@ -411,6 +437,7 @@ def tts_toggle():
         tts.enabled = bool(body["enabled"])
     else:
         tts.enabled = not tts.enabled
+    get_settings().set("ttsEnabled", tts.enabled)
     return jsonify({"enabled": tts.enabled})
 
 
@@ -422,6 +449,7 @@ def stt_toggle():
         stt.enabled = bool(body["enabled"])
     else:
         stt.enabled = not stt.enabled
+    get_settings().set("sttEnabled", stt.enabled)
     return jsonify({"enabled": stt.enabled})
 
 
@@ -432,6 +460,8 @@ def set_voice():
     if not voice_id:
         return jsonify({"error": "voiceId required"}), 400
     result = get_tts_manager().load_voice(voice_id)
+    if "error" not in result:
+        get_settings().set("selectedVoice", voice_id)
     return jsonify(result)
 
 
@@ -484,6 +514,8 @@ def set_stt_model():
     if not model:
         return jsonify({"error": "model required"}), 400
     result = get_stt_manager().load_model(model)
+    if "error" not in result:
+        get_settings().set("sttModel", model)
     return jsonify(result)
 
 
@@ -491,19 +523,23 @@ def set_stt_model():
 # Versions
 # ---------------------------------------------------------------------------
 
+
 @app.route("/api/versions")
 def versions():
     import importlib.metadata
     import platform
+
     try:
         flask_version = importlib.metadata.version("flask")
     except Exception:
         flask_version = "unknown"
-    return jsonify({
-        "clippy": VERSION,
-        "python": platform.python_version(),
-        "flask": flask_version,
-    })
+    return jsonify(
+        {
+            "clippy": VERSION,
+            "python": platform.python_version(),
+            "flask": flask_version,
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
