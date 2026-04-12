@@ -24,8 +24,8 @@ export const SettingsAppearance: React.FC = () => {
     <div>
       <fieldset>
         <legend>Font Options</legend>
-        <div className="field-row" style={{ width: 300 }}>
-          <label style={{ width: 100 }}>Font size:</label>
+        <div className="field-row">
+          <label style={{ width: 80 }}>Font size:</label>
           <label>8px</label>
           <input
             type="range"
@@ -37,8 +37,8 @@ export const SettingsAppearance: React.FC = () => {
           />
           <label>24px</label>
         </div>
-        <div className="field-row" style={{ width: 300 }}>
-          <label htmlFor="defaultFont" style={{ width: 58 }}>
+        <div className="field-row">
+          <label htmlFor="defaultFont" style={{ width: 80 }}>
             Font:
           </label>
           <select
@@ -57,7 +57,7 @@ export const SettingsAppearance: React.FC = () => {
           </select>
         </div>
       </fieldset>
-      <button style={{ marginTop: 10 }} onClick={onReset}>
+      <button style={{ marginTop: "10px" }} onClick={onReset}>
         Reset
       </button>
     </div>

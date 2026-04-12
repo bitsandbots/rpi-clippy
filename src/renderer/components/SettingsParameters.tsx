@@ -66,7 +66,7 @@ export const SettingsParameters: React.FC = () => {
           </button>
         </div>
       </fieldset>
-      <fieldset style={{ marginTop: "20px" }}>
+      <fieldset>
         <legend>Parameters</legend>
         <div className="field-row">
           <label htmlFor="topK">Top K</label>

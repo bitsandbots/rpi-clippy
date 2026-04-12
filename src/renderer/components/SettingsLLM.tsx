@@ -168,14 +168,14 @@ export const SettingsLLM: React.FC = () => {
       </fieldset>
 
       {/* ── Active session ────────────────────────────── */}
-      <fieldset style={{ marginTop: "12px" }}>
+      <fieldset>
         <legend>Active Model</legend>
         <p style={{ marginTop: 0 }}>
           Use the <strong>Model</strong> tab to download and select which model
           Clippy uses. The selected model is loaded on next chat session.
         </p>
         <div className="field-row">
-          <label style={{ width: 100 }}>Selected:</label>
+          <label style={{ width: 70 }}>Selected:</label>
           <span>{settings.selectedModel ?? <em>none</em>}</span>
         </div>
         <div className="field-row" style={{ marginTop: "6px" }}>
