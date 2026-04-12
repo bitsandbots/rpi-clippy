@@ -16,7 +16,6 @@ import {
   transcribeAudio,
   setSttModel,
   rescanVoices,
-  importVoice,
   type VoiceInfo,
 } from "../api";
 
@@ -36,16 +35,6 @@ type VoiceContextType = {
   transcribe: (audioBase64: string) => Promise<string>;
   stopSpeaking: () => void;
   rescan: () => Promise<void>;
-  importVoice: (
-    model: File,
-    config?: File,
-    meta?: File,
-  ) => Promise<{
-    status?: string;
-    voice?: string;
-    name?: string;
-    error?: string;
-  }>;
 };
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined);
@@ -197,19 +186,6 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     if (state.currentVoice) setCurrentVoice(state.currentVoice);
   }, []);
 
-  const importVoice = useCallback(
-    async (model: File, config?: File, meta?: File) => {
-      const result = await importVoice(model, config, meta);
-      if (!result.error) {
-        // Refresh the voice list
-        const state = await rescanVoices();
-        setVoices(state.voices);
-      }
-      return result;
-    },
-    [rescanVoices],
-  );
-
   return (
     <VoiceContext.Provider
       value={{
@@ -228,7 +204,6 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         transcribe,
         stopSpeaking,
         rescan,
-        importVoice,
       }}
     >
       {children}

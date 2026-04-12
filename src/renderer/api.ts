@@ -282,23 +282,6 @@ export async function rescanVoices(): Promise<VoiceState["tts"]> {
   return r.json();
 }
 
-export async function importVoice(
-  modelFile: File,
-  configFile?: File,
-  metaFile?: File,
-): Promise<{ status?: string; voice?: string; name?: string; error?: string }> {
-  const formData = new FormData();
-  formData.append("model", modelFile);
-  if (configFile) formData.append("config", configFile);
-  if (metaFile) formData.append("meta", metaFile);
-
-  const r = await fetch("/api/voice/import", {
-    method: "POST",
-    body: formData,
-  });
-  return r.json();
-}
-
 /**
  * Speak text via Piper TTS. Returns an audio object URL ready to play.
  * Caller is responsible for revoking the URL after playback.
