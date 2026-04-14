@@ -20,25 +20,7 @@ export const SettingsVoice: React.FC = () => {
   } = useVoice();
 
   const voiceList = Object.values(voices);
-  console.log(
-    "[SettingsVoice] Render - currentVoice:",
-    currentVoice,
-    "ttsEnabled:",
-    ttsEnabled,
-    "voices count:",
-    Object.keys(voices).length,
-    "voiceList:",
-    voiceList.map((v) => v.id).join(", "),
-  );
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-
-  // Log when component mounts/unmounts
-  useEffect(() => {
-    console.log("[SettingsVoice] Component mounted");
-    return () => {
-      console.log("[SettingsVoice] Component unmounted");
-    };
-  }, []);
 
   // Enumerate browser audio output devices
   useEffect(() => {
@@ -136,13 +118,7 @@ export const SettingsVoice: React.FC = () => {
               <select
                 id="voiceSelect"
                 value={currentVoice ?? ""}
-                onChange={(e) => {
-                  console.log(
-                    "[SettingsVoice] onChange fired, selected:",
-                    e.target.value,
-                  );
-                  selectVoice(e.target.value);
-                }}
+                onChange={(e) => selectVoice(e.target.value)}
                 disabled={!ttsEnabled}
                 style={{ flex: 1 }}
               >

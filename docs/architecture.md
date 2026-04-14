@@ -2,7 +2,7 @@
 
 ## High-Level Design
 
-###三层架构 (Three-Tier Architecture)
+### Three-Tier Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

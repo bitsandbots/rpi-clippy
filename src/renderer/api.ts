@@ -270,9 +270,14 @@ export async function toggleStt(
   return r.json();
 }
 
-export async function setVoice(
-  voiceId: string,
-): Promise<Record<string, unknown>> {
+export interface SetVoiceResponse {
+  status?: "loaded" | "already_loaded" | string;
+  voice?: string;
+  error?: string;
+  available?: string[];
+}
+
+export async function setVoice(voiceId: string): Promise<SetVoiceResponse> {
   const r = await post("/voice/set-voice", { voiceId });
   return r.json();
 }

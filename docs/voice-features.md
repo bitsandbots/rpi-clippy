@@ -196,9 +196,9 @@ alsamixer
 
 ### Add Custom Voice
 
-1. Download `.onnx` and `.onnx.json` from Piper repository
-2. Place in `~/.config/Clippy/voices/`
-3. Create `.meta.json` with display info:
+1. Download `.onnx` and `.onnx.json` from the [Piper repository](https://github.com/rhasspy/piper)
+2. Place both files in `~/.config/Clippy/voices/`
+3. Optionally create a `.meta.json` alongside for display metadata:
 
 ```json
 {
@@ -210,7 +210,9 @@ alsamixer
 }
 ```
 
-4. Click "Rescan Voices" in Settings
+4. Click **Rescan Voices** in Settings → Voice
+
+> **Note**: Voice files smaller than 1 KB are automatically skipped as likely corrupted (e.g. a failed or partial download). Ensure the `.onnx` file is complete before rescanning. A warning is logged to the server console for any skipped files.
 
 ### Adjust Voice Settings
 

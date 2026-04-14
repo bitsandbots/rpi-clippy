@@ -11,13 +11,15 @@
 | Vitest         | 2.0.0   | Testing framework              |
 | 98.css         | 0.1.21  | Windows 98 styling             |
 | React Markdown | 10.1.0  | Markdown rendering in messages |
+| date-fns       | 4.1.0   | Date formatting utilities      |
 
 ### Development Tools
 
-| Tool     | Purpose                     |
-| -------- | --------------------------- |
-| Prettier | Code formatting (.ts, .tsx) |
-| jsdom    | Headless browser testing    |
+| Tool                 | Purpose                          |
+| -------------------- | -------------------------------- |
+| Prettier             | Code formatting (.ts, .tsx)      |
+| jsdom                | Headless browser testing         |
+| @vitejs/plugin-react | Vite React/JSX transform plugin  |
 
 ## Backend (Python)
 

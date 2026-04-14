@@ -57,29 +57,20 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   currentVoiceRef.current = currentVoice;
 
   useEffect(() => {
-    getVoiceState().then((state) => {
-      console.log("[VoiceContext] Initial state loaded:", state);
-      setTtsEnabledState(state.tts.enabled);
-      setSttEnabledState(state.stt.enabled);
-      // Only set currentVoice from API if not already set (e.g., by user selection)
-      // This prevents the initial API load from overriding user selections
-      if (currentVoiceRef.current === null && state.tts.currentVoice) {
-        setCurrentVoice(state.tts.currentVoice);
-        console.log(
-          "[VoiceContext] Set initial currentVoice from API:",
-          state.tts.currentVoice,
-        );
-      }
-      setVoices(state.tts.voices);
-      setSttModelState(state.stt.model);
-      setAvailableSttModels(state.stt.available_models);
-      console.log(
-        "[VoiceContext] After initial load - currentVoice:",
-        currentVoiceRef.current,
-        "voices count:",
-        Object.keys(state.tts.voices).length,
-      );
-    });
+    getVoiceState()
+      .then((state) => {
+        setTtsEnabledState(state.tts.enabled);
+        setSttEnabledState(state.stt.enabled);
+        if (currentVoiceRef.current === null && state.tts.currentVoice) {
+          setCurrentVoice(state.tts.currentVoice);
+        }
+        setVoices(state.tts.voices);
+        setSttModelState(state.stt.model);
+        setAvailableSttModels(state.stt.available_models);
+      })
+      .catch((err) => {
+        console.error("[VoiceContext] Failed to load initial voice state:", err);
+      });
   }, []);
 
   const setTtsEnabled = useCallback(async (enabled: boolean) => {
@@ -93,36 +84,33 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectVoice = useCallback(async (voiceId: string) => {
-    console.log("[VoiceContext] selectVoice called with:", voiceId);
-    console.log(
-      "[VoiceContext] currentVoice BEFORE API call:",
-      currentVoiceRef.current,
-    );
-    const result = await setVoice(voiceId);
-    console.log("[VoiceContext] selectVoice result:", result);
-    console.log(
-      "[VoiceContext] result.error:",
-      result.error,
-      "result.status:",
-      result.status,
-    );
-    // Only update state if the voice was successfully loaded
-    // Check for both error AND successful status
-    if (!result.error && result.status === "loaded") {
-      console.log("[VoiceContext] Calling setCurrentVoice to:", voiceId);
+    let result: Awaited<ReturnType<typeof setVoice>>;
+    try {
+      result = await setVoice(voiceId);
+    } catch (err) {
+      console.error("[VoiceContext] setVoice network error:", err);
+      return;
+    }
+    if (!result.error && (result.status === "loaded" || result.status === "already_loaded")) {
       setCurrentVoice(voiceId);
-      console.log(
-        "[VoiceContext] currentVoice AFTER setCurrentVoice:",
-        voiceId,
-      );
     } else {
-      console.log("[VoiceContext] Voice load failed, not updating state");
+      console.error("[VoiceContext] Voice load failed:", result.error ?? result.status);
     }
   }, []);
 
   const changeSttModel = useCallback(async (model: string) => {
-    await setSttModel(model);
-    setSttModelState(model);
+    let result: Awaited<ReturnType<typeof setSttModel>>;
+    try {
+      result = await setSttModel(model);
+    } catch (err) {
+      console.error("[VoiceContext] setSttModel network error:", err);
+      return;
+    }
+    if (!result.error) {
+      setSttModelState(model);
+    } else {
+      console.error("[VoiceContext] STT model change failed:", result.error);
+    }
   }, []);
 
   const stopSpeaking = useCallback(() => {
@@ -174,7 +162,17 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
 
   const transcribe = useCallback(
     async (audioBase64: string): Promise<string> => {
-      const result = await transcribeAudio(audioBase64);
+      let result: Awaited<ReturnType<typeof transcribeAudio>>;
+      try {
+        result = await transcribeAudio(audioBase64);
+      } catch (err) {
+        console.error("[VoiceContext] transcribeAudio network error:", err);
+        return "";
+      }
+      if (result.error) {
+        console.error("[VoiceContext] Transcription failed:", result.error);
+        return "";
+      }
       return result.text ?? "";
     },
     [],

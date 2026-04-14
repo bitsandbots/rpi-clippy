@@ -11,16 +11,16 @@ The app was converted from Electron to a Flask+React SPA to eliminate the displa
 ## Commands
 
 ```bash
+# Install Python dev dependencies (required before running pytest)
+pip install -r requirements-dev.txt
+
 # Run Python test suite
-pytest -q                           # all tests, quiet
-pytest tests/test_routes.py -q      # specific module
+python3 -m pytest -q                           # all tests, quiet
+python3 -m pytest tests/test_routes.py -q      # specific module
 
 # Run frontend tests (Vitest)
 npm run test                        # one-shot
 npm run test:watch                  # watch mode
-
-# Install Python dev dependencies
-pip install -r requirements-dev.txt
 
 # Start Flask server (production)
 python3 app.py
@@ -112,7 +112,7 @@ TTS audio: `POST /api/voice/speak` returns `audio/wav` bytes (not SSE).
 
 ### Frontend
 
-State is managed via React Context — no Redux or Zustand:
+State is managed via React Context — no Redux or Zustand. Context files live in `src/renderer/contexts/`:
 
 - `ChatContext.tsx` — active messages, model loading, chat CRUD
 - `SharedStateContext.tsx` — models list, global settings (2s polling + SSE pull events)
@@ -177,6 +177,7 @@ Uses **98.css** for the Windows 95/98 aesthetic. Custom styles in `src/renderer/
 - **Payload limits**: `app.py` enforces a 10MB body cap and 1000-message limit on chat writes (HTTP 413 on violation). Don't bypass `_validate_chat_payload()`.
 - **SSE abort**: `POST /api/llm/abort` sets a `threading.Event` checked per chunk — not a socket close. If adding new SSE endpoints, use the same pattern.
 - **clippyApi.tsx shim**: This file re-exports from `api.ts` for backward compat. New code should import from `api.ts` directly.
+- **Animation asset regeneration**: `tools/extract-animations.sh` rebuilds Clippy sprite frames from `assets/animations/clippy/` into `src/renderer/images/animations/`. Run via `npm run extract-animations`. Only needed when updating animation source assets.
 
 ## Key Dependencies
 

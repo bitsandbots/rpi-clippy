@@ -167,6 +167,44 @@ def test_scan_handles_corrupt_meta(tmp_path):
     assert "bad-meta" in mgr.registry  # still discovered, just uses defaults
 
 
+def test_scan_skips_onnx_file_below_1kb(tmp_path):
+    """Files under 1 KB must be excluded from registry (likely corrupted)."""
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    (voices / "tiny-voice.onnx").write_bytes(b"\x00" * 1023)
+    (voices / "tiny-voice.onnx.json").write_text("{}")
+    mgr = make_manager(voices)
+    assert "tiny-voice" not in mgr.registry
+
+
+def test_scan_includes_onnx_file_at_exact_1kb(tmp_path):
+    """A file at exactly 1024 bytes must be included (boundary condition)."""
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    (voices / "edge-voice.onnx").write_bytes(b"\x00" * 1024)
+    (voices / "edge-voice.onnx.json").write_text("{}")
+    mgr = make_manager(voices)
+    assert "edge-voice" in mgr.registry
+
+
+def test_scan_warns_on_small_file_and_keeps_valid_sibling(tmp_path, caplog):
+    """Small file emits a warning; only it is skipped — valid sibling is kept."""
+    import logging
+
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    (voices / "bad-voice.onnx").write_bytes(b"\x00" * 500)
+    (voices / "bad-voice.onnx.json").write_text("{}")
+    create_voice_files(voices, "good-voice")
+
+    with caplog.at_level(logging.WARNING, logger="tts_manager"):
+        mgr = make_manager(voices)
+
+    assert "bad-voice" not in mgr.registry
+    assert "good-voice" in mgr.registry
+    assert any("bad-voice" in r.message for r in caplog.records)
+
+
 # ---------------------------------------------------------------------------
 # Voice loading
 # ---------------------------------------------------------------------------

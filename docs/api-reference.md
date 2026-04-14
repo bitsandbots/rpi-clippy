@@ -320,12 +320,28 @@ Toggle STT on/off.
 
 #### POST `/api/voice/set-voice`
 
-Load a specific voice model.
+Load a specific voice model. Persists `selectedVoice` to `settings.json` on success.
 
 ```bash
 curl -X POST http://localhost:5080/api/voice/set-voice \
   -H "Content-Type: application/json" \
   -d '{"voiceId": "en_US-amy-medium"}'
+```
+
+**Success responses**:
+
+```json
+{ "status": "loaded", "voice": "en_US-amy-medium" }
+{ "status": "already_loaded", "voice": "en_US-amy-medium" }
+```
+
+**Error response** (HTTP 422):
+
+```json
+{
+  "error": "unknown_voice: en_US-nonexistent",
+  "available": ["en_US-amy-medium", "en_US-lessac-medium"]
+}
 ```
 
 #### POST `/api/voice/rescan`
