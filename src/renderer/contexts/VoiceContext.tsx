@@ -69,7 +69,10 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         setAvailableSttModels(state.stt.available_models);
       })
       .catch((err) => {
-        console.error("[VoiceContext] Failed to load initial voice state:", err);
+        console.error(
+          "[VoiceContext] Failed to load initial voice state:",
+          err,
+        );
       });
   }, []);
 
@@ -91,10 +94,16 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       console.error("[VoiceContext] setVoice network error:", err);
       return;
     }
-    if (!result.error && (result.status === "loaded" || result.status === "already_loaded")) {
+    if (
+      !result.error &&
+      (result.status === "loaded" || result.status === "already_loaded")
+    ) {
       setCurrentVoice(voiceId);
     } else {
-      console.error("[VoiceContext] Voice load failed:", result.error ?? result.status);
+      console.error(
+        "[VoiceContext] Voice load failed:",
+        result.error ?? result.status,
+      );
     }
   }, []);
 
