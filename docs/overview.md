@@ -18,6 +18,7 @@ Clippy is a revival of Microsoft Office 97's iconic animated assistant, reimagin
 | Speech-to-Text (STT)           | ✅ Complete |
 | Persistent chat history        | ✅ Complete |
 | Systemd auto-start             | ✅ Complete |
+| Hardened voice error handling  | ✅ Complete |
 
 ## Architecture Overview
 

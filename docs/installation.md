@@ -53,18 +53,20 @@ sudo systemctl status ollama
 ollama pull llama3.2:1b
 
 # Clone and install Clippy
-git clone https://github.com/CoreConduit/rpi-clippy
+git clone https://github.com/bitsandbots/rpi-clippy
 cd rpi-clippy
 bash install.sh
 ```
 
 The `install.sh` script will:
 
-1. Install system dependencies (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
-2. Install Python dependencies
-3. Install npm dependencies
-4. Build the React frontend
-5. Install and start the `clippy` systemd service
+1. Check Python 3.11+ and Node.js 20+ are available
+2. Install system dependencies (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
+3. Install Python dependencies from `requirements.txt`
+4. Install npm dependencies
+5. Build the React frontend
+6. Generate and install the `clippy` systemd service (scoped to the current user)
+7. Enable and start the service
 
 ### Verify Installation
 

@@ -32,8 +32,8 @@ rpi-clippy/
 ├── assets/            # Static assets (images, sounds)
 ├── scripts/           # Utility scripts
 ├── app.py             # Flask entry point
-├── clippy.service     # Systemd service definition
-└── install.sh         # Installation script
+├── install.sh         # Installation script (auto-generates service file)
+└── release.sh         # Version bump + tag + push release script
 ```
 
 ## Getting Started
@@ -50,7 +50,7 @@ rpi-clippy/
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2:1b
-git clone https://github.com/CoreConduit/rpi-clippy
+git clone https://github.com/bitsandbots/rpi-clippy
 cd rpi-clippy
 bash install.sh
 ```
@@ -118,8 +118,7 @@ All data stored in `~/.config/Clippy/`:
 
 ## Support
 
-- Report issues: [GitHub Issues](https://github.com/CoreConduit/rpi-clippy/issues)
-- Documentation: [GitHub Wiki](https://github.com/CoreConduit/rpi-clippy/wiki)
+- Report issues: [GitHub Issues](https://github.com/bitsandbots/rpi-clippy/issues)
 
 ## License
 

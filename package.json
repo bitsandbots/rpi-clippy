@@ -5,11 +5,11 @@
   "description": "Clippy",
   "scripts": {
     "start": "python3 app.py",
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "prettier --write --ext .ts,.tsx .",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "dev": "node node_modules/.bin/vite",
+    "build": "node node_modules/.bin/vite build",
+    "lint": "node node_modules/prettier/bin/prettier.cjs --write --ext .ts,.tsx .",
+    "test": "node node_modules/vitest/dist/cli.js run",
+    "test:watch": "node node_modules/vitest/dist/cli.js",
     "extract-animations": "./tools/extract-animations.sh -j ./assets/animations/clippy/animations.json -s ./assets/animations/clippy/map.png -o src/renderer/images/animations"
   },
   "keywords": [],
