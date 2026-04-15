@@ -5,10 +5,11 @@ import { Settings } from "./Settings";
 import { useBubbleView } from "../contexts/BubbleViewContext";
 import { Chats } from "./Chats";
 import { useChat } from "../contexts/ChatContext";
+import { StatusBar } from "./StatusBar";
 
 export function Bubble() {
   const { currentView, setCurrentView } = useBubbleView();
-  const { setIsChatWindowOpen } = useChat();
+  const { setIsChatWindowOpen, status } = useChat();
 
   const containerStyle = {
     width: "calc(100% - 6px)",
@@ -57,8 +58,19 @@ export function Bubble() {
     }
   }, [setCurrentView, currentView]);
 
+  const isActivityPulse = status === "thinking" || status === "responding";
+
+  const showStatusBar = currentView === "chat";
+
   return (
-    <div className="bubble-container window" style={containerStyle}>
+    <div
+      className={`bubble-container window${isActivityPulse ? " activity-pulse" : ""}`}
+      style={{
+        ...containerStyle,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <div className="title-bar">
         <div className="title-bar-text">Chat with Clippy</div>
         <div className="title-bar-controls">
@@ -90,10 +102,15 @@ export function Bubble() {
       </div>
       <div
         className="window-content"
-        style={currentView === "chat" ? scrollAnchoredAtBottomStyle : {}}
+        style={{
+          ...(currentView === "chat" ? scrollAnchoredAtBottomStyle : {}),
+          flex: 1,
+          overflow: "auto",
+        }}
       >
         {content}
       </div>
+      {showStatusBar && <StatusBar />}
     </div>
   );
 }

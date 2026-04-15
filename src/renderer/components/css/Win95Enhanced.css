@@ -1,0 +1,617 @@
+/**
+ * Win95Enhanced.css — Refined Authentic Windows 95/98 Aesthetic
+ *
+ * Layers museum-quality polish on top of 98.css base styles.
+ * Focus: CRT effects, precise bevels, authentic animations, speech bubbles.
+ */
+
+/* ============================================================================
+   CRT EFFECTS — Subtle period-accurate display simulation
+   ============================================================================ */
+
+/* Scanline overlay — very subtle, adds authentic CRT feel */
+.bubble-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Slight phosphor glow on active window */
+.bubble-container:focus-within {
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff,
+    0 0 30px rgba(0, 0, 128, 0.1);
+}
+
+/* ============================================================================
+   WINDOW CHROME — Authentic beveled borders with proper depth
+   ============================================================================ */
+
+.bubble-container {
+  position: relative;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff,
+    /* Drop shadow — authentic Win95 window shadow */
+    2px 2px 0 #000000;
+}
+
+/* ============================================================================
+   TITLE BAR — Enhanced with animated gradient and activity pulse
+   ============================================================================ */
+
+.title-bar {
+  background: linear-gradient(
+    90deg,
+    #000080 0%,
+    #1084d0 50%,
+    #000080 100%
+  );
+  background-size: 200% 100%;
+  animation: titleBarShift 8s ease-in-out infinite;
+}
+
+/* Inactive title bar */
+.bubble-container:not(:focus-within) .title-bar {
+  background: linear-gradient(90deg, #808080, #b5b5b5);
+}
+
+/* Activity pulse when Clippy is thinking/responding */
+.bubble-container.activity-pulse .title-bar {
+  animation: activityPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes titleBarShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes activityPulse {
+  0%, 100% {
+    filter: brightness(1);
+    background: linear-gradient(90deg, #000080, #1084d0, #000080);
+  }
+  50% {
+    filter: brightness(1.2);
+    background: linear-gradient(90deg, #0000c0, #20a4f0, #0000c0);
+  }
+}
+
+.title-bar-text {
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  font-weight: 700;
+}
+
+/* Title bar control buttons — authentic sizing and spacing */
+.title-bar-controls button {
+  min-width: 16px;
+  min-height: 14px;
+  margin-left: 2px;
+  transition: filter 0.05s;
+}
+
+.title-bar-controls button:hover {
+  filter: brightness(1.1);
+}
+
+.title-bar-controls button:active {
+  transform: translate(1px, 1px);
+}
+
+/* ============================================================================
+   MESSAGES — Office Assistant speech bubble styling
+   ============================================================================ */
+
+.message {
+  position: relative;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.message:not(:last-child) {
+  border-bottom: 1px solid #c0c0c0;
+}
+
+/* Speech bubble for Clippy messages */
+.message[data-sender="clippy"] .message-content {
+  position: relative;
+  background: #ffffcc;
+  border: 2px solid #000000;
+  box-shadow:
+    inset -1px -1px #808080,
+    inset 1px 1px #ffffff;
+  padding: 8px 12px;
+  margin-left: 32px;
+}
+
+/* Speech bubble tail — points to Clippy */
+.message[data-sender="clippy"] .message-content::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 10px solid #000000;
+}
+
+.message[data-sender="clippy"] .message-content::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 10px;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 8px solid #ffffcc;
+}
+
+/* User message — question icon style, no bubble */
+.message[data-sender="user"] .message-content {
+  background: #ffffff;
+  border: 1px solid #808080;
+  padding: 6px 10px;
+  margin-left: 32px;
+  box-shadow:
+    inset -1px -1px #dfdfdf,
+    inset 1px 1px #808080;
+}
+
+/* Message icons */
+.message img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
+/* ============================================================================
+   CHAT INPUT — Enhanced with authentic focus states
+   ============================================================================ */
+
+.chat-container textarea {
+  font-family: "Pixelated MS Sans Serif", Tahoma, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+.chat-container textarea:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+/* Button styling for input area */
+.chat-container button {
+  transition: transform 0.02s;
+}
+
+.chat-container button:not(:disabled):active {
+  transform: translate(1px, 1px);
+}
+
+/* ============================================================================
+   SCROLLBAR — Authentic Win95 scrollbar with working arrows
+   ============================================================================ */
+
+.window-content::-webkit-scrollbar {
+  width: 16px;
+}
+
+.window-content::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  background-image: url("data:image/svg+xml,%3Csvg width='2' height='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 0H0v1h1v1h1V1H1V0z' fill='%23c0c0c0'/%3E%3Cpath d='M2 0H1v1H0v1h1V1h1V0z' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+.window-content::-webkit-scrollbar-thumb {
+  background-color: #dfdfdf;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+  border: 1px solid #808080;
+}
+
+.window-content::-webkit-scrollbar-thumb:hover {
+  background-color: #e8e8e8;
+}
+
+.window-content::-webkit-scrollbar-button {
+  background-color: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+
+/* ============================================================================
+   TABS — Enhanced tab styling for settings
+   ============================================================================ */
+
+menu[role="tablist"] {
+  padding-left: 4px;
+  margin-bottom: -2px;
+}
+
+menu[role="tablist"] > li {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  box-shadow:
+    inset -1px 0 #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px 0 #808080,
+    inset 2px 2px #ffffff;
+  margin-right: 2px;
+  transition: background-color 0.1s;
+}
+
+menu[role="tablist"] > li:hover {
+  background-color: #d0d0d0;
+}
+
+menu[role="tablist"] > li[aria-selected="true"] {
+  background-color: #c0c0c0;
+  border-bottom: 2px solid #c0c0c0;
+  margin-bottom: -2px;
+}
+
+/* ============================================================================
+   FORM ELEMENTS — Enhanced focus states
+   ============================================================================ */
+
+/* Focus rectangle — authentic Win95 focus indicator */
+.clippy button:focus,
+.clippy input:focus,
+.clippy select:focus,
+.clippy textarea:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+/* Checkbox and radio focus */
+.clippy input[type="checkbox"]:focus + label,
+.clippy input[type="radio"]:focus + label {
+  outline: 1px dotted #000000;
+  outline-offset: 2px;
+}
+
+/* Button press animation */
+.clippy button:not(:disabled):active {
+  transform: translate(1px, 1px);
+  transition: transform 0.01s;
+}
+
+/* ============================================================================
+   CLIPPY SPRITE — Subtle idle animation
+   ============================================================================ */
+
+.clippy .app-no-select {
+  /* Subtle breathing animation for idle state */
+  animation: clippyIdle 4s ease-in-out infinite;
+}
+
+@keyframes clippyIdle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
+/* ============================================================================
+   STATUS BAR — Optional status bar styling
+   ============================================================================ */
+
+.status-bar {
+  display: flex;
+  gap: 2px;
+  padding: 2px 4px;
+  margin: 0;
+}
+
+.status-bar-field {
+  flex-grow: 1;
+  padding: 2px 4px;
+  box-shadow:
+    inset -1px -1px #dfdfdf,
+    inset 1px 1px #808080;
+  background: #c0c0c0;
+  font-size: 11px;
+}
+
+.status-bar-field:first-child {
+  flex-grow: 3;
+}
+
+/* ============================================================================
+   TYPOGRAPHY HIERARCHY — Period-accurate sizing
+   ============================================================================ */
+
+.clippy h1 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.clippy h2 {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.clippy h3 {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.clippy legend {
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+/* ============================================================================
+   SETTINGS PANEL — Enhanced form layout
+   ============================================================================ */
+
+fieldset {
+  padding: 12px;
+  border-image: url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h5v5H0V2h2v1h1V2H0' fill='%23ffffff'/%3E%3Cpath d='M0 0h4v4H0V1h1v2h2V1H0' fill='%23808080'/%3E%3C/svg%3E") 2;
+}
+
+.field-row {
+  margin-bottom: 8px;
+}
+
+.field-row label {
+  min-width: 80px;
+}
+
+/* Slider with authentic Win95 track */
+input[type="range"] {
+  margin: 8px 0;
+}
+
+/* ============================================================================
+   LOADING STATES — Animated progress
+   ============================================================================ */
+
+@keyframes progressStripe {
+  0% { background-position: 0 0; }
+  100% { background-position: 16px 0; }
+}
+
+.progress-indicator {
+  box-shadow:
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #808080;
+}
+
+.progress-indicator-bar {
+  background: linear-gradient(
+    90deg,
+    #000080 25%,
+    #1084d0 25%,
+    #1084d0 50%,
+    #000080 50%,
+    #000080 75%,
+    #1084d0 75%
+  );
+  background-size: 16px 100%;
+  animation: progressStripe 0.5s linear infinite;
+}
+
+/* ============================================================================
+   ACCESSIBILITY — Reduced motion preference
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .title-bar {
+    animation: none;
+  }
+
+  .bubble-container.activity-pulse .title-bar {
+    animation: none;
+  }
+
+  .clippy .app-no-select {
+    animation: none;
+  }
+
+  .progress-indicator-bar {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   PRINT STYLES — Clean output for printing
+   ============================================================================ */
+
+@media print {
+  .bubble-container::before {
+    display: none;
+  }
+
+  .title-bar-controls {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   TITLE BAR BUTTON ENHANCEMENTS
+   ============================================================================ */
+
+/* Title bar buttons — Chats/Settings buttons need proper sizing */
+.title-bar-controls button:not([aria-label]) {
+  min-width: 60px;
+  font-size: 11px;
+  padding: 0 8px;
+}
+
+/* Title bar button text styling */
+.title-bar-controls button:not([aria-label]) {
+  color: transparent;
+  text-shadow: 0 0 #ffffff;
+}
+
+.title-bar-controls button:not([aria-label]):hover {
+  text-shadow: 0 0 #ffffff, 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================================================
+   WELCOME MESSAGE — Enhanced first-run experience
+   ============================================================================ */
+
+.welcome-message {
+  background: linear-gradient(135deg, #ffffcc 0%, #ffffff 100%);
+  border: 2px solid #000080;
+  padding: 16px;
+  margin: 8px;
+  box-shadow:
+    inset -1px -1px #808080,
+    inset 1px 1px #ffffff;
+}
+
+.welcome-message h2 {
+  color: #000080;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.welcome-message p {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   LOADING ANIMATION — Authentic Win95 hourglass feel
+   ============================================================================ */
+
+@keyframes hourglassBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-indicator {
+  animation: hourglassBlink 0.8s ease-in-out infinite;
+}
+
+/* ============================================================================
+   MODEL BADGE — Visual indicator in status bar
+   ============================================================================ */
+
+.status-bar .model-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-bar .model-badge::before {
+  content: "●";
+  color: #008000;
+  font-size: 8px;
+}
+
+.status-bar .model-badge.loading::before {
+  color: #808000;
+  animation: hourglassBlink 0.5s ease-in-out infinite;
+}
+
+/* ============================================================================
+   CHAT MESSAGE TIMESTAMP — Subtle time display
+   ============================================================================ */
+
+.message-timestamp {
+  font-size: 9px;
+  color: #808080;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* ============================================================================
+   BUTTON ICON ENHANCEMENTS — Voice/mic buttons
+   ============================================================================ */
+
+.chat-container button[title*="voice"],
+.chat-container button[title*="mic"],
+.chat-container button[title*="Mute"],
+.chat-container button[title*="Record"] {
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+
+.chat-container button[disabled] {
+  opacity: 0.5;
+}
+
+/* Recording state — blinking red */
+.chat-container button.recording {
+  background: #c00000 !important;
+  animation: recordingPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+  0%, 100% { background: #c00000; }
+  50% { background: #800000; }
+}
+
+/* ============================================================================
+   LINK STYLING — Authentic Win95 links
+   ============================================================================ */
+
+.message-content a {
+  color: #0000ff;
+  text-decoration: none;
+}
+
+.message-content a:hover {
+  text-decoration: underline;
+}
+
+.message-content a:visited {
+  color: #800080;
+}
+
+.message-content a:focus {
+  outline: 1px dotted #0000ff;
+}
+
+/* ============================================================================
+   CODE BLOCK STYLING — Monospace with authentic feel
+   ============================================================================ */
+
+.message-content pre,
+.message-content code {
+  font-family: "Courier New", "Lucida Console", monospace;
+  background: #ffffff;
+  border: 1px solid #808080;
+  padding: 4px 8px;
+  box-shadow:
+    inset -1px -1px #dfdfdf,
+    inset 1px 1px #808080;
+}
+
+.message-content pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message-content code {
+  font-size: 10px;
+}

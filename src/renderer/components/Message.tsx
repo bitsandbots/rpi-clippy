@@ -15,6 +15,7 @@ export function Message({ message }: { message: Message }) {
   return (
     <div
       className="message"
+      data-sender={message.sender}
       style={{ display: "flex", alignItems: "flex-start" }}
     >
       <img
