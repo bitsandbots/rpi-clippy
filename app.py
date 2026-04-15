@@ -319,7 +319,10 @@ def set_ollama_url():
         return jsonify({"error": "url required"}), 400
     get_settings().set("ollamaUrl", url)
     set_ollama_base(url)
-    return jsonify({"status": "ok", "url": url})
+    # Refresh model cache for new server and return updated state
+    svc = get_ollama_service()
+    svc.refresh_available()
+    return jsonify({"status": "ok", "url": url, "models": svc.get_model_state()})
 
 
 @app.route("/api/ollama/discover")

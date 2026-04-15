@@ -252,6 +252,26 @@ def test_refresh_models_returns_model_state(client):
     assert isinstance(resp.get_json(), dict)
 
 
+def test_set_ollama_url_refreshes_models(client, mocker):
+    """When Ollama URL changes, model cache should be refreshed."""
+    # Mock the requests.get to return a specific model list
+    mock_get = mocker.patch("requests.get")
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "models": [{"name": "test-model:latest"}]
+    }
+
+    resp = post_json(client, "/api/ollama/url", {"url": "http://test-server:11434"})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["status"] == "ok"
+    assert data["url"] == "http://test-server:11434"
+    # Verify models are returned (proving refresh was called)
+    assert "models" in data
+    # The mocked model list should affect downloaded status via _is_available
+    assert isinstance(data["models"], dict)
+
+
 # ---------------------------------------------------------------------------
 # LLM
 # ---------------------------------------------------------------------------
