@@ -1,0 +1,339 @@
+/**
+ * Win95Expressive.css — Expressive Maximalist Theme
+ *
+ * Late-90s internet aesthetic: brighter colors, more personality,
+ * animated cursor trails, playful hover states, rainbow accents.
+ * ICQ/AIM-inspired chat vibes with Clippy personality.
+ */
+
+/* ============================================================================
+   COLOR SCHEME — Bright, expressive palette
+   ============================================================================ */
+
+:root {
+  --expressive-primary: #ff6b00;
+  --expressive-secondary: #00c8ff;
+  --expressive-accent: #ff00ff;
+  --expressive-success: #00ff00;
+  --expressive-warning: #ffff00;
+  --expressive-danger: #ff0000;
+  --expressive-rainbow-1: #ff0000;
+  --expressive-rainbow-2: #ff8800;
+  --expressive-rainbow-3: #ffff00;
+  --expressive-rainbow-4: #00ff00;
+  --expressive-rainbow-5: #0088ff;
+  --expressive-rainbow-6: #8800ff;
+}
+
+/* ============================================================================
+   TITLE BAR — Rainbow gradient on focus
+   ============================================================================ */
+
+.bubble-container.expressive .title-bar {
+  background: linear-gradient(
+    90deg,
+    var(--expressive-rainbow-1) 0%,
+    var(--expressive-rainbow-2) 16%,
+    var(--expressive-rainbow-3) 33%,
+    var(--expressive-rainbow-4) 50%,
+    var(--expressive-rainbow-5) 66%,
+    var(--expressive-rainbow-6) 83%,
+    var(--expressive-rainbow-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: rainbowShift 3s linear infinite;
+}
+
+@keyframes rainbowShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Inactive — still colorful */
+.bubble-container.expressive:not(:focus-within) .title-bar {
+  background: linear-gradient(90deg, #404040, #606060);
+  opacity: 0.8;
+}
+
+/* Activity pulse — strobe effect */
+.bubble-container.expressive.activity-pulse .title-bar {
+  animation: rainbowShift 0.5s linear infinite, strobePulse 0.3s ease-in-out infinite;
+}
+
+@keyframes strobePulse {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.5) saturate(1.3); }
+}
+
+/* ============================================================================
+   TITLE BAR BUTTONS — Glowing hover
+   ============================================================================ */
+
+.bubble-container.expressive .title-bar-controls button:hover {
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff,
+    0 0 10px var(--expressive-primary);
+  filter: brightness(1.2);
+}
+
+.bubble-container.expressive .title-bar-controls button:not([aria-label]) {
+  background: linear-gradient(180deg, #ff8c00, #ff6b00);
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+/* ============================================================================
+   MESSAGES — AIM/ICQ chat bubble style
+   ============================================================================ */
+
+.bubble-container.expressive .message {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Clippy messages — bright yellow with sparkle */
+.bubble-container.expressive .message[data-sender="clippy"] .message-content {
+  background: linear-gradient(135deg, #ffff00, #ffcc00);
+  border: 3px solid var(--expressive-primary);
+  border-radius: 12px 12px 12px 0;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  padding: 12px 16px;
+}
+
+/* Sparkle effect on Clippy messages */
+.bubble-container.expressive .message[data-sender="clippy"] .message-content::before {
+  content: "✨";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  animation: sparkleRotate 2s ease-in-out infinite;
+}
+
+@keyframes sparkleRotate {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+}
+
+/* User messages — blue gradient */
+.bubble-container.expressive .message[data-sender="user"] .message-content {
+  background: linear-gradient(135deg, #00c8ff, #0088ff);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px 12px 0 12px;
+  box-shadow: 0 4px 8px rgba(0, 136, 255, 0.3);
+  padding: 12px 16px;
+}
+
+/* ============================================================================
+   BUTTONS — Neon glow on hover
+   ============================================================================ */
+
+.bubble-container.expressive button:not(:disabled):hover {
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff,
+    0 0 15px var(--expressive-secondary);
+}
+
+.bubble-container.expressive button:not(:disabled):active {
+  transform: scale(0.98);
+  box-shadow:
+    inset -1px -1px #dfdfdf,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #ffffff,
+    inset 2px 2px #808080,
+    0 0 20px var(--expressive-primary);
+}
+
+/* Primary action buttons */
+.bubble-container.expressive button.primary,
+.bubble-container.expressive .chat-container button:last-child {
+  background: linear-gradient(180deg, var(--expressive-primary), #cc5500);
+  color: #ffffff;
+  border: none;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================================
+   INPUT FIELDS — Glowing focus
+   ============================================================================ */
+
+.bubble-container.expressive textarea:focus,
+.bubble-container.expressive input:focus {
+  border: 2px solid var(--expressive-secondary);
+  box-shadow:
+    inset -1px -1px #dfdfdf,
+    inset 1px 1px #808080,
+    0 0 15px rgba(0, 200, 255, 0.3);
+}
+
+/* ============================================================================
+   STATUS BAR — Gradient background
+   ============================================================================ */
+
+.bubble-container.expressive .status-bar {
+  background: linear-gradient(180deg, #e0e0e0, #c0c0c0);
+  border-top: 2px solid var(--expressive-primary);
+}
+
+.bubble-container.expressive .status-bar-field:first-child {
+  color: var(--expressive-primary);
+  font-weight: bold;
+}
+
+/* ============================================================================
+   WELCOME MESSAGE — Party mode
+   ============================================================================ */
+
+.bubble-container.expressive .welcome-message {
+  background: linear-gradient(135deg, #ffff00, #00ff00, #00ffff, #ff00ff);
+  background-size: 400% 400%;
+  animation: gradientShift 5s ease-in-out infinite;
+  border: 3px solid var(--expressive-primary);
+  border-radius: 8px;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bubble-container.expressive .welcome-message::before {
+  content: "🎉";
+  font-size: 24px;
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ============================================================================
+   CHAT INPUT — Neon border animation
+   ============================================================================ */
+
+.bubble-container.expressive .chat-container textarea {
+  border: 2px solid transparent;
+  background: linear-gradient(#ffffff, #ffffff) padding-box,
+              linear-gradient(90deg, var(--expressive-rainbow-1), var(--expressive-rainbow-3), var(--expressive-rainbow-5)) border-box;
+  animation: borderRainbow 3s linear infinite;
+}
+
+@keyframes borderRainbow {
+  0% { border-color: var(--expressive-rainbow-1); }
+  16% { border-color: var(--expressive-rainbow-2); }
+  33% { border-color: var(--expressive-rainbow-3); }
+  50% { border-color: var(--expressive-rainbow-4); }
+  66% { border-color: var(--expressive-rainbow-5); }
+  83% { border-color: var(--expressive-rainbow-6); }
+  100% { border-color: var(--expressive-rainbow-1); }
+}
+
+/* ============================================================================
+   SETTINGS TABS — Colorful active state
+   ============================================================================ */
+
+.bubble-container.expressive menu[role="tablist"] > li[aria-selected="true"] {
+  background: linear-gradient(180deg, var(--expressive-secondary), #0088cc);
+  color: #ffffff;
+}
+
+.bubble-container.expressive menu[role="tablist"] > li[aria-selected="true"] a {
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================================
+   PROGRESS BAR — Animated rainbow
+   ============================================================================ */
+
+.bubble-container.expressive .progress-bar-fill {
+  background: linear-gradient(
+    90deg,
+    var(--expressive-rainbow-1),
+    var(--expressive-rainbow-2),
+    var(--expressive-rainbow-3),
+    var(--expressive-rainbow-4),
+    var(--expressive-rainbow-5),
+    var(--expressive-rainbow-6)
+  );
+  background-size: 100px 100%;
+  animation: progressRainbow 1s linear infinite;
+}
+
+@keyframes progressRainbow {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 0; }
+}
+
+/* ============================================================================
+   CURSOR TRAIL — Playful cursor effect (CSS only approximation)
+   ============================================================================ */
+
+.bubble-container.expressive {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='8' cy='8' r='4' fill='%23ff6b00'/%3E%3C/svg%3E"), auto;
+}
+
+/* ============================================================================
+   TYPING INDICATOR — Bouncing letters
+   ============================================================================ */
+
+.bubble-container.expressive .typing-indicator {
+  background: linear-gradient(135deg, #ffff00, #ffcc00);
+  border-radius: 12px;
+}
+
+.bubble-container.expressive .typing-indicator span {
+  background: var(--expressive-primary);
+  animation: bounceType 0.6s ease-in-out infinite;
+}
+
+@keyframes bounceType {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ============================================================================
+   SCROLLBAR — Colorful
+   ============================================================================ */
+
+.bubble-container.expressive .window-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--expressive-secondary), var(--expressive-primary));
+}
+
+/* ============================================================================
+   ACCESSIBILITY — Still respect reduced motion
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-container.expressive .title-bar,
+  .bubble-container.expressive .welcome-message,
+  .bubble-container.expressive .chat-container textarea {
+    animation: none;
+  }
+
+  .bubble-container.expressive .message {
+    animation: none;
+  }
+}

@@ -6,6 +6,7 @@ export type DefaultFont =
   | "Tahoma"
   | "System Default";
 export type DefaultFontSize = number;
+export type UITheme = "refined" | "expressive";
 
 export interface SettingsState {
   selectedModel?: string;
@@ -15,6 +16,7 @@ export interface SettingsState {
   temperature?: number;
   defaultFont: DefaultFont;
   defaultFontSize: number;
+  uiTheme: UITheme;
   ollamaUrl?: string;
 }
 
@@ -43,6 +45,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   temperature: 0.7,
   defaultFont: "Tahoma",
   defaultFontSize: 16,
+  uiTheme: "refined",
 };
 
 export const EMPTY_SHARED_STATE: SharedState = {

@@ -25,7 +25,7 @@ export const ErrorLoadModelMessageContent: React.FC<
   };
 
   return (
-    <div>
+    <div className="error-message">
       <p>
         Sadly, Clippy failed to successfully load the model. This could be an
         issue with Clippy itself, the selected model, or your system. You can

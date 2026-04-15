@@ -15,7 +15,7 @@ export const WelcomeMessageContent: React.FC = () => {
   const readyModel = Object.values(models || {}).find(isModelReady);
 
   return (
-    <div>
+    <div className="welcome-message">
       <strong>Welcome to Clippy!</strong>
       <p>
         This little app is a love letter and homage to the late, great Clippy,
@@ -41,7 +41,7 @@ export const WelcomeMessageContent: React.FC = () => {
       </p>
 
       {downloadingModel && (
-        <div style={{ marginTop: "15px", marginBottom: "15px" }}>
+        <div className="download-progress">
           <p>
             Downloading {downloadingModel.name}... (
             {prettyDownloadSpeed(
@@ -56,11 +56,8 @@ export const WelcomeMessageContent: React.FC = () => {
       )}
 
       {!downloadingModel && readyModel && (
-        <div style={{ marginTop: "15px", marginBottom: "15px" }}>
-          <p style={{ color: "green", fontWeight: "bold" }}>
-            ✓ {readyModel.name} is ready! You can now start chatting with
-            Clippy.
-          </p>
+        <div className="success-message">
+          {readyModel.name} is ready! You can now start chatting with Clippy.
         </div>
       )}
 

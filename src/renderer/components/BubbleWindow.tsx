@@ -6,10 +6,14 @@ import { useBubbleView } from "../contexts/BubbleViewContext";
 import { Chats } from "./Chats";
 import { useChat } from "../contexts/ChatContext";
 import { StatusBar } from "./StatusBar";
+import { useSharedState } from "../contexts/SharedStateContext";
 
 export function Bubble() {
   const { currentView, setCurrentView } = useBubbleView();
   const { setIsChatWindowOpen, status } = useChat();
+  const { settings } = useSharedState();
+
+  const themeClass = settings.uiTheme === "expressive" ? "expressive" : "";
 
   const containerStyle = {
     width: "calc(100% - 6px)",
@@ -64,7 +68,7 @@ export function Bubble() {
 
   return (
     <div
-      className={`bubble-container window${isActivityPulse ? " activity-pulse" : ""}`}
+      className={`bubble-container window${isActivityPulse ? " activity-pulse" : ""}${themeClass ? ` ${themeClass}` : ""}`}
       style={{
         ...containerStyle,
         display: "flex",

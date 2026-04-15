@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS } from "../../sharedState";
 import { clippyApi } from "../clippyApi";
 import { useSharedState } from "../contexts/SharedStateContext";
+import { UITheme } from "../../sharedState";
 
 export const SettingsAppearance: React.FC = () => {
   const { settings } = useSharedState();
@@ -12,16 +13,37 @@ export const SettingsAppearance: React.FC = () => {
     }
   };
 
+  const onChangeTheme = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    clippyApi.setState("settings.uiTheme", event.target.value as UITheme);
+  };
+
   const onReset = () => {
     clippyApi.setState("settings.defaultFont", DEFAULT_SETTINGS.defaultFont);
     clippyApi.setState(
       "settings.defaultFontSize",
       DEFAULT_SETTINGS.defaultFontSize,
     );
+    clippyApi.setState("settings.uiTheme", DEFAULT_SETTINGS.uiTheme);
   };
 
   return (
     <div>
+      <fieldset>
+        <legend>Appearance</legend>
+        <div className="field-row">
+          <label htmlFor="uiTheme" style={{ width: 80 }}>
+            Theme:
+          </label>
+          <select
+            id="uiTheme"
+            value={settings.uiTheme || "refined"}
+            onChange={onChangeTheme}
+          >
+            <option value="refined">Refined Authentic</option>
+            <option value="expressive">Expressive Maximalist</option>
+          </select>
+        </div>
+      </fieldset>
       <fieldset>
         <legend>Font Options</legend>
         <div className="field-row">

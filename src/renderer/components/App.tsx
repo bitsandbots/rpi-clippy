@@ -3,6 +3,7 @@ import "../../../node_modules/98.css/dist/98.css";
 import "./css/98.extended.css";
 import "./css/Theme.css";
 import "./css/Win95Enhanced.css";
+import "./css/Win95Expressive.css";
 
 import { Clippy } from "./Clippy";
 import { ChatProvider } from "../contexts/ChatContext";
@@ -60,15 +61,17 @@ function ClippyLayout() {
 
 function ClippyRoot({ children }: { children: React.ReactNode }) {
   const { settings } = useSharedState();
+  const themeClass = settings.uiTheme === "expressive" ? "theme-expressive" : "";
   return (
     <div
-      className="clippy"
+      className={`clippy ${themeClass}`}
       style={
         {
           "--font-size": `${settings.defaultFontSize}px`,
         } as React.CSSProperties
       }
       data-font={settings.defaultFont}
+      data-theme={settings.uiTheme}
     >
       {children}
     </div>
