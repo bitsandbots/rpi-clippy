@@ -241,12 +241,25 @@ curl http://localhost:5080/api/ollama/status
 
 #### POST `/api/ollama/url`
 
-Change the Ollama base URL.
+Change the Ollama base URL. Refreshes model cache and returns updated model state.
 
 ```bash
 curl -X POST http://localhost:5080/api/ollama/url \
   -H "Content-Type: application/json" \
   -d '{"url": "http://remote-host:11434"}'
+```
+
+**Response**:
+
+```json
+{
+  "status": "ok",
+  "url": "http://remote-host:11434",
+  "models": {
+    "Gemma 3 (1B)": { "downloaded": true, ... },
+    "Phi-4 Mini (3.8B)": { "downloaded": false, ... }
+  }
+}
 ```
 
 #### GET `/api/ollama/discover`
