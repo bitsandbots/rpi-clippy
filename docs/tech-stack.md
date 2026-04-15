@@ -15,11 +15,11 @@
 
 ### Development Tools
 
-| Tool                 | Purpose                          |
-| -------------------- | -------------------------------- |
-| Prettier             | Code formatting (.ts, .tsx)      |
-| jsdom                | Headless browser testing         |
-| @vitejs/plugin-react | Vite React/JSX transform plugin  |
+| Tool                 | Purpose                         |
+| -------------------- | ------------------------------- |
+| Prettier             | Code formatting (.ts, .tsx)     |
+| jsdom                | Headless browser testing        |
+| @vitejs/plugin-react | Vite React/JSX transform plugin |
 
 ## Backend (Python)
 

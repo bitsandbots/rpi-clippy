@@ -10,9 +10,10 @@ export function StatusBar() {
   const { settings } = useSharedState();
 
   const statusText = getStatusText(status, isModelLoaded);
-  const modelText = isModelLoaded && settings.selectedModel
-    ? settings.selectedModel
-    : "No model";
+  const modelText =
+    isModelLoaded && settings.selectedModel
+      ? settings.selectedModel
+      : "No model";
 
   return (
     <div className="status-bar" style={{ marginTop: "auto" }}>
@@ -27,10 +28,7 @@ export function StatusBar() {
   );
 }
 
-function getStatusText(
-  status: string,
-  isLoaded: boolean,
-): string {
+function getStatusText(status: string, isLoaded: boolean): string {
   if (!isLoaded) return "Loading model...";
   switch (status) {
     case "thinking":

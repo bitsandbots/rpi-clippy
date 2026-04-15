@@ -61,7 +61,8 @@ function ClippyLayout() {
 
 function ClippyRoot({ children }: { children: React.ReactNode }) {
   const { settings } = useSharedState();
-  const themeClass = settings.uiTheme === "expressive" ? "theme-expressive" : "";
+  const themeClass =
+    settings.uiTheme === "expressive" ? "theme-expressive" : "";
   return (
     <div
       className={`clippy ${themeClass}`}

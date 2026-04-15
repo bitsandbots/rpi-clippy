@@ -49,8 +49,7 @@
     inset 1px 1px #dfdfdf,
     inset -2px -2px #808080,
     inset 2px 2px #ffffff,
-    /* Drop shadow — authentic Win95 window shadow */
-    2px 2px 0 #000000;
+    /* Drop shadow — authentic Win95 window shadow */ 2px 2px 0 #000000;
 }
 
 /* ============================================================================
@@ -58,12 +57,7 @@
    ============================================================================ */
 
 .title-bar {
-  background: linear-gradient(
-    90deg,
-    #000080 0%,
-    #1084d0 50%,
-    #000080 100%
-  );
+  background: linear-gradient(90deg, #000080 0%, #1084d0 50%, #000080 100%);
   background-size: 200% 100%;
   animation: titleBarShift 8s ease-in-out infinite;
 }
@@ -79,12 +73,18 @@
 }
 
 @keyframes titleBarShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes activityPulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(1);
     background: linear-gradient(90deg, #000080, #1084d0, #000080);
   }
@@ -310,8 +310,13 @@ menu[role="tablist"] > li[aria-selected="true"] {
 }
 
 @keyframes clippyIdle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.01); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.01);
+  }
 }
 
 /* ============================================================================
@@ -370,7 +375,8 @@ menu[role="tablist"] > li[aria-selected="true"] {
 
 fieldset {
   padding: 12px;
-  border-image: url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h5v5H0V2h2v1h1V2H0' fill='%23ffffff'/%3E%3Cpath d='M0 0h4v4H0V1h1v2h2V1H0' fill='%23808080'/%3E%3C/svg%3E") 2;
+  border-image: url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h5v5H0V2h2v1h1V2H0' fill='%23ffffff'/%3E%3Cpath d='M0 0h4v4H0V1h1v2h2V1H0' fill='%23808080'/%3E%3C/svg%3E")
+    2;
 }
 
 .field-row {
@@ -391,8 +397,12 @@ input[type="range"] {
    ============================================================================ */
 
 @keyframes progressStripe {
-  0% { background-position: 0 0; }
-  100% { background-position: 16px 0; }
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 16px 0;
+  }
 }
 
 .progress-indicator {
@@ -469,7 +479,9 @@ input[type="range"] {
 }
 
 .title-bar-controls button:not([aria-label]):hover {
-  text-shadow: 0 0 #ffffff, 0 0 2px rgba(255, 255, 255, 0.5);
+  text-shadow:
+    0 0 #ffffff,
+    0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 /* ============================================================================
@@ -502,8 +514,13 @@ input[type="range"] {
    ============================================================================ */
 
 @keyframes hourglassBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .loading-indicator {
@@ -566,8 +583,13 @@ input[type="range"] {
 }
 
 @keyframes recordingPulse {
-  0%, 100% { background: #c00000; }
-  50% { background: #800000; }
+  0%,
+  100% {
+    background: #c00000;
+  }
+  50% {
+    background: #800000;
+  }
 }
 
 /* ============================================================================
@@ -628,8 +650,7 @@ input[type="range"] {
   box-shadow:
     inset -1px -1px #808080,
     inset 1px 1px #ffffff,
-    /* Outer drop shadow */
-    3px 3px 0 rgba(0, 0, 0, 0.3);
+    /* Outer drop shadow */ 3px 3px 0 rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
@@ -763,8 +784,12 @@ input[type="range"] {
 }
 
 @keyframes win95Spinner {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -775,7 +800,9 @@ input[type="range"] {
 
 /* Authentic Win95 hourglass cursor */
 .loading-cursor {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='0' y='0' width='16' height='16' fill='%23c0c0c0'/%3E%3Crect x='1' y='1' width='14' height='14' fill='%23ffffff'/%3E%3Crect x='2' y='2' width='12' height='12' fill='%23000080'/%3E%3C/svg%3E"), wait;
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='0' y='0' width='16' height='16' fill='%23c0c0c0'/%3E%3Crect x='1' y='1' width='14' height='14' fill='%23ffffff'/%3E%3Crect x='2' y='2' width='12' height='12' fill='%23000080'/%3E%3C/svg%3E"),
+    wait;
 }
 
 /* ============================================================================
@@ -794,12 +821,7 @@ input[type="range"] {
 }
 
 .progress-bar-fill {
-  background: linear-gradient(
-    90deg,
-    #000080 0%,
-    #1084d0 50%,
-    #000080 100%
-  );
+  background: linear-gradient(90deg, #000080 0%, #1084d0 50%, #000080 100%);
   background-size: 16px 100%;
   height: 100%;
   animation: progressStripe 0.5s linear infinite;
@@ -813,7 +835,9 @@ input[type="range"] {
   font-size: 10px;
   font-weight: bold;
   color: #000000;
-  text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff;
+  text-shadow:
+    1px 1px 0 #ffffff,
+    -1px -1px 0 #ffffff;
 }
 
 /* ============================================================================
@@ -873,6 +897,13 @@ input[type="range"] {
 }
 
 @keyframes typingDot {
-  0%, 100% { opacity: 0.3; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-2px); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
