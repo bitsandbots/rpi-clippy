@@ -20,15 +20,74 @@ def set_ollama_base(url: str) -> None:
     global OLLAMA_BASE
     OLLAMA_BASE = url.rstrip("/")
 
+
 BUILT_IN_MODELS = [
-    {"name": "Gemma 3 (1B)",       "company": "Google",    "size": 806,  "ollamaTag": "gemma3:1b"},
-    {"name": "Gemma 3 (4B)",       "company": "Google",    "size": 2490, "ollamaTag": "gemma3:4b"},
-    {"name": "Gemma 3 (12B)",      "company": "Google",    "size": 5600, "ollamaTag": "gemma3:12b"},
-    {"name": "Phi-4 Mini (3.8B)",  "company": "Microsoft", "size": 2490, "ollamaTag": "phi4-mini"},
-    {"name": "Qwen3 (4B)",         "company": "Qwen",      "size": 2500, "ollamaTag": "qwen3:4b"},
-    {"name": "Llama 3.2 (1B Instruct)", "company": "Meta", "size": 808,  "ollamaTag": "llama3.2:1b"},
-    {"name": "Llama 3.2 (3B Instruct)", "company": "Meta", "size": 2020, "ollamaTag": "llama3.2:3b"},
-    {"name": "TinyLlama (1.1B)",   "company": "TinyLlama", "size": 637,  "ollamaTag": "tinyllama"},
+    {
+        "name": "Gemma 3 (1B)",
+        "company": "Google",
+        "size": 806,
+        "ollamaTag": "gemma3:1b",
+    },
+    {
+        "name": "Gemma 3 (4B)",
+        "company": "Google",
+        "size": 2490,
+        "ollamaTag": "gemma3:4b-Q4_K_M",
+    },
+    {
+        "name": "Gemma 3 (12B)",
+        "company": "Google",
+        "size": 5600,
+        "ollamaTag": "gemma3:12b",
+    },
+    {
+        "name": "Phi-4 Mini (3.8B)",
+        "company": "Microsoft",
+        "size": 2490,
+        "ollamaTag": "phi4-mini",
+    },
+    {
+        "name": "Qwen3 (4B)",
+        "company": "Qwen",
+        "size": 2500,
+        "ollamaTag": "qwen3:4b-Q4_K_M",
+    },
+    {
+        "name": "Llama 3.2 (1B Instruct)",
+        "company": "Meta",
+        "size": 808,
+        "ollamaTag": "llama3.2:1b",
+    },
+    {
+        "name": "Llama 3.2 (3B Instruct)",
+        "company": "Meta",
+        "size": 2020,
+        "ollamaTag": "llama3.2:3b",
+    },
+    {
+        "name": "TinyLlama (1.1B)",
+        "company": "TinyLlama",
+        "size": 637,
+        "ollamaTag": "tinyllama",
+    },
+    {
+        "name": "Llama 3.1 (8B Instruct)",
+        "company": "Meta",
+        "size": 8060,
+        "ollamaTag": "llama3.1:8b-instruct-q8_0",
+    },
+    {
+        "name": "Qwen2.5 Coder (0.5B)",
+        "company": "Qwen",
+        "size": 500,
+        "ollamaTag": "qwen2.5-coder:0.5b",
+    },
+    {
+        "name": "Qwen3 (1.7B)",
+        "company": "Qwen",
+        "size": 1700,
+        "ollamaTag": "qwen3:1.7b",
+    },
 ]
 
 
@@ -98,11 +157,27 @@ class OllamaService:
             temperature = float(session.get("temperature", 0.7))
             top_k = int(session.get("topK", 10))
 
+            # Format prompt with conversation history for generate endpoint
+            # Ollama's /api/generate expects a single prompt string
+            prompt_lines = []
+            if system_prompt:
+                prompt_lines.append(f"System: {system_prompt}")
+            for msg in history_snapshot:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                if content:
+                    if role == "assistant":
+                        prompt_lines.append(f"Assistant: {content}")
+                    else:
+                        prompt_lines.append(f"User: {content}")
+            prompt_lines.append(f"User: {message}")
+            prompt = "\n\n".join(prompt_lines)
+
             resp = requests.post(
-                f"{OLLAMA_BASE}/api/chat",
+                f"{OLLAMA_BASE}/api/generate",
                 json={
                     "model": ollama_tag,
-                    "messages": messages,
+                    "prompt": prompt,
                     "stream": True,
                     "options": {
                         "temperature": temperature,
@@ -123,7 +198,10 @@ class OllamaService:
                     continue
                 data_json = json.loads(raw)
                 if not data_json.get("done"):
-                    chunk = data_json.get("message", {}).get("content", "")
+                    # Ollama returns "response" for text and "thinking" for thinking
+                    chunk = data_json.get("response", "") or data_json.get(
+                        "thinking", ""
+                    )
                     if chunk:
                         full_response += chunk
                         yield {"type": "chunk", "uuid": uuid, "text": chunk}
@@ -131,9 +209,11 @@ class OllamaService:
             if not abort_event.is_set():
                 with self._history_lock:
                     self._history.append({"role": "user", "content": message})
-                    self._history.append({"role": "assistant", "content": full_response})
+                    self._history.append(
+                        {"role": "assistant", "content": full_response}
+                    )
                     if len(self._history) > self._MAX_HISTORY:
-                        self._history = self._history[-self._MAX_HISTORY:]
+                        self._history = self._history[-self._MAX_HISTORY :]
 
             yield {"type": "done", "uuid": uuid}
 
@@ -166,7 +246,9 @@ class OllamaService:
 
     def _is_available(self, tag: str) -> bool:
         base = tag.split(":")[0]
-        return tag in self._available or any(m.startswith(base) for m in self._available)
+        return tag in self._available or any(
+            m.startswith(base) for m in self._available
+        )
 
     def get_model_state(self) -> dict:
         """Return a ModelState dict (name → ManagedModel) for the renderer."""
@@ -188,7 +270,9 @@ class OllamaService:
         """
         model = next((m for m in BUILT_IN_MODELS if m["name"] == name), None)
         if not model:
-            self._broadcast_pull({"type": "pull_error", "tag": name, "error": "Unknown model"})
+            self._broadcast_pull(
+                {"type": "pull_error", "tag": name, "error": "Unknown model"}
+            )
             return
 
         tag = model["ollamaTag"]
@@ -206,14 +290,16 @@ class OllamaService:
                     continue
                 data = json.loads(raw)
                 status = data.get("status", "")
-                self._broadcast_pull({
-                    "type": "pull_progress",
-                    "tag": tag,
-                    "status": status,
-                    "total": data.get("total", 0),
-                    "completed": data.get("completed", 0),
-                    "elapsed": round(time.time() - start, 1),
-                })
+                self._broadcast_pull(
+                    {
+                        "type": "pull_progress",
+                        "tag": tag,
+                        "status": status,
+                        "total": data.get("total", 0),
+                        "completed": data.get("completed", 0),
+                        "elapsed": round(time.time() - start, 1),
+                    }
+                )
                 if status == "success":
                     break
             self._available.add(tag)
@@ -225,7 +311,9 @@ class OllamaService:
         """Delete an Ollama model by display name."""
         model = next((m for m in BUILT_IN_MODELS if m["name"] == name), None)
         tag = model["ollamaTag"] if model else name
-        resp = requests.delete(f"{OLLAMA_BASE}/api/delete", json={"name": tag}, timeout=30)
+        resp = requests.delete(
+            f"{OLLAMA_BASE}/api/delete", json={"name": tag}, timeout=30
+        )
         resp.raise_for_status()
         self._available.discard(tag)
 
@@ -241,7 +329,9 @@ class OllamaService:
             tag = model["ollamaTag"]
             if self._is_available(tag):
                 try:
-                    requests.delete(f"{OLLAMA_BASE}/api/delete", json={"name": tag}, timeout=30)
+                    requests.delete(
+                        f"{OLLAMA_BASE}/api/delete", json={"name": tag}, timeout=30
+                    )
                 except Exception:
                     pass
         self._available.clear()

@@ -17,6 +17,7 @@ _original_refresh_bg = OllamaService._refresh_available_bg
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_service() -> OllamaService:
     """Return a fresh OllamaService (background refresh already patched to no-op)."""
     return OllamaService()
@@ -25,6 +26,7 @@ def make_service() -> OllamaService:
 def _streaming_response(lines: list[dict]):
     """Build a mock requests.Response whose iter_lines yields encoded JSON."""
     from unittest.mock import MagicMock
+
     resp = MagicMock()
     resp.iter_lines.return_value = [json.dumps(line).encode() for line in lines]
     return resp
@@ -33,6 +35,7 @@ def _streaming_response(lines: list[dict]):
 # ---------------------------------------------------------------------------
 # Session management
 # ---------------------------------------------------------------------------
+
 
 def test_create_session_stores_options():
     svc = make_service()
@@ -51,23 +54,27 @@ def test_destroy_session_clears_state():
 
 def test_create_session_seeds_history():
     svc = make_service()
-    svc.create_session({
-        "ollamaTag": "tinyllama",
-        "initialPrompts": [
-            {"role": "user", "content": "Hi"},
-            {"role": "assistant", "content": "Hello"},
-        ],
-    })
+    svc.create_session(
+        {
+            "ollamaTag": "tinyllama",
+            "initialPrompts": [
+                {"role": "user", "content": "Hi"},
+                {"role": "assistant", "content": "Hello"},
+            ],
+        }
+    )
     assert len(svc._history) == 2
     assert svc._history[0] == {"role": "user", "content": "Hi"}
 
 
 def test_create_session_skips_empty_prompts():
     svc = make_service()
-    svc.create_session({
-        "ollamaTag": "tinyllama",
-        "initialPrompts": [{"role": "user", "content": ""}],
-    })
+    svc.create_session(
+        {
+            "ollamaTag": "tinyllama",
+            "initialPrompts": [{"role": "user", "content": ""}],
+        }
+    )
     assert svc._history == []
 
 
@@ -81,6 +88,7 @@ def test_destroy_clears_history():
 # ---------------------------------------------------------------------------
 # Model state
 # ---------------------------------------------------------------------------
+
 
 def test_get_model_state_returns_all_builtin_models():
     svc = make_service()
@@ -150,12 +158,16 @@ def test_refresh_available_silent_on_connection_error(mocker):
 # Streaming inference
 # ---------------------------------------------------------------------------
 
+
 def test_prompt_streaming_yields_chunks(mocker):
-    mock_resp = _streaming_response([
-        {"done": False, "message": {"role": "assistant", "content": "Hello"}},
-        {"done": False, "message": {"role": "assistant", "content": " world"}},
-        {"done": True},
-    ])
+    # Ollama /api/generate uses "response" field instead of "message.content"
+    mock_resp = _streaming_response(
+        [
+            {"done": False, "response": "Hello"},
+            {"done": False, "response": " world"},
+            {"done": True},
+        ]
+    )
     mocker.patch("requests.post", return_value=mock_resp)
 
     svc = make_service()
@@ -174,10 +186,13 @@ def test_prompt_streaming_yields_chunks(mocker):
 
 
 def test_prompt_streaming_appends_history(mocker):
-    mock_resp = _streaming_response([
-        {"done": False, "message": {"role": "assistant", "content": "Hi"}},
-        {"done": True},
-    ])
+    # Ollama /api/generate uses "response" field
+    mock_resp = _streaming_response(
+        [
+            {"done": False, "response": "Hi"},
+            {"done": True},
+        ]
+    )
     mocker.patch("requests.post", return_value=mock_resp)
 
     svc = make_service()
@@ -191,9 +206,10 @@ def test_prompt_streaming_appends_history(mocker):
 
 def test_prompt_streaming_abort_skips_history(mocker):
     """Aborting mid-stream means history is NOT appended."""
+    # Ollama /api/generate uses "response" field
     lines = [
-        {"done": False, "message": {"role": "assistant", "content": "A"}},
-        {"done": False, "message": {"role": "assistant", "content": "B"}},
+        {"done": False, "response": "A"},
+        {"done": False, "response": "B"},
         {"done": True},
     ]
     mock_resp = _streaming_response(lines)
@@ -203,9 +219,9 @@ def test_prompt_streaming_abort_skips_history(mocker):
     svc.create_session({"ollamaTag": "tinyllama"})
 
     gen = svc.prompt_streaming("test", "abort-uuid")
-    next(gen)           # consume first chunk
-    svc.abort("abort-uuid")   # set abort event
-    list(gen)           # exhaust generator
+    next(gen)  # consume first chunk
+    svc.abort("abort-uuid")  # set abort event
+    list(gen)  # exhaust generator
 
     assert svc._history == []
 
@@ -223,7 +239,7 @@ def test_prompt_streaming_error_yields_error_event(mocker):
 
 
 def test_prompt_streaming_uses_system_prompt(mocker):
-    """System prompt should be prepended as the first message."""
+    """System prompt should be included in the prompt string."""
     mock_resp = _streaming_response([{"done": True}])
     mock_post = mocker.patch("requests.post", return_value=mock_resp)
 
@@ -232,12 +248,14 @@ def test_prompt_streaming_uses_system_prompt(mocker):
     list(svc.prompt_streaming("hi", "uuid-sys"))
 
     call_body = mock_post.call_args[1]["json"]
-    assert call_body["messages"][0] == {"role": "system", "content": "Be concise."}
+    # Ollama /api/generate uses "prompt" with formatted conversation
+    assert "System: Be concise." in call_body["prompt"]
 
 
 # ---------------------------------------------------------------------------
 # Abort
 # ---------------------------------------------------------------------------
+
 
 def test_abort_unknown_uuid_is_noop():
     svc = make_service()
@@ -247,6 +265,7 @@ def test_abort_unknown_uuid_is_noop():
 # ---------------------------------------------------------------------------
 # Pull SSE fan-out
 # ---------------------------------------------------------------------------
+
 
 def test_subscribe_returns_queue():
     svc = make_service()
@@ -296,6 +315,7 @@ def test_pull_model_unknown_name_broadcasts_error():
 # ---------------------------------------------------------------------------
 # Model deletion
 # ---------------------------------------------------------------------------
+
 
 def test_delete_model_removes_from_available(mocker):
     mock_resp = mocker.MagicMock()
