@@ -196,7 +196,10 @@ class OllamaService:
                     break
                 if not raw:
                     continue
-                data_json = json.loads(raw)
+                try:
+                    data_json = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
                 if not data_json.get("done"):
                     # Ollama returns "response" for text and "thinking" for thinking
                     chunk = data_json.get("response", "") or data_json.get(

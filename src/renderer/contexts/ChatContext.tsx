@@ -155,8 +155,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         initialPrompts,
       };
 
-      console.log("Loading model with options:", options);
-
       try {
         await electronAi.create(options);
         setIsModelLoaded(true);
