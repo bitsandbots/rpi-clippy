@@ -7,7 +7,7 @@
 import type { SharedState } from "../sharedState";
 import type { DebugState } from "../debugState";
 import type { ChatRecord, ChatWithMessages } from "../types/interfaces";
-import type { ModelState } from "../models";
+import type { HybridModelState } from "../models";
 
 const API = "/api";
 
@@ -87,13 +87,17 @@ export async function deleteAllChats(): Promise<void> {
 // Models
 // ---------------------------------------------------------------------------
 
-export async function updateModelState(): Promise<ModelState> {
+export async function updateModelState(): Promise<HybridModelState> {
   const r = await post("/models/refresh");
   return r.json();
 }
 
 export async function downloadModelByName(name: string): Promise<void> {
   await post("/models/download", { name });
+}
+
+export async function downloadModelByTag(tag: string): Promise<void> {
+  await post("/models/download", { tag });
 }
 
 export async function deleteModelByName(name: string): Promise<boolean> {

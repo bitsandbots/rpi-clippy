@@ -21,6 +21,7 @@ import {
   deleteAllChats,
   updateModelState,
   downloadModelByName,
+  downloadModelByTag,
   deleteModelByName,
   removeModelByName,
   deleteAllModels,
@@ -536,5 +537,23 @@ describe("subscribePullProgress", () => {
     const es = MockEventSource.instances[0];
     unsubscribe();
     expect(es.readyState).toBe(2); // CLOSED
+  });
+});
+
+// ---------------------------------------------------------------------------
+// downloadModelByTag
+// ---------------------------------------------------------------------------
+
+describe("downloadModelByTag", () => {
+  it("posts tag to /models/download", async () => {
+    mockFetch({ status: "ok" });
+    await downloadModelByTag("llama3.2:1b");
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/models/download",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ tag: "llama3.2:1b" }),
+      }),
+    );
   });
 });
