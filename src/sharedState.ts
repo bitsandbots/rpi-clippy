@@ -1,4 +1,4 @@
-import { ModelState } from "./models";
+import { HybridModelState } from "./models";
 
 export type DefaultFont =
   | "Pixelated MS Sans Serif"
@@ -21,7 +21,7 @@ export interface SettingsState {
 }
 
 export interface SharedState {
-  models: ModelState;
+  models: HybridModelState;
   settings: SettingsState;
 }
 
@@ -49,7 +49,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
 };
 
 export const EMPTY_SHARED_STATE: SharedState = {
-  models: {},
+  models: { catalog: {}, orphans: [] },
   settings: {
     ...DEFAULT_SETTINGS,
   },
