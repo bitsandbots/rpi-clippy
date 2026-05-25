@@ -93,37 +93,90 @@ def test_destroy_clears_history():
 def test_get_model_state_returns_all_builtin_models():
     svc = make_service()
     state = svc.get_model_state()
-    assert len(state) == len(BUILT_IN_MODELS)
-    for name, model in state.items():
+    catalog = state["catalog"]
+    assert len(catalog) == len(BUILT_IN_MODELS)
+    for name, model in catalog.items():
         assert "downloaded" in model
         assert isinstance(model["downloaded"], bool)
-        assert "ollamaTag" in model
+        assert "actualTag" in model
 
 
 def test_model_state_all_downloaded_false_when_available_empty():
     svc = make_service()
     svc._available = set()
     state = svc.get_model_state()
-    assert all(not m["downloaded"] for m in state.values())
+    catalog = state["catalog"]
+    assert all(not m["downloaded"] for m in catalog.values())
 
 
-def test_is_available_exact_match():
+def test_get_model_state_returns_hybrid_format():
     svc = make_service()
-    svc._available = {"tinyllama:latest"}
-    assert svc._is_available("tinyllama:latest") is True
+    svc._available = set()
+    state = svc.get_model_state()
+    assert "catalog" in state
+    assert "orphans" in state
+    assert isinstance(state["catalog"], dict)
+    assert isinstance(state["orphans"], list)
 
 
-def test_is_available_prefix_match():
-    svc = make_service()
-    svc._available = {"llama3.2:3b"}
-    # The built-in tag is "llama3.2:1b" — different tag, but same base prefix "llama3.2"
-    assert svc._is_available("llama3.2:1b") is True
-
-
-def test_is_available_no_match():
+def test_get_model_state_catalog_entries_have_actual_tag():
     svc = make_service()
     svc._available = {"gemma3:1b"}
-    assert svc._is_available("tinyllama") is False
+    state = svc.get_model_state()
+    gemma = state["catalog"].get("Gemma 3 (1B)")
+    assert gemma is not None
+    assert gemma["actualTag"] == "gemma3:1b"
+    assert gemma["downloaded"] is True
+
+
+def test_get_model_state_actual_tag_fallback_when_not_installed():
+    svc = make_service()
+    svc._available = set()
+    state = svc.get_model_state()
+    gemma = state["catalog"]["Gemma 3 (1B)"]
+    assert gemma["actualTag"] == gemma["ollamaTag"]
+    assert gemma["downloaded"] is False
+
+
+def test_get_model_state_orphans_from_ollama_tags():
+    svc = make_service()
+    svc._available = {"nomic-embed-text", "gemma3:1b"}
+    state = svc.get_model_state()
+    orphan_tags = [m["name"] for m in state["orphans"]]
+    assert "nomic-embed-text" in orphan_tags
+    # gemma3:1b is consumed by catalog match — not in orphans
+    assert "gemma3:1b" not in orphan_tags
+
+
+def test_get_model_state_no_orphan_duplicates():
+    """Tags matching a catalog prefix are excluded from orphans."""
+    svc = make_service()
+    svc._available = {"qwen3:4b-Q4_K_M", "qwen3:4b-Q4_K_M-40k", "gemma3:1b"}
+    state = svc.get_model_state()
+    orphan_names = [m["name"] for m in state["orphans"]]
+    assert "qwen3:4b-Q4_K_M" not in orphan_names
+    assert "qwen3:4b-Q4_K_M-40k" not in orphan_names
+    assert "gemma3:1b" not in orphan_names
+
+
+def test_get_model_state_orphans_have_minimal_fields():
+    svc = make_service()
+    svc._available = {"nomic-embed-text"}
+    state = svc.get_model_state()
+    orphan = state["orphans"][0]
+    assert orphan["name"] == "nomic-embed-text"
+    assert orphan["path"] == "nomic-embed-text"
+    assert orphan["downloaded"] is True
+    assert orphan.get("actualTag") == "nomic-embed-text"
+
+
+def test_get_model_state_empty_ollama():
+    """Empty available set produces no orphans, all catalog downloaded=false."""
+    svc = make_service()
+    svc._available = set()
+    state = svc.get_model_state()
+    assert state["orphans"] == []
+    assert all(not m["downloaded"] for m in state["catalog"].values())
 
 
 def test_refresh_available_populates_set(mocker):

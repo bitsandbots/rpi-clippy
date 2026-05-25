@@ -153,7 +153,7 @@ class OllamaService:
             messages.extend(history_snapshot)
             messages.append({"role": "user", "content": message})
 
-            ollama_tag = session.get("ollamaTag", "llama3.2:1b")
+            ollama_tag = self._resolve_tag(session.get("ollamaTag", "llama3.2:1b"))
             temperature = float(session.get("temperature", 0.7))
             top_k = int(session.get("topK", 10))
 
@@ -234,36 +234,81 @@ class OllamaService:
     # Model management
     # ------------------------------------------------------------------
 
-    def _refresh_available_bg(self) -> None:
+    def _refresh_available_bg(self, clear_on_failure: bool = False) -> None:
         try:
-            resp = requests.get(f"{OLLAMA_BASE}/api/tags", timeout=10)
+            resp = requests.get(f"{OLLAMA_BASE}/api/tags", timeout=3)
             resp.raise_for_status()
             tags = {m["name"] for m in resp.json().get("models", [])}
             self._available = tags
         except Exception:
-            pass
+            if clear_on_failure:
+                self._available = set()
 
     def refresh_available(self) -> None:
-        """Synchronously refresh the available model cache."""
-        self._refresh_available_bg()
+        """Synchronously refresh the available model cache after an explicit URL change."""
+        self._refresh_available_bg(clear_on_failure=True)
 
-    def _is_available(self, tag: str) -> bool:
+    def _resolve_tag(self, tag: str) -> str:
+        """Return the actual installed tag matching the given tag prefix.
+
+        If the exact tag exists, return it. Otherwise search available models
+        for one starting with the same base name. Falls back to the given tag.
+        """
+        if tag in self._available:
+            return tag
         base = tag.split(":")[0]
-        return tag in self._available or any(
-            m.startswith(base) for m in self._available
-        )
+        for m in self._available:
+            if m.startswith(base):
+                return m
+        return tag
 
     def get_model_state(self) -> dict:
-        """Return a ModelState dict (name → ManagedModel) for the renderer."""
-        state = {}
+        """Return {catalog: {name: ManagedModel}, orphans: [ManagedModel]}.
+
+        Catalog entries come from BUILT_IN_MODELS. Each gets an ``actualTag``
+        resolved via ``_resolve_tag()`` so the frontend always uses the correct
+        Ollama tag for inference.
+
+        Orphans are models from ``/api/tags`` that don't match any catalog entry
+        prefix. They appear as simple entries with the tag as both name and path.
+        """
+        catalog: dict[str, dict] = {}
+        matched_tags: set[str] = set()
+
         for model in BUILT_IN_MODELS:
-            tag = model["ollamaTag"]
-            state[model["name"]] = {
+            suggested_tag = model["ollamaTag"]
+            actual_tag = self._resolve_tag(suggested_tag)
+            is_downloaded = actual_tag in self._available
+            name = model["name"]
+
+            catalog[name] = {
                 **model,
-                "path": tag,
-                "downloaded": self._is_available(tag),
+                "path": suggested_tag,
+                "actualTag": actual_tag,
+                "downloaded": is_downloaded,
             }
-        return state
+            # Track all tags consumed by catalog (the actual tag and the base
+            # prefix) so we don't show them as orphans.
+            matched_tags.add(actual_tag)
+            base = suggested_tag.split(":")[0]
+            for t in self._available:
+                if t.startswith(base):
+                    matched_tags.add(t)
+
+        orphans: list[dict] = []
+        for tag in sorted(self._available):
+            if tag not in matched_tags:
+                orphans.append(
+                    {
+                        "name": tag,
+                        "path": tag,
+                        "actualTag": tag,
+                        "downloaded": True,
+                        "size": 0,
+                    }
+                )
+
+        return {"catalog": catalog, "orphans": orphans}
 
     def pull_model_by_name(self, name: str) -> None:
         """
