@@ -365,6 +365,58 @@ def test_pull_model_unknown_name_broadcasts_error():
     assert event["type"] == "pull_error"
 
 
+def test_pull_model_by_tag_starts_pull(mocker):
+    """pull_model_by_tag accepts an arbitrary tag string."""
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [
+        b'{"status":"pulling"}',
+        b'{"status":"success"}',
+    ]
+    mock_post = mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc.pull_model_by_tag("llama3.2:1b")
+
+    mock_post.assert_called_once()
+    call_body = mock_post.call_args[1]["json"]
+    assert call_body["name"] == "llama3.2:1b"
+
+
+def test_pull_model_by_tag_arbitrary_tag(mocker):
+    """Can pull tags not in BUILT_IN_MODELS."""
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [b'{"status":"success"}']
+    mock_post = mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc.pull_model_by_tag("nomic-embed-text")
+
+    call_body = mock_post.call_args[1]["json"]
+    assert call_body["name"] == "nomic-embed-text"
+
+
+def test_pull_model_by_tag_adds_to_available_on_success(mocker):
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [b'{"status":"success"}']
+    mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc._available = set()
+    svc.pull_model_by_tag("new-model:latest")
+
+    assert "new-model:latest" in svc._available
+
+
+def test_pull_model_by_tag_broadcasts_error_on_failure(mocker):
+    mocker.patch("requests.post", side_effect=ConnectionError("refused"))
+    svc = make_service()
+    q = svc.subscribe_pull_events()
+    svc.pull_model_by_tag("bad-tag")
+    event = q.get_nowait()
+    assert event["type"] == "pull_error"
+    assert event["tag"] == "bad-tag"
+
+
 # ---------------------------------------------------------------------------
 # Model deletion
 # ---------------------------------------------------------------------------

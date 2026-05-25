@@ -355,6 +355,43 @@ class OllamaService:
         except Exception as exc:
             self._broadcast_pull({"type": "pull_error", "tag": tag, "error": str(exc)})
 
+    def pull_model_by_tag(self, tag: str) -> None:
+        """
+        Pull an Ollama model by its raw tag string (e.g. "llama3.2:1b").
+        Runs in the caller's thread. Progress events broadcast to pull SSE
+        subscribers. Call from a daemon thread started by the Flask route.
+        """
+        start = time.time()
+        try:
+            resp = requests.post(
+                f"{OLLAMA_BASE}/api/pull",
+                json={"name": tag, "stream": True},
+                stream=True,
+                timeout=3600,
+            )
+            resp.raise_for_status()
+            for raw in resp.iter_lines():
+                if not raw:
+                    continue
+                data = json.loads(raw)
+                status = data.get("status", "")
+                self._broadcast_pull(
+                    {
+                        "type": "pull_progress",
+                        "tag": tag,
+                        "status": status,
+                        "total": data.get("total", 0),
+                        "completed": data.get("completed", 0),
+                        "elapsed": round(time.time() - start, 1),
+                    }
+                )
+                if status == "success":
+                    break
+            self._available.add(tag)
+            self._broadcast_pull({"type": "pull_done", "tag": tag})
+        except Exception as exc:
+            self._broadcast_pull({"type": "pull_error", "tag": tag, "error": str(exc)})
+
     def delete_model_by_name(self, name: str) -> None:
         """Delete an Ollama model by display name."""
         model = next((m for m in BUILT_IN_MODELS if m["name"] == name), None)
