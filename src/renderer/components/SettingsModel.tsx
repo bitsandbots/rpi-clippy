@@ -3,13 +3,21 @@ import { Progress } from "./Progress";
 import React, { useState } from "react";
 import { useSharedState } from "../contexts/SharedStateContext";
 import { clippyApi } from "../clippyApi";
+import { downloadModelByTag } from "../api";
 import { prettyDownloadSpeed } from "../helpers/convert-download-speed";
 import { ManagedModel } from "../../models";
 import { isModelDownloading } from "../../helpers/model-helpers";
 
 export const SettingsModel: React.FC = () => {
   const { models, settings } = useSharedState();
+  const catalog = models?.catalog ?? {};
+  const orphans = models?.orphans ?? [];
+  const catalogKeys = Object.keys(catalog);
+
+  const [selectedSection, setSelectedSection] = useState<"catalog" | "orphans">("catalog");
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [pullTag, setPullTag] = useState("");
+  const [isPulling, setIsPulling] = useState(false);
 
   const columns: Array<Column> = [
     { key: "default", header: "Loaded", width: 50 },
@@ -23,50 +31,79 @@ export const SettingsModel: React.FC = () => {
     { key: "downloaded", header: "Downloaded" },
   ];
 
-  const modelKeys = Object.keys(models || {});
-  const data = modelKeys.map((modelKey) => {
-    const model = models?.[modelKey as keyof typeof models];
-
+  const catalogData = catalogKeys.map((key) => {
+    const model = catalog[key];
     return {
       default: model?.name === settings.selectedModel ? "ｘ" : "",
       name: model?.name,
-      company: model?.company,
-      size: model?.size,
-      downloaded: model.downloaded ? "Yes" : "No",
+      company: model?.company ?? "",
+      size: model?.size ?? 0,
+      downloaded: model?.downloaded ? "Yes" : "No",
     };
   });
 
-  // Variables
-  const selectedModel =
-    models?.[modelKeys[selectedIndex] as keyof typeof models] || null;
+  const orphanData = orphans.map((m) => ({
+    default: m.name === settings.selectedModel ? "ｘ" : "",
+    name: m.name,
+    company: "-",
+    size: m.size ?? 0,
+    downloaded: m.downloaded ? "Yes" : "No",
+  }));
+
+  const selectedModel: ManagedModel | null =
+    selectedSection === "catalog" && catalogKeys.length > 0
+      ? catalog[catalogKeys[selectedIndex]] ?? null
+      : selectedSection === "orphans" && orphans.length > 0
+        ? orphans[selectedIndex] ?? null
+        : null;
+
   const isDownloading = isModelDownloading(selectedModel);
   const isDefaultModel = selectedModel?.name === settings.selectedModel;
 
-  // Handlers
-  // ---------------------------------------------------------------------------
-  const handleRowSelect = (index: number) => {
+  const handleCatalogSelect = (index: number) => {
+    setSelectedSection("catalog");
     setSelectedIndex(index);
   };
 
-  const handleDownload = async () => {
-    if (selectedModel) {
-      await clippyApi.downloadModelByName(data[selectedIndex].name);
+  const handleOrphanSelect = (index: number) => {
+    setSelectedSection("orphans");
+    setSelectedIndex(index);
+  };
+
+  const handlePull = async () => {
+    const tag = pullTag.trim();
+    if (!tag) return;
+    setIsPulling(true);
+    try {
+      await downloadModelByTag(tag);
+    } finally {
+      setIsPulling(false);
+      setPullTag("");
     }
   };
 
+  const handleQuickSelect = (tag: string) => {
+    setPullTag(tag);
+  };
+
   const handleDeleteOrRemove = async () => {
-    if (selectedModel?.imported) {
+    if (!selectedModel) return;
+    if (selectedModel.imported) {
       await clippyApi.removeModelByName(selectedModel.name);
-    } else if (selectedModel) {
+    } else {
       await clippyApi.deleteModelByName(selectedModel.name);
     }
   };
 
   const handleMakeDefault = async () => {
     if (selectedModel) {
-      clippyApi.setState("settings.selectedModel", selectedModel.name);
+      await clippyApi.setState("settings.selectedModel", selectedModel.name);
     }
   };
+
+  const quickTags = catalogKeys
+    .map((k) => catalog[k]?.ollamaTag)
+    .filter(Boolean) as string[];
 
   return (
     <div>
@@ -82,18 +119,31 @@ export const SettingsModel: React.FC = () => {
         </a>
       </p>
 
-      <button
-        style={{ marginBottom: 10 }}
-        onClick={() => clippyApi.addModelFromFile()}
-      >
-        Add model from file
-      </button>
-      <TableView
-        columns={columns}
-        data={data}
-        onRowSelect={handleRowSelect}
-        initialSelectedIndex={selectedIndex}
-      />
+      <fieldset>
+        <legend>Suggested Models</legend>
+        {catalogData.length > 0 ? (
+          <TableView
+            columns={columns}
+            data={catalogData}
+            onRowSelect={handleCatalogSelect}
+            initialSelectedIndex={selectedSection === "catalog" ? selectedIndex : 0}
+          />
+        ) : (
+          <p style={{ color: "#888" }}>No suggested models available.</p>
+        )}
+      </fieldset>
+
+      {orphanData.length > 0 && (
+        <fieldset>
+          <legend>Other Models (from Ollama)</legend>
+          <TableView
+            columns={columns}
+            data={orphanData}
+            onRowSelect={handleOrphanSelect}
+            initialSelectedIndex={selectedSection === "orphans" ? selectedIndex : 0}
+          />
+        </fieldset>
+      )}
 
       {selectedModel && (
         <div
@@ -102,23 +152,22 @@ export const SettingsModel: React.FC = () => {
         >
           <strong>{selectedModel.name}</strong>
 
-          {selectedModel.description && <p>{selectedModel.description}</p>}
-
-          {selectedModel.homepage && (
-            <p>
-              <a
-                href={selectedModel.homepage}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Visit Homepage
-              </a>
-            </p>
+          {selectedModel.actualTag && (
+            <div style={{ marginTop: "4px" }}>
+              <code style={{ color: "#555" }}>{selectedModel.actualTag}</code>
+            </div>
           )}
 
           <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
             {!selectedModel.downloaded ? (
-              <button disabled={isDownloading} onClick={handleDownload}>
+              <button
+                disabled={isDownloading}
+                onClick={() => {
+                  if (selectedModel.actualTag) {
+                    setPullTag(selectedModel.actualTag);
+                  }
+                }}
+              >
                 Download Model
               </button>
             ) : (
@@ -140,6 +189,37 @@ export const SettingsModel: React.FC = () => {
           <SettingsModelDownload model={selectedModel} />
         </div>
       )}
+
+      <fieldset style={{ marginTop: "15px" }}>
+        <legend>Pull New Model</legend>
+        <div className="field-row">
+          <label style={{ width: 50 }}>Tag:</label>
+          <input
+            type="text"
+            value={pullTag}
+            onChange={(e) => setPullTag(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handlePull()}
+            placeholder="e.g. llama3.2:1b"
+            style={{ flex: 1, marginRight: "6px" }}
+          />
+          <button onClick={handlePull} disabled={isPulling || !pullTag.trim()}>
+            {isPulling ? "Pulling..." : "Pull"}
+          </button>
+        </div>
+        {quickTags.length > 0 && (
+          <div style={{ marginTop: "6px", display: "flex", gap: "4px", flexWrap: "wrap" }}>
+            {quickTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleQuickSelect(tag)}
+                style={{ fontSize: "0.85em", padding: "2px 6px" }}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </fieldset>
     </div>
   );
 };
