@@ -208,7 +208,7 @@ def test_download_model_missing_name_returns_400(client):
 
 def test_download_model_starts_thread(client, mocker):
     mock_thread = mocker.patch("threading.Thread")
-    post_json(client, "/api/models/download", {"name": "TinyLlama (1.1B)"})
+    post_json(client, "/api/models/download", {"tag": "llama3.2:1b"})
     # Thread may be called more than once (e.g., background refresh), but
     # at least one call should start the download.
     assert mock_thread.call_count >= 1
@@ -252,11 +252,57 @@ def test_refresh_models_returns_model_state(client):
     assert isinstance(resp.get_json(), dict)
 
 
+def test_get_state_returns_hybrid_format(client):
+    resp = client.get("/api/state")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    models = data["models"]
+    assert "catalog" in models
+    assert "orphans" in models
+    assert isinstance(models["catalog"], dict)
+    assert isinstance(models["orphans"], list)
+
+
+def test_download_model_by_tag(client, mocker):
+    """POST /api/models/download with {tag} instead of {name}."""
+    mock_thread = mocker.patch("threading.Thread")
+    resp = post_json(client, "/api/models/download", {"tag": "llama3.2:1b"})
+    assert resp.status_code == 200
+    # Thread may be called more than once (e.g., background refresh)
+    assert mock_thread.call_count >= 1
+    assert mock_thread.return_value.start.called
+
+
+def test_download_model_missing_tag_returns_400(client):
+    resp = post_json(client, "/api/models/download", {})
+    assert resp.status_code == 400
+    data = resp.get_json()
+    assert "error" in data
+
+
+def test_delete_model_by_tag(client, mocker):
+    """Delete works with raw tag string for orphan models."""
+    mock_resp = mocker.MagicMock()
+    mock_resp.raise_for_status = mocker.MagicMock()
+    mocker.patch("requests.delete", return_value=mock_resp)
+
+    resp = post_json(client, "/api/models/delete", {"name": "nomic-embed-text"})
+    assert resp.status_code == 200
+
+
+def test_refresh_models_returns_hybrid_format(client):
+    resp = post_json(client, "/api/models/refresh")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "catalog" in data
+    assert "orphans" in data
+
+
 def test_set_ollama_url_refreshes_models(client, mocker):
     """When Ollama URL changes, model cache should be refreshed."""
-    # Mock the requests.get to return a specific model list
     mock_get = mocker.patch("requests.get")
-    mock_get.return_value.status_code = 200
+    mock_get.return_value.ok = True
+    mock_get.return_value.raise_for_status = lambda: None
     mock_get.return_value.json.return_value = {
         "models": [{"name": "test-model:latest"}]
     }
@@ -266,10 +312,22 @@ def test_set_ollama_url_refreshes_models(client, mocker):
     data = resp.get_json()
     assert data["status"] == "ok"
     assert data["url"] == "http://test-server:11434"
-    # Verify models are returned (proving refresh was called)
     assert "models" in data
-    # The mocked model list should affect downloaded status via _is_available
     assert isinstance(data["models"], dict)
+
+
+def test_set_ollama_url_clears_models_on_unreachable(real_ollama_refresh, mocker):
+    """When the new Ollama URL is unreachable, refresh_available() clears _available."""
+    import ollama_service
+
+    mocker.patch("ollama_service.requests.get", side_effect=ConnectionError("refused"))
+
+    svc = ollama_service.get_ollama_service()
+    svc._available = {"old-model:latest"}
+
+    svc.refresh_available()
+
+    assert svc._available == set()
 
 
 # ---------------------------------------------------------------------------

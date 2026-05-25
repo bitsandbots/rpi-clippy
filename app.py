@@ -219,11 +219,11 @@ def refresh_models():
 @app.route("/api/models/download", methods=["POST"])
 def download_model():
     body = request.get_json(force=True) or {}
-    name = body.get("name", "")
-    if not name:
-        return jsonify({"error": "name required"}), 400
+    tag = body.get("tag", "")
+    if not tag:
+        return jsonify({"error": "tag required"}), 400
     svc = get_ollama_service()
-    threading.Thread(target=svc.pull_model_by_name, args=(name,), daemon=True).start()
+    threading.Thread(target=svc.pull_model_by_tag, args=(tag,), daemon=True).start()
     return jsonify({"status": "ok"})
 
 
