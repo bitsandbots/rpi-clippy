@@ -142,9 +142,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     async (initialPrompts: LanguageModelPrompt[] = []) => {
       setIsModelLoaded(false);
 
-      const selectedModelData = models[settings.selectedModel];
+      const selectedModelData = settings.selectedModel
+        ? models.catalog[settings.selectedModel]
+        : undefined;
       const ollamaTag =
-        (selectedModelData as any)?.ollamaTag ?? settings.selectedModel ?? "";
+        (selectedModelData as any)?.actualTag ?? settings.selectedModel ?? "";
 
       const options = {
         modelAlias: settings.selectedModel,
@@ -254,10 +256,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (
       !settings.selectedModel ||
-      !models[settings.selectedModel] ||
-      !models[settings.selectedModel].downloaded
+      !models.catalog[settings.selectedModel] ||
+      !models.catalog[settings.selectedModel].downloaded
     ) {
-      const downloadedModel = Object.values(models).find(
+      const downloadedModel = Object.values(models.catalog).find(
         (model) => model.downloaded,
       );
 
@@ -279,8 +281,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (
       messages.length > 0 ||
-      Object.keys(models).length === 0 ||
-      areAnyModelsReadyOrDownloading(models)
+      Object.keys(models.catalog).length === 0 ||
+      areAnyModelsReadyOrDownloading(models.catalog)
     ) {
       return;
     }
