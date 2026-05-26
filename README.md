@@ -117,6 +117,10 @@ These models are available in the Settings → Model panel. Download them with o
 **Recommended for Pi 5 (8 GB):** Llama 3.2 3B or Qwen3 4B.  
 **Recommended for Pi 5 (4 GB):** Llama 3.2 1B or TinyLlama.
 
+### Hybrid catalog
+
+The Settings → Model panel uses a **hybrid catalog**: curated entries above match any installed Ollama tag with the same prefix (so `llama3.2:3b-instruct-q4_K_M` satisfies the `llama3.2:3b` entry), and any other models you have pulled with `ollama pull` appear underneath as **orphans**. You don't need to pull the exact tag listed in the table — any compatible variant works, and you can use models the catalog has never heard of.
+
 ---
 
 ## Service Management
