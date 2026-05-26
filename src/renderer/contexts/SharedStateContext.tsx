@@ -1,16 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { DEFAULT_SETTINGS, SharedState } from "../../sharedState";
+import { EMPTY_SHARED_STATE, SharedState } from "../../sharedState";
 import { clippyApi } from "../clippyApi";
 import { subscribePullProgress } from "../api";
-
-const EMPTY_SHARED_STATE: SharedState = {
-  models: {},
-  settings: {
-    ...DEFAULT_SETTINGS,
-    selectedModel: undefined,
-    systemPrompt: undefined,
-  },
-};
 
 export const SharedStateContext =
   createContext<SharedState>(EMPTY_SHARED_STATE);
