@@ -16,6 +16,12 @@ export interface ManagedModel extends Model {
   downloaded?: boolean;
   downloadState?: DownloadState;
   imported?: boolean;
+  actualTag?: string;
+}
+
+export interface HybridModelState {
+  catalog: Record<string, ManagedModel>;
+  orphans: ManagedModel[];
 }
 
 export type ModelState = Record<string, ManagedModel>;

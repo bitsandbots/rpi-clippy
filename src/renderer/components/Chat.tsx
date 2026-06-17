@@ -91,6 +91,12 @@ export function Chat({ style }: ChatProps) {
         },
         onError: (error: string) => {
           console.error("LLM error:", error);
+          addMessage({
+            id: randomUUID(),
+            content: `_Could not get a response — ${error}_`,
+            sender: "clippy",
+            createdAt: Date.now(),
+          });
           setStreamingMessageContent("");
           setStatus("idle");
         },

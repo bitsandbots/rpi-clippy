@@ -100,19 +100,26 @@ npm run dev
 
 These models are available in the Settings → Model panel. Download them with one click or via `ollama pull <tag>`.
 
-| Model             | Tag           | Size    |
-| ----------------- | ------------- | ------- |
-| TinyLlama (1.1B)  | `tinyllama`   | ~637 MB |
-| Llama 3.2 (1B)    | `llama3.2:1b` | ~808 MB |
-| Gemma 3 (1B)      | `gemma3:1b`   | ~806 MB |
-| Llama 3.2 (3B)    | `llama3.2:3b` | ~2.0 GB |
-| Phi-4 Mini (3.8B) | `phi4-mini`   | ~2.5 GB |
-| Qwen3 (4B)        | `qwen3:4b`    | ~2.5 GB |
-| Gemma 3 (4B)      | `gemma3:4b`   | ~2.5 GB |
-| Gemma 3 (12B)     | `gemma3:12b`  | ~5.6 GB |
+| Model                   | Tag                         | Size    |
+| ----------------------- | --------------------------- | ------- |
+| TinyLlama (1.1B)        | `tinyllama`                 | ~637 MB |
+| Llama 3.2 (1B Instruct) | `llama3.2:1b`               | ~808 MB |
+| Gemma 3 (1B)            | `gemma3:1b`                 | ~806 MB |
+| Llama 3.2 (3B Instruct) | `llama3.2:3b`               | ~2.0 GB |
+| Phi-4 Mini (3.8B)       | `phi4-mini`                 | ~2.5 GB |
+| Qwen3 (4B)              | `qwen3:4b-Q4_K_M`           | ~2.5 GB |
+| Gemma 3 (4B)            | `gemma3:4b-Q4_K_M`          | ~2.5 GB |
+| Gemma 3 (12B)           | `gemma3:12b`                | ~5.6 GB |
+| Llama 3.1 (8B Instruct) | `llama3.1:8b-instruct-q8_0` | ~8.0 GB |
+| Qwen2.5 Coder (0.5B)    | `qwen2.5-coder:0.5b`        | ~500 MB |
+| Qwen3 (1.7B)            | `qwen3:1.7b`                | ~1.7 GB |
 
 **Recommended for Pi 5 (8 GB):** Llama 3.2 3B or Qwen3 4B.  
 **Recommended for Pi 5 (4 GB):** Llama 3.2 1B or TinyLlama.
+
+### Hybrid catalog
+
+The Settings → Model panel uses a **hybrid catalog**: curated entries above match any installed Ollama tag with the same prefix (so `llama3.2:3b-instruct-q4_K_M` satisfies the `llama3.2:3b` entry), and any other models you have pulled with `ollama pull` appear underneath as **orphans**. You don't need to pull the exact tag listed in the table — any compatible variant works, and you can use models the catalog has never heard of.
 
 ---
 

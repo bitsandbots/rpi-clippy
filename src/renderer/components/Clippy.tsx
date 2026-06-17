@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 
-import { ANIMATIONS, Animation } from "../clippy-animations";
+import { Animation } from "../clippy-animations";
 import {
   EMPTY_ANIMATION,
   getRandomIdleAnimation,
@@ -8,6 +8,8 @@ import {
 import { useChat } from "../contexts/ChatContext";
 import { log } from "../logging";
 import { useDebugState } from "../contexts/DebugContext";
+import { useSharedState } from "../contexts/SharedStateContext";
+import { CHARACTERS, DEFAULT_CHARACTER } from "../character-animations";
 
 const WAIT_TIME = 6000;
 
@@ -20,29 +22,37 @@ export function Clippy() {
     isChatWindowOpen,
   } = useChat();
   const { enableDragDebug } = useDebugState();
+  const { settings } = useSharedState();
+  const character =
+    CHARACTERS[settings.character || DEFAULT_CHARACTER] ||
+    CHARACTERS[DEFAULT_CHARACTER];
+  const animations = character.animations;
   const [animation, setAnimation] = useState<Animation>(EMPTY_ANIMATION);
   const [animationTimeoutId, setAnimationTimeoutId] = useState<
     number | undefined
   >(undefined);
 
-  const playAnimation = useCallback((key: string) => {
-    if (ANIMATIONS[key]) {
-      log(`Playing animation`, { key });
+  const playAnimation = useCallback(
+    (key: string) => {
+      if (animations[key]) {
+        log(`Playing animation`, { key, character: character.id });
 
-      if (animationTimeoutId) {
-        window.clearTimeout(animationTimeoutId);
+        if (animationTimeoutId) {
+          window.clearTimeout(animationTimeoutId);
+        }
+
+        setAnimation(animations[key]);
+        setAnimationTimeoutId(
+          window.setTimeout(() => {
+            setAnimation(animations.Default);
+          }, animations[key].length + 200),
+        );
+      } else {
+        log(`Animation not found`, { key, character: character.id });
       }
-
-      setAnimation(ANIMATIONS[key]);
-      setAnimationTimeoutId(
-        window.setTimeout(() => {
-          setAnimation(ANIMATIONS.Default);
-        }, ANIMATIONS[key].length + 200),
-      );
-    } else {
-      log(`Animation not found`, { key });
-    }
-  }, []);
+    },
+    [animations, character.id],
+  );
 
   const toggleChat = useCallback(() => {
     setIsChatWindowOpen(!isChatWindowOpen);
@@ -52,13 +62,13 @@ export function Clippy() {
     const playRandomIdleAnimation = () => {
       if (status !== "idle") return;
 
-      const randomIdleAnimation = getRandomIdleAnimation(animation);
+      const randomIdleAnimation = getRandomIdleAnimation(animation, animations);
       setAnimation(randomIdleAnimation);
 
       // Reset back to default after 6 seconds and schedule next animation
       setAnimationTimeoutId(
         window.setTimeout(() => {
-          setAnimation(ANIMATIONS.Default);
+          setAnimation(animations.Default);
           setAnimationTimeoutId(
             window.setTimeout(playRandomIdleAnimation, WAIT_TIME),
           );
@@ -67,10 +77,10 @@ export function Clippy() {
     };
 
     if (status === "welcome" && animation === EMPTY_ANIMATION) {
-      setAnimation(ANIMATIONS.Show);
+      setAnimation(animations.Show);
       setTimeout(() => {
         setStatus("idle");
-      }, ANIMATIONS.Show.length + 200);
+      }, animations.Show.length + 200);
     } else if (status === "idle") {
       if (!animationTimeoutId) {
         playRandomIdleAnimation();
@@ -83,10 +93,14 @@ export function Clippy() {
         window.clearTimeout(animationTimeoutId);
       }
     };
-  }, [status]);
+  }, [status, animations]);
 
   useEffect(() => {
-    log(`New animation key`, { animationKey });
+    setAnimation(animations.Default);
+  }, [character.id, animations]);
+
+  useEffect(() => {
+    log(`New animation key`, { animationKey, character: character.id });
     playAnimation(animationKey);
   }, [animationKey, playAnimation]);
 
@@ -122,7 +136,7 @@ export function Clippy() {
         className="app-no-select"
         src={animation.src}
         draggable={false}
-        alt="Clippy"
+        alt={character.name}
         style={{ width: "186px" }}
       />
     </div>
