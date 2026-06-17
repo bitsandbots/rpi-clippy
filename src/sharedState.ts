@@ -1,4 +1,4 @@
-import { ModelState } from "./models";
+import { HybridModelState } from "./models";
 
 export type DefaultFont =
   | "Pixelated MS Sans Serif"
@@ -7,6 +7,7 @@ export type DefaultFont =
   | "System Default";
 export type DefaultFontSize = number;
 export type UITheme = "refined" | "expressive";
+export type CharacterId = "clippy" | "sprout";
 
 export interface SettingsState {
   selectedModel?: string;
@@ -17,11 +18,12 @@ export interface SettingsState {
   defaultFont: DefaultFont;
   defaultFontSize: number;
   uiTheme: UITheme;
+  character: CharacterId;
   ollamaUrl?: string;
 }
 
 export interface SharedState {
-  models: ModelState;
+  models: HybridModelState;
   settings: SettingsState;
 }
 
@@ -46,10 +48,11 @@ export const DEFAULT_SETTINGS: SettingsState = {
   defaultFont: "Tahoma",
   defaultFontSize: 16,
   uiTheme: "refined",
+  character: "clippy",
 };
 
 export const EMPTY_SHARED_STATE: SharedState = {
-  models: {},
+  models: { catalog: {}, orphans: [] },
   settings: {
     ...DEFAULT_SETTINGS,
   },

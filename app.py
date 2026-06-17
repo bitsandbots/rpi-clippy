@@ -34,6 +34,7 @@ DIST_DIR = Path(__file__).parent / "dist"
 VERSION = "0.5.0"
 
 app = Flask(__name__, static_folder=None)
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # reject bodies >20 MB before route handlers run
 
 _CHAT_ID_RE = re.compile(r"^[A-Za-z0-9_\-]+$")
 _MAX_MESSAGES_PER_CHAT = 1000
@@ -59,7 +60,6 @@ def _validate_chat_payload(body: dict) -> tuple[bool, str]:
             )
 
         # Check message count
-        chat = body.get("chat", {})
         messages = body.get("messages", [])
         if len(messages) > _MAX_MESSAGES_PER_CHAT:
             return (
@@ -219,11 +219,15 @@ def refresh_models():
 @app.route("/api/models/download", methods=["POST"])
 def download_model():
     body = request.get_json(force=True) or {}
+    tag = body.get("tag", "")
     name = body.get("name", "")
-    if not name:
-        return jsonify({"error": "name required"}), 400
+    if not tag and not name:
+        return jsonify({"error": "tag or name required"}), 400
     svc = get_ollama_service()
-    threading.Thread(target=svc.pull_model_by_name, args=(name,), daemon=True).start()
+    if name:
+        threading.Thread(target=svc.pull_model_by_name, args=(name,), daemon=True).start()
+    else:
+        threading.Thread(target=svc.pull_model_by_tag, args=(tag,), daemon=True).start()
     return jsonify({"status": "ok"})
 
 
@@ -313,10 +317,15 @@ def ollama_status():
 @app.route("/api/ollama/url", methods=["POST"])
 def set_ollama_url():
     """Persist a new Ollama base URL and apply it immediately."""
+    from urllib.parse import urlparse
+
     body = request.get_json(force=True) or {}
     url = (body.get("url") or "").strip().rstrip("/")
     if not url:
         return jsonify({"error": "url required"}), 400
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        return jsonify({"error": "url must use http or https scheme"}), 400
     get_settings().set("ollamaUrl", url)
     set_ollama_base(url)
     # Refresh model cache for new server and return updated state
@@ -327,7 +336,8 @@ def set_ollama_url():
 
 @app.route("/api/ollama/discover")
 def ollama_discover():
-    """Scan the local subnet for Ollama instances (port 11434). Non-blocking."""
+    """Scan the local subnet for Ollama instances (port 11434)."""
+    import concurrent.futures
     import ipaddress
     import socket
     import requests as _req
@@ -343,24 +353,24 @@ def ollama_discover():
         except Exception:
             return []
 
-    def _probe(ip, results):
+    def _probe(ip):
         try:
             url = f"http://{ip}:11434"
             resp = _req.get(f"{url}/api/tags", timeout=1)
             if resp.ok:
-                results.append({"url": url, "ip": ip})
+                return {"url": url, "ip": ip}
         except Exception:
             pass
+        return None
 
     hosts = _get_local_subnet()
-    results = []
-    threads = [
-        threading.Thread(target=_probe, args=(h, results), daemon=True) for h in hosts
-    ]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join(timeout=2)
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
+    try:
+        futures = [executor.submit(_probe, h) for h in hosts]
+        done, _ = concurrent.futures.wait(futures, timeout=2)
+        results = [r for f in done if (r := f.result()) is not None]
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
     return jsonify({"instances": results})
 
 
@@ -481,7 +491,10 @@ def speak():
     """Synthesize text to WAV. Returns audio/wav bytes."""
     body = request.get_json(force=True) or {}
     text = body.get("text", "").strip()
-    length_scale = float(body.get("lengthScale", 1.0))
+    try:
+        length_scale = float(body.get("lengthScale", 1.0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "lengthScale must be a number"}), 400
     if not text:
         return jsonify({"error": "text required"}), 400
 

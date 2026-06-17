@@ -142,9 +142,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     async (initialPrompts: LanguageModelPrompt[] = []) => {
       setIsModelLoaded(false);
 
-      const selectedModelData = models[settings.selectedModel];
+      const selectedModelData = settings.selectedModel
+        ? models.catalog[settings.selectedModel]
+        : undefined;
       const ollamaTag =
-        (selectedModelData as any)?.ollamaTag ?? settings.selectedModel ?? "";
+        (selectedModelData as any)?.actualTag ?? settings.selectedModel ?? "";
 
       const options = {
         modelAlias: settings.selectedModel,
@@ -154,8 +156,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         temperature: settings.temperature,
         initialPrompts,
       };
-
-      console.log("Loading model with options:", options);
 
       try {
         await electronAi.create(options);
@@ -207,6 +207,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Update the chat record in the database whenever messages change
   useEffect(() => {
+    if (messages.length === 0) return;
+
     const updatedChatRecord = {
       ...currentChatRecord,
       updatedAt: Date.now(),
@@ -256,10 +258,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (
       !settings.selectedModel ||
-      !models[settings.selectedModel] ||
-      !models[settings.selectedModel].downloaded
+      !models.catalog[settings.selectedModel] ||
+      !models.catalog[settings.selectedModel].downloaded
     ) {
-      const downloadedModel = Object.values(models).find(
+      const downloadedModel = Object.values(models.catalog).find(
         (model) => model.downloaded,
       );
 
@@ -281,8 +283,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (
       messages.length > 0 ||
-      Object.keys(models).length === 0 ||
-      areAnyModelsReadyOrDownloading(models)
+      Object.keys(models.catalog).length === 0 ||
+      areAnyModelsReadyOrDownloading(models.catalog)
     ) {
       return;
     }

@@ -20,10 +20,16 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src" / "python"))
 
+# Save real _refresh_available_bg before any fixture patches it.
+import ollama_service as _osvc  # noqa: E402
+
+_real_refresh_available_bg = _osvc.OllamaService._refresh_available_bg
+
 
 # ---------------------------------------------------------------------------
 # Config & singleton isolation (autouse — applies to every test)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def isolate_config(tmp_path, monkeypatch):
@@ -50,10 +56,23 @@ def isolate_config(tmp_path, monkeypatch):
 def no_ollama_bg_refresh(monkeypatch):
     """Prevent OllamaService.__init__ background thread from hitting network."""
     import ollama_service
+
     monkeypatch.setattr(
         ollama_service.OllamaService,
         "_refresh_available_bg",
-        lambda self: None,
+        lambda self, clear_on_failure=False: None,
+    )
+
+
+@pytest.fixture
+def real_ollama_refresh(monkeypatch):
+    """Restore the real _refresh_available_bg for tests that need network-failure behaviour."""
+    import ollama_service
+
+    monkeypatch.setattr(
+        ollama_service.OllamaService,
+        "_refresh_available_bg",
+        _real_refresh_available_bg,
     )
 
 
@@ -61,10 +80,12 @@ def no_ollama_bg_refresh(monkeypatch):
 # Flask test fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def flask_app(monkeypatch):
     """Return the Flask app configured for testing."""
     import app as flask_module
+
     flask_module.app.config["TESTING"] = True
     return flask_module.app
 

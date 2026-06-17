@@ -26,6 +26,8 @@ DEFAULT_SETTINGS = {
     "temperature": 0.7,
     "defaultFont": "Tahoma",
     "defaultFontSize": 16,
+    "uiTheme": "refined",
+    "character": "clippy",
     "selectedModel": None,
     "ollamaUrl": "http://localhost:11434",
     "ttsEnabled": False,
@@ -52,6 +54,7 @@ class SettingsManager:
 
     def __init__(self, filename: str = "settings.json"):
         self._path = _config_dir() / filename
+        self._lock = threading.RLock()
         self._data: dict = self._load()
 
     def _load(self) -> dict:
@@ -73,7 +76,8 @@ class SettingsManager:
 
     def get_all(self) -> dict:
         """Return the full settings dict."""
-        return dict(self._data)
+        with self._lock:
+            return dict(self._data)
 
     def get(self, key: str):
         """Get a setting value. Supports dot-notation (e.g. 'settings.topK')."""
@@ -81,11 +85,12 @@ class SettingsManager:
         # Strip leading 'settings.' prefix if present
         if parts[0] == "settings":
             parts = parts[1:]
-        node = self._data
-        for part in parts:
-            if not isinstance(node, dict):
-                return None
-            node = node.get(part)
+        with self._lock:
+            node = self._data
+            for part in parts:
+                if not isinstance(node, dict):
+                    return None
+                node = node.get(part)
         return node
 
     def set(self, key: str, value) -> None:
@@ -93,11 +98,12 @@ class SettingsManager:
         parts = key.split(".")
         if parts[0] == "settings":
             parts = parts[1:]
-        node = self._data
-        for part in parts[:-1]:
-            node = node.setdefault(part, {})
-        node[parts[-1]] = value
-        self._save()
+        with self._lock:
+            node = self._data
+            for part in parts[:-1]:
+                node = node.setdefault(part, {})
+            node[parts[-1]] = value
+            self._save()
 
 
 class DebugSettingsManager(SettingsManager):

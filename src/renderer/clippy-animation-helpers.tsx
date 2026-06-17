@@ -16,16 +16,20 @@ export const EMPTY_ANIMATION: Animation = {
  *
  * @param keys - The keys of the animations to choose from
  * @param current - The current animation
+ * @param animations - The animation map to pick from (defaults to Clippy)
  * @returns A random animation from the given keys
  */
-export function getRandomAnimation(keys: string[], current?: Animation) {
+export function getRandomAnimation(
+  keys: string[],
+  current?: Animation,
+  animations: Record<string, Animation> = ANIMATIONS,
+) {
   const randomIndex = Math.floor(Math.random() * keys.length);
-  const randomAnimationKey = keys[randomIndex] as keyof typeof ANIMATIONS;
-  const animation = ANIMATIONS[randomAnimationKey];
+  const animation = animations[keys[randomIndex]];
 
   // If the random animation is the same as the current animation, get a new random animation
   if (current && animation === current) {
-    return getRandomAnimation(keys, current);
+    return getRandomAnimation(keys, current, animations);
   }
 
   return animation;
@@ -35,8 +39,12 @@ export function getRandomAnimation(keys: string[], current?: Animation) {
  * Get a random idle animation
  *
  * @param current - The current animation
+ * @param animations - The animation map to pick from (defaults to Clippy)
  * @returns A random idle animation
  */
-export function getRandomIdleAnimation(current?: Animation) {
-  return getRandomAnimation(IDLE_ANIMATION_KEYS, current);
+export function getRandomIdleAnimation(
+  current?: Animation,
+  animations: Record<string, Animation> = ANIMATIONS,
+) {
+  return getRandomAnimation(IDLE_ANIMATION_KEYS, current, animations);
 }

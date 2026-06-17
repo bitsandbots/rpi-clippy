@@ -20,6 +20,7 @@ class ChatManager:
     def __init__(self):
         self._dir = _chats_dir()
         self._index_path = self._dir / "chats.json"
+        self._lock = threading.Lock()
         self._records: dict = self._load_index()
         self._messages: dict = {}
 
@@ -40,20 +41,22 @@ class ChatManager:
 
     def get_records(self) -> dict:
         """Return the chat index (id → ChatRecord)."""
-        return dict(self._records)
+        with self._lock:
+            return dict(self._records)
 
     def get_with_messages(self, chat_id: str) -> dict | None:
         """Return ChatWithMessages for chat_id, or None if not found."""
-        # Check in-memory cache first
-        if chat_id in self._messages and chat_id in self._records:
-            return {"chat": self._records[chat_id], "messages": self._messages[chat_id]}
+        with self._lock:
+            if chat_id in self._messages and chat_id in self._records:
+                return {"chat": self._records[chat_id], "messages": self._messages[chat_id]}
 
         path = self._chat_path(chat_id)
         if not path.exists():
             return None
         try:
             data = json.loads(path.read_text())
-            self._messages[chat_id] = data.get("messages", [])
+            with self._lock:
+                self._messages[chat_id] = data.get("messages", [])
             return data
         except Exception:
             return None
@@ -67,30 +70,32 @@ class ChatManager:
         if not chat_id or not messages:
             return
 
-        self._records[chat_id] = chat
-        self._messages[chat_id] = messages
-
         self._dir.mkdir(parents=True, exist_ok=True)
         self._chat_path(chat_id).write_text(json.dumps(chat_with_messages, indent=2))
-        self._save_index()
+        with self._lock:
+            self._records[chat_id] = chat
+            self._messages[chat_id] = messages
+            self._save_index()
 
     def delete(self, chat_id: str) -> None:
         """Delete a single chat from disk and index."""
-        self._records.pop(chat_id, None)
-        self._messages.pop(chat_id, None)
         path = self._chat_path(chat_id)
         if path.exists():
             path.unlink()
-        self._save_index()
+        with self._lock:
+            self._records.pop(chat_id, None)
+            self._messages.pop(chat_id, None)
+            self._save_index()
 
     def delete_all(self) -> None:
         """Delete all chats from disk and reset the index."""
-        self._records = {}
-        self._messages = {}
         if self._dir.exists():
             for f in self._dir.glob("*.json"):
                 f.unlink(missing_ok=True)
-        self._save_index()
+        with self._lock:
+            self._records = {}
+            self._messages = {}
+            self._save_index()
 
 
 _chat_manager: ChatManager | None = None

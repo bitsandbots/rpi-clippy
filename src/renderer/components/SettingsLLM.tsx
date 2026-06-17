@@ -66,10 +66,11 @@ export const SettingsLLM: React.FC = () => {
       ? "Connected"
       : "Disconnected";
 
-  const modelKeys = Object.keys(useSharedState().models ?? {});
   const { models } = useSharedState();
+  const catalog = models?.catalog ?? {};
+  const modelKeys = Object.keys(catalog);
   const loadedModel = modelKeys
-    .map((k) => models[k as keyof typeof models])
+    .map((k) => catalog[k])
     .find((m) => m?.name === settings.selectedModel);
 
   return (
@@ -115,9 +116,9 @@ export const SettingsLLM: React.FC = () => {
           <div className="field-row" style={{ marginBottom: "6px" }}>
             <label style={{ width: 70 }}>Model:</label>
             <span>{loadedModel.name}</span>
-            {loadedModel.ollamaTag && (
+            {loadedModel.actualTag && (
               <code style={{ marginLeft: "8px", color: "#555" }}>
-                {loadedModel.ollamaTag}
+                {loadedModel.actualTag}
               </code>
             )}
           </div>

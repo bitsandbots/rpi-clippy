@@ -1,7 +1,8 @@
-import { DEFAULT_SETTINGS } from "../../sharedState";
+import { DEFAULT_SETTINGS, CharacterId } from "../../sharedState";
 import { clippyApi } from "../clippyApi";
 import { useSharedState } from "../contexts/SharedStateContext";
 import { UITheme } from "../../sharedState";
+import { CHARACTERS } from "../character-animations";
 
 export const SettingsAppearance: React.FC = () => {
   const { settings } = useSharedState();
@@ -17,6 +18,10 @@ export const SettingsAppearance: React.FC = () => {
     clippyApi.setState("settings.uiTheme", event.target.value as UITheme);
   };
 
+  const onChangeCharacter = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    clippyApi.setState("settings.character", event.target.value as CharacterId);
+  };
+
   const onReset = () => {
     clippyApi.setState("settings.defaultFont", DEFAULT_SETTINGS.defaultFont);
     clippyApi.setState(
@@ -24,6 +29,7 @@ export const SettingsAppearance: React.FC = () => {
       DEFAULT_SETTINGS.defaultFontSize,
     );
     clippyApi.setState("settings.uiTheme", DEFAULT_SETTINGS.uiTheme);
+    clippyApi.setState("settings.character", DEFAULT_SETTINGS.character);
   };
 
   return (
@@ -41,6 +47,22 @@ export const SettingsAppearance: React.FC = () => {
           >
             <option value="refined">Refined Authentic</option>
             <option value="expressive">Expressive Maximalist</option>
+          </select>
+        </div>
+        <div className="field-row">
+          <label htmlFor="character" style={{ width: 80 }}>
+            Character:
+          </label>
+          <select
+            id="character"
+            value={settings.character || DEFAULT_SETTINGS.character}
+            onChange={onChangeCharacter}
+          >
+            {Object.values(CHARACTERS).map((character) => (
+              <option key={character.id} value={character.id}>
+                {character.name}
+              </option>
+            ))}
           </select>
         </div>
       </fieldset>

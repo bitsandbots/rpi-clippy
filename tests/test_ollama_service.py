@@ -17,6 +17,7 @@ _original_refresh_bg = OllamaService._refresh_available_bg
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_service() -> OllamaService:
     """Return a fresh OllamaService (background refresh already patched to no-op)."""
     return OllamaService()
@@ -25,6 +26,7 @@ def make_service() -> OllamaService:
 def _streaming_response(lines: list[dict]):
     """Build a mock requests.Response whose iter_lines yields encoded JSON."""
     from unittest.mock import MagicMock
+
     resp = MagicMock()
     resp.iter_lines.return_value = [json.dumps(line).encode() for line in lines]
     return resp
@@ -33,6 +35,7 @@ def _streaming_response(lines: list[dict]):
 # ---------------------------------------------------------------------------
 # Session management
 # ---------------------------------------------------------------------------
+
 
 def test_create_session_stores_options():
     svc = make_service()
@@ -51,23 +54,27 @@ def test_destroy_session_clears_state():
 
 def test_create_session_seeds_history():
     svc = make_service()
-    svc.create_session({
-        "ollamaTag": "tinyllama",
-        "initialPrompts": [
-            {"role": "user", "content": "Hi"},
-            {"role": "assistant", "content": "Hello"},
-        ],
-    })
+    svc.create_session(
+        {
+            "ollamaTag": "tinyllama",
+            "initialPrompts": [
+                {"role": "user", "content": "Hi"},
+                {"role": "assistant", "content": "Hello"},
+            ],
+        }
+    )
     assert len(svc._history) == 2
     assert svc._history[0] == {"role": "user", "content": "Hi"}
 
 
 def test_create_session_skips_empty_prompts():
     svc = make_service()
-    svc.create_session({
-        "ollamaTag": "tinyllama",
-        "initialPrompts": [{"role": "user", "content": ""}],
-    })
+    svc.create_session(
+        {
+            "ollamaTag": "tinyllama",
+            "initialPrompts": [{"role": "user", "content": ""}],
+        }
+    )
     assert svc._history == []
 
 
@@ -82,40 +89,94 @@ def test_destroy_clears_history():
 # Model state
 # ---------------------------------------------------------------------------
 
+
 def test_get_model_state_returns_all_builtin_models():
     svc = make_service()
     state = svc.get_model_state()
-    assert len(state) == len(BUILT_IN_MODELS)
-    for name, model in state.items():
+    catalog = state["catalog"]
+    assert len(catalog) == len(BUILT_IN_MODELS)
+    for name, model in catalog.items():
         assert "downloaded" in model
         assert isinstance(model["downloaded"], bool)
-        assert "ollamaTag" in model
+        assert "actualTag" in model
 
 
 def test_model_state_all_downloaded_false_when_available_empty():
     svc = make_service()
     svc._available = set()
     state = svc.get_model_state()
-    assert all(not m["downloaded"] for m in state.values())
+    catalog = state["catalog"]
+    assert all(not m["downloaded"] for m in catalog.values())
 
 
-def test_is_available_exact_match():
+def test_get_model_state_returns_hybrid_format():
     svc = make_service()
-    svc._available = {"tinyllama:latest"}
-    assert svc._is_available("tinyllama:latest") is True
+    svc._available = set()
+    state = svc.get_model_state()
+    assert "catalog" in state
+    assert "orphans" in state
+    assert isinstance(state["catalog"], dict)
+    assert isinstance(state["orphans"], list)
 
 
-def test_is_available_prefix_match():
-    svc = make_service()
-    svc._available = {"llama3.2:3b"}
-    # The built-in tag is "llama3.2:1b" — different tag, but same base prefix "llama3.2"
-    assert svc._is_available("llama3.2:1b") is True
-
-
-def test_is_available_no_match():
+def test_get_model_state_catalog_entries_have_actual_tag():
     svc = make_service()
     svc._available = {"gemma3:1b"}
-    assert svc._is_available("tinyllama") is False
+    state = svc.get_model_state()
+    gemma = state["catalog"].get("Gemma 3 (1B)")
+    assert gemma is not None
+    assert gemma["actualTag"] == "gemma3:1b"
+    assert gemma["downloaded"] is True
+
+
+def test_get_model_state_actual_tag_fallback_when_not_installed():
+    svc = make_service()
+    svc._available = set()
+    state = svc.get_model_state()
+    gemma = state["catalog"]["Gemma 3 (1B)"]
+    assert gemma["actualTag"] == gemma["ollamaTag"]
+    assert gemma["downloaded"] is False
+
+
+def test_get_model_state_orphans_from_ollama_tags():
+    svc = make_service()
+    svc._available = {"nomic-embed-text", "gemma3:1b"}
+    state = svc.get_model_state()
+    orphan_tags = [m["name"] for m in state["orphans"]]
+    assert "nomic-embed-text" in orphan_tags
+    # gemma3:1b is consumed by catalog match — not in orphans
+    assert "gemma3:1b" not in orphan_tags
+
+
+def test_get_model_state_no_orphan_duplicates():
+    """Tags matching a catalog prefix are excluded from orphans."""
+    svc = make_service()
+    svc._available = {"qwen3:4b-Q4_K_M", "qwen3:4b-Q4_K_M-40k", "gemma3:1b"}
+    state = svc.get_model_state()
+    orphan_names = [m["name"] for m in state["orphans"]]
+    assert "qwen3:4b-Q4_K_M" not in orphan_names
+    assert "qwen3:4b-Q4_K_M-40k" not in orphan_names
+    assert "gemma3:1b" not in orphan_names
+
+
+def test_get_model_state_orphans_have_minimal_fields():
+    svc = make_service()
+    svc._available = {"nomic-embed-text"}
+    state = svc.get_model_state()
+    orphan = state["orphans"][0]
+    assert orphan["name"] == "nomic-embed-text"
+    assert orphan["path"] == "nomic-embed-text"
+    assert orphan["downloaded"] is True
+    assert orphan.get("actualTag") == "nomic-embed-text"
+
+
+def test_get_model_state_empty_ollama():
+    """Empty available set produces no orphans, all catalog downloaded=false."""
+    svc = make_service()
+    svc._available = set()
+    state = svc.get_model_state()
+    assert state["orphans"] == []
+    assert all(not m["downloaded"] for m in state["catalog"].values())
 
 
 def test_refresh_available_populates_set(mocker):
@@ -150,12 +211,16 @@ def test_refresh_available_silent_on_connection_error(mocker):
 # Streaming inference
 # ---------------------------------------------------------------------------
 
+
 def test_prompt_streaming_yields_chunks(mocker):
-    mock_resp = _streaming_response([
-        {"done": False, "message": {"role": "assistant", "content": "Hello"}},
-        {"done": False, "message": {"role": "assistant", "content": " world"}},
-        {"done": True},
-    ])
+    # Ollama /api/generate uses "response" field instead of "message.content"
+    mock_resp = _streaming_response(
+        [
+            {"done": False, "response": "Hello"},
+            {"done": False, "response": " world"},
+            {"done": True},
+        ]
+    )
     mocker.patch("requests.post", return_value=mock_resp)
 
     svc = make_service()
@@ -174,10 +239,13 @@ def test_prompt_streaming_yields_chunks(mocker):
 
 
 def test_prompt_streaming_appends_history(mocker):
-    mock_resp = _streaming_response([
-        {"done": False, "message": {"role": "assistant", "content": "Hi"}},
-        {"done": True},
-    ])
+    # Ollama /api/generate uses "response" field
+    mock_resp = _streaming_response(
+        [
+            {"done": False, "response": "Hi"},
+            {"done": True},
+        ]
+    )
     mocker.patch("requests.post", return_value=mock_resp)
 
     svc = make_service()
@@ -191,9 +259,10 @@ def test_prompt_streaming_appends_history(mocker):
 
 def test_prompt_streaming_abort_skips_history(mocker):
     """Aborting mid-stream means history is NOT appended."""
+    # Ollama /api/generate uses "response" field
     lines = [
-        {"done": False, "message": {"role": "assistant", "content": "A"}},
-        {"done": False, "message": {"role": "assistant", "content": "B"}},
+        {"done": False, "response": "A"},
+        {"done": False, "response": "B"},
         {"done": True},
     ]
     mock_resp = _streaming_response(lines)
@@ -203,9 +272,9 @@ def test_prompt_streaming_abort_skips_history(mocker):
     svc.create_session({"ollamaTag": "tinyllama"})
 
     gen = svc.prompt_streaming("test", "abort-uuid")
-    next(gen)           # consume first chunk
-    svc.abort("abort-uuid")   # set abort event
-    list(gen)           # exhaust generator
+    next(gen)  # consume first chunk
+    svc.abort("abort-uuid")  # set abort event
+    list(gen)  # exhaust generator
 
     assert svc._history == []
 
@@ -223,7 +292,7 @@ def test_prompt_streaming_error_yields_error_event(mocker):
 
 
 def test_prompt_streaming_uses_system_prompt(mocker):
-    """System prompt should be prepended as the first message."""
+    """System prompt should be included in the prompt string."""
     mock_resp = _streaming_response([{"done": True}])
     mock_post = mocker.patch("requests.post", return_value=mock_resp)
 
@@ -232,12 +301,14 @@ def test_prompt_streaming_uses_system_prompt(mocker):
     list(svc.prompt_streaming("hi", "uuid-sys"))
 
     call_body = mock_post.call_args[1]["json"]
-    assert call_body["messages"][0] == {"role": "system", "content": "Be concise."}
+    # Ollama /api/generate uses "prompt" with formatted conversation
+    assert "System: Be concise." in call_body["prompt"]
 
 
 # ---------------------------------------------------------------------------
 # Abort
 # ---------------------------------------------------------------------------
+
 
 def test_abort_unknown_uuid_is_noop():
     svc = make_service()
@@ -247,6 +318,7 @@ def test_abort_unknown_uuid_is_noop():
 # ---------------------------------------------------------------------------
 # Pull SSE fan-out
 # ---------------------------------------------------------------------------
+
 
 def test_subscribe_returns_queue():
     svc = make_service()
@@ -293,9 +365,62 @@ def test_pull_model_unknown_name_broadcasts_error():
     assert event["type"] == "pull_error"
 
 
+def test_pull_model_by_tag_starts_pull(mocker):
+    """pull_model_by_tag accepts an arbitrary tag string."""
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [
+        b'{"status":"pulling"}',
+        b'{"status":"success"}',
+    ]
+    mock_post = mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc.pull_model_by_tag("llama3.2:1b")
+
+    mock_post.assert_called_once()
+    call_body = mock_post.call_args[1]["json"]
+    assert call_body["name"] == "llama3.2:1b"
+
+
+def test_pull_model_by_tag_arbitrary_tag(mocker):
+    """Can pull tags not in BUILT_IN_MODELS."""
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [b'{"status":"success"}']
+    mock_post = mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc.pull_model_by_tag("nomic-embed-text")
+
+    call_body = mock_post.call_args[1]["json"]
+    assert call_body["name"] == "nomic-embed-text"
+
+
+def test_pull_model_by_tag_adds_to_available_on_success(mocker):
+    mock_resp = mocker.MagicMock()
+    mock_resp.iter_lines.return_value = [b'{"status":"success"}']
+    mocker.patch("requests.post", return_value=mock_resp)
+
+    svc = make_service()
+    svc._available = set()
+    svc.pull_model_by_tag("new-model:latest")
+
+    assert "new-model:latest" in svc._available
+
+
+def test_pull_model_by_tag_broadcasts_error_on_failure(mocker):
+    mocker.patch("requests.post", side_effect=ConnectionError("refused"))
+    svc = make_service()
+    q = svc.subscribe_pull_events()
+    svc.pull_model_by_tag("bad-tag")
+    event = q.get_nowait()
+    assert event["type"] == "pull_error"
+    assert event["tag"] == "bad-tag"
+
+
 # ---------------------------------------------------------------------------
 # Model deletion
 # ---------------------------------------------------------------------------
+
 
 def test_delete_model_removes_from_available(mocker):
     mock_resp = mocker.MagicMock()

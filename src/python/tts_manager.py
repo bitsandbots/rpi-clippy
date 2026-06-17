@@ -154,6 +154,7 @@ class TTSManager:
                 except Exception as exc:
                     log.error("Auto-load of voice %r failed: %s", voice_id, exc)
                     return None
+            voice = self._loaded_voice  # capture reference while holding lock
 
         buf = io.BytesIO()
         wav_writer = wave.open(buf, "wb")
@@ -161,7 +162,7 @@ class TTSManager:
             from piper.config import SynthesisConfig
 
             syn_config = SynthesisConfig(length_scale=length_scale)
-            self._loaded_voice.synthesize_wav(text, wav_writer, syn_config=syn_config)
+            voice.synthesize_wav(text, wav_writer, syn_config=syn_config)
         except Exception as exc:
             log.error("TTS synthesis failed: %s", exc)
             try:
