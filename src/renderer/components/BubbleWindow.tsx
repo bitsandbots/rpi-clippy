@@ -70,6 +70,7 @@ export function Bubble() {
           className={currentView.startsWith("settings") ? "chat-nav-btn active" : "chat-nav-btn"}
           onClick={handleSettingsClick}
           aria-label="Settings"
+          title="Settings"
         >
           ⚙
         </button>

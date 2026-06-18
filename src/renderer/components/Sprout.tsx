@@ -107,7 +107,7 @@ export function Sprout() {
         style={{
           position: "absolute",
           height: "140px",
-          width: "186px",
+          width: "124px",
           backgroundColor: enableDragDebug ? "blue" : "transparent",
           opacity: 0.5,
           zIndex: 5,
@@ -131,7 +131,7 @@ export function Sprout() {
         src={animation.src}
         draggable={false}
         alt={character.name}
-        style={{ width: "186px" }}
+        style={{ width: "124px" }}
       />
     </div>
   );
