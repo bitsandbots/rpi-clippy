@@ -106,8 +106,8 @@ export function Sprout() {
         className="app-drag"
         style={{
           position: "absolute",
-          height: "140px",
-          width: "124px",
+          height: "420px",
+          width: "372px",
           backgroundColor: enableDragDebug ? "blue" : "transparent",
           opacity: 0.5,
           zIndex: 5,
@@ -117,12 +117,12 @@ export function Sprout() {
           className="app-no-drag"
           style={{
             position: "absolute",
-            height: "120px",
-            width: "68px",
+            height: "360px",
+            width: "204px",
             backgroundColor: enableDragDebug ? "red" : "transparent",
             zIndex: 10,
-            right: "60px",
-            top: "3px",
+            right: "180px",
+            top: "9px",
           }}
         ></div>
       </div>
@@ -131,7 +131,7 @@ export function Sprout() {
         src={animation.src}
         draggable={false}
         alt={character.name}
-        style={{ width: "124px" }}
+        style={{ width: "372px" }}
       />
     </div>
   );

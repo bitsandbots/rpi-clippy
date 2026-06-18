@@ -24,7 +24,7 @@ function SproutLayout() {
       <div style={{ flex: 1, minWidth: "320px", display: "flex", flexDirection: "column" }}>
         <Bubble />
       </div>
-      <div style={{ width: "124px", flexShrink: 0, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ width: "372px", flexShrink: 0, display: "flex", alignItems: "flex-end" }}>
         <Sprout />
       </div>
     </div>

@@ -15,15 +15,15 @@ import sys
 from pathlib import Path
 from typing import Tuple, List, Dict, Any
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SPROUT_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations" / "sprout"
 SPROUT_TSX_FILE = PROJECT_ROOT / "src" / "renderer" / "sprout-animations.tsx"
 
-# Canvas size (Double-sized for anti-aliasing)
-W, H = 124, 93
-W2, H2 = W * 2, H * 2
+# Output size (3x the legacy 124x93); W2/H2 is the fixed design canvas
+W, H = 372, 279
+W2, H2 = 248, 186
 
 # CoreConduit / Silver theme and plant colors
 COLOR_POT = (224, 112, 24)        # CoreConduit orange / terracotta
@@ -341,8 +341,9 @@ def draw_sprout_frame(
         draw_rotated_ellipse(img, (int(ax), int(ay)), (28, 10), frame_idx * 15, COLOR_WHITE)
         draw_rotated_ellipse(img, (int(ax), int(ay)), (28, 10), -frame_idx * 15 + 45, COLOR_WHITE)
 
-    # Resize down to W, H with Lanczos (anti-aliasing)
+    # Resize down to W, H with Lanczos (anti-aliasing) then sharpen
     final_img = img.resize((W, H), Image.Resampling.LANCZOS)
+    final_img = final_img.filter(ImageFilter.UnsharpMask(radius=0.6, percent=130, threshold=3))
     return final_img
 
 def save_animation(filename: str, frames: List[Image.Image], durations: List[int]) -> int:
@@ -556,12 +557,13 @@ def generate_all():
     frames_print = []
     for i in range(10):
         # Print paper sliding down
-        paper_y = i * 2.0
+        OS = W / 124  # output-space scale factor
+        paper_y = i * 2.0 * OS
         scratch = draw_sprout_frame(i, 10, bounce_y=-1.0)
-        # Draw small printed slip from pot rim
+        # Draw small printed slip from pot rim (coordinates in output W×H space)
         draw = ImageDraw.Draw(scratch)
         if i > 0:
-            draw.rectangle([60, 80 + paper_y, 80, 95 + paper_y], fill=COLOR_WHITE, outline=(200,200,200))
+            draw.rectangle([int(60*OS), int(80*OS) + int(paper_y), int(80*OS), int(95*OS) + int(paper_y)], fill=COLOR_WHITE, outline=(200,200,200))
         frames_print.append(scratch)
     durations["Print"] = save_animation("Print.png", frames_print, [120]*10)
 

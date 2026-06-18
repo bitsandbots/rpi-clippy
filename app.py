@@ -91,7 +91,10 @@ def serve_spa(path):
 
     index = DIST_DIR / "index.html"
     if index.exists():
-        return index.read_text(), 200, {"Content-Type": "text/html"}
+        return index.read_text(), 200, {
+            "Content-Type": "text/html",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+        }
 
     return (
         "<h1>Sprout</h1><p>Run <code>npm run build</code> first, then restart.</p>",
