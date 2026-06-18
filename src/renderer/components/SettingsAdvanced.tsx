@@ -1,4 +1,4 @@
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 
 export const SettingsAdvanced: React.FC = () => {
   return (
@@ -6,10 +6,10 @@ export const SettingsAdvanced: React.FC = () => {
       <fieldset>
         <legend>Delete All Models</legend>
         <p>
-          This will delete all models from Clippy. This action is not
+          This will delete all models from Sprout. This action is not
           reversible.
         </p>
-        <button onClick={() => clippyApi.deleteAllModels()}>
+        <button onClick={() => sproutApi.deleteAllModels()}>
           Delete All Models
         </button>
       </fieldset>

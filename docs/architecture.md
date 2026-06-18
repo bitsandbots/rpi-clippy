@@ -10,7 +10,7 @@
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │   Browser → React SPA → 98.css UI                         │  │
 │  │   - BubbleWindow.tsx (chat interface)                     │  │
-│  │   - Clippy.tsx (animated sprite)                          │  │
+│  │   - Sprout.tsx (animated sprite)                          │  │
 │  │   - Settings panels (Appearance, Voice, LLM)              │  │
 │  │   - Responsive design with flexbox layout                 │  │
 │  └───────────────────────────────────────────────────────────┘  │
@@ -116,7 +116,7 @@ class SettingsManager:
 **Settings**:
 
 - `selectedModel` - Current LLM model
-- `systemPrompt` - Clippy persona definition
+- `systemPrompt` - Sprout persona definition
 - `temperature`, `topK` - LLM sampling parameters
 - `defaultFont`, `defaultFontSize` - UI styling
 - `ollamaUrl` - Ollama endpoint (for remote instances)
@@ -187,7 +187,7 @@ speakText(), transcribeAudio(), ...
 
 **Core UI**:
 
-- `Clippy.tsx` - Animated sprite with CSS position
+- `Sprout.tsx` - Animated sprite with CSS position
 - `BubbleWindow.tsx` - Chat bubble container
 - `App.tsx` - Root component with all providers
 
@@ -328,7 +328,7 @@ export default defineConfig({
 | Path traversal     | `_valid_chat_id()` uses regex `^[A-Za-z0-9_-]+$` |
 | Payload size       | 32KB message limit, 10MB chat write limit        |
 | Input validation   | Length checks before processing                  |
-| No secrets in code | Settings from `~/.config/Clippy/`                |
+| No secrets in code | Settings from `~/.config/Sprout/`                |
 
 ## Performance Characteristics
 

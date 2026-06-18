@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Clippy Flask server — replaces the Electron main process.
+Sprout Flask server — replaces the Electron main process.
 Serves the React SPA and exposes a REST/SSE API for the frontend.
 
 Usage:
@@ -94,7 +94,7 @@ def serve_spa(path):
         return index.read_text(), 200, {"Content-Type": "text/html"}
 
     return (
-        "<h1>Clippy</h1><p>Run <code>npm run build</code> first, then restart.</p>",
+        "<h1>Sprout</h1><p>Run <code>npm run build</code> first, then restart.</p>",
         200,
         {"Content-Type": "text/html"},
     )
@@ -552,7 +552,7 @@ def versions():
         flask_version = "unknown"
     return jsonify(
         {
-            "clippy": VERSION,
+            "sprout": VERSION,
             "python": platform.python_version(),
             "flask": flask_version,
         }
@@ -568,6 +568,6 @@ if __name__ == "__main__":
     saved_url = get_settings().get("ollamaUrl")
     if saved_url:
         set_ollama_base(saved_url)
-    print(f"Clippy running at http://localhost:{PORT}")
+    print(f"Sprout running at http://localhost:{PORT}")
     print(f"LAN access: http://0.0.0.0:{PORT}")
     app.run(host="0.0.0.0", port=PORT, threaded=True, debug=False)

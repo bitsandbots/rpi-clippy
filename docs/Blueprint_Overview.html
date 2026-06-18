@@ -1,0 +1,2479 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprout — Blueprint Overview v0.5.0</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --navy: #0a1628;
+        --surface: #0f1e35;
+        --silver: #e8eaed;
+        --blue: #2b7de9;
+        --orange: #e07018;
+        --muted: #8a9bb5;
+        --border: #1e3050;
+        --sidebar-w: 240px;
+        --font-body:
+          system-ui, "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont,
+          sans-serif;
+        --font-mono:
+          "IBM Plex Mono", "Cascadia Code", "Fira Code", "Courier New",
+          monospace;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        font-size: 15px;
+      }
+
+      body {
+        background: var(--navy);
+        color: var(--silver);
+        font-family: var(--font-body);
+        line-height: 1.65;
+        min-height: 100vh;
+      }
+
+      /* ── Sidebar ── */
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-w);
+        height: 100vh;
+        background: #080f1e;
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        padding: 0 0 2rem;
+        z-index: 100;
+      }
+
+      #sidebar .sidebar-brand {
+        padding: 1.25rem 1rem 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.5rem;
+      }
+
+      #sidebar .sidebar-brand h2 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        background: linear-gradient(90deg, var(--blue), var(--orange));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      #sidebar .sidebar-brand span {
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+      }
+
+      #sidebar nav ul {
+        list-style: none;
+      }
+
+      #sidebar nav ul li a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.45rem 1rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.82rem;
+        transition:
+          color 0.15s,
+          background 0.15s;
+        border-left: 3px solid transparent;
+      }
+
+      #sidebar nav ul li a:hover,
+      #sidebar nav ul li a.active {
+        color: var(--silver);
+        background: rgba(43, 125, 233, 0.08);
+        border-left-color: var(--blue);
+      }
+
+      .gap-badge {
+        font-size: 0.65rem;
+        background: var(--orange);
+        color: #fff;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        flex-shrink: 0;
+      }
+
+      .nav-section-label {
+        padding: 1rem 1rem 0.3rem;
+        font-size: 0.68rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 600;
+      }
+
+      /* ── Main content ── */
+      #main {
+        margin-left: var(--sidebar-w);
+        padding: 0 2.5rem 4rem;
+        max-width: 1000px;
+      }
+
+      /* ── Header ── */
+      #site-header {
+        padding: 3rem 0 2rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2.5rem;
+      }
+
+      #site-header .header-eyebrow {
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--orange);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      #site-header h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+      }
+
+      #site-header h1 span {
+        color: var(--blue);
+      }
+
+      #site-header .tagline {
+        margin-top: 0.6rem;
+        font-size: 1.05rem;
+        color: var(--muted);
+        max-width: 560px;
+      }
+
+      .header-meta {
+        margin-top: 1.2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        font-family: var(--font-mono);
+      }
+
+      .badge-blue {
+        background: rgba(43, 125, 233, 0.15);
+        color: var(--blue);
+        border: 1px solid rgba(43, 125, 233, 0.3);
+      }
+      .badge-orange {
+        background: rgba(224, 112, 24, 0.15);
+        color: var(--orange);
+        border: 1px solid rgba(224, 112, 24, 0.3);
+      }
+      .badge-green {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+      }
+
+      .header-link {
+        color: var(--blue);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+      .header-link:hover {
+        text-decoration: underline;
+      }
+
+      /* ── Section ── */
+      section {
+        margin-bottom: 3.5rem;
+        scroll-margin-top: 1.5rem;
+      }
+
+      section h2 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      section h2 .section-num {
+        font-size: 0.75rem;
+        color: var(--orange);
+        font-family: var(--font-mono);
+        font-weight: 700;
+        padding: 2px 6px;
+        border: 1px solid var(--orange);
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      section h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin: 1.5rem 0 0.6rem;
+        color: var(--silver);
+      }
+
+      section h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin: 1rem 0 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      p {
+        margin-bottom: 0.9rem;
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+        border-top: 3px solid;
+        border-image: linear-gradient(90deg, var(--blue), var(--orange)) 1;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-top: 3px solid;
+        border-image: linear-gradient(90deg, var(--blue), var(--orange)) 1;
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        text-align: center;
+      }
+
+      .stat-card .stat-num {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--blue);
+        font-family: var(--font-mono);
+      }
+
+      .stat-card .stat-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-top: 0.2rem;
+      }
+
+      /* ── Code blocks ── */
+      pre {
+        background: var(--navy);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.6;
+        margin: 0.75rem 0 1rem;
+        color: #b8cce8;
+      }
+
+      pre .kw {
+        color: var(--blue);
+      }
+      pre .str {
+        color: var(--orange);
+      }
+      pre .cm {
+        color: var(--muted);
+        font-style: italic;
+      }
+      pre .hl {
+        color: #4ade80;
+      }
+      pre .url {
+        color: #a78bfa;
+      }
+      pre .num {
+        color: #f9a8d4;
+      }
+
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.84em;
+        background: rgba(43, 125, 233, 0.1);
+        color: #93c5fd;
+        padding: 1px 5px;
+        border-radius: 3px;
+        border: 1px solid rgba(43, 125, 233, 0.2);
+      }
+
+      pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font-size: 1em;
+      }
+
+      /* ── Tables ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+        margin: 0.75rem 0 1rem;
+      }
+
+      th {
+        background: rgba(43, 125, 233, 0.1);
+        color: var(--blue);
+        font-weight: 600;
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid rgba(30, 48, 80, 0.6);
+        color: var(--silver);
+        vertical-align: top;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(43, 125, 233, 0.04);
+      }
+
+      /* ── Lists ── */
+      ul,
+      ol {
+        padding-left: 1.5rem;
+        margin-bottom: 0.9rem;
+      }
+
+      li {
+        margin-bottom: 0.3rem;
+      }
+
+      /* ── Step list ── */
+      .steps {
+        list-style: none;
+        padding: 0;
+        counter-reset: step;
+      }
+
+      .steps li {
+        counter-increment: step;
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        align-items: flex-start;
+      }
+
+      .steps li::before {
+        content: counter(step);
+        background: linear-gradient(135deg, var(--blue), var(--orange));
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 800;
+        min-width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+        font-family: var(--font-mono);
+      }
+
+      /* ── Gap analysis ── */
+      .gap-box {
+        background: rgba(224, 112, 24, 0.07);
+        border: 1px solid rgba(224, 112, 24, 0.3);
+        border-left: 3px solid var(--orange);
+        border-radius: 5px;
+        padding: 0.85rem 1rem;
+        margin: 0.75rem 0;
+        font-size: 0.88rem;
+      }
+
+      .gap-box .gap-title {
+        font-weight: 700;
+        color: var(--orange);
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+      }
+
+      .gap-box .gap-status {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        margin-bottom: 0.4rem;
+      }
+
+      /* ── Callout ── */
+      .callout {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: 5px;
+        margin: 0.75rem 0;
+        font-size: 0.88rem;
+        border: 1px solid;
+        align-items: flex-start;
+      }
+
+      .callout-info {
+        background: rgba(43, 125, 233, 0.08);
+        border-color: rgba(43, 125, 233, 0.25);
+      }
+      .callout-warn {
+        background: rgba(224, 112, 24, 0.08);
+        border-color: rgba(224, 112, 24, 0.25);
+      }
+      .callout-ok {
+        background: rgba(34, 197, 94, 0.07);
+        border-color: rgba(34, 197, 94, 0.2);
+      }
+
+      .callout-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* ── Endpoint entry ── */
+      .endpoint {
+        display: flex;
+        gap: 0.6rem;
+        align-items: baseline;
+        margin-bottom: 0.25rem;
+        flex-wrap: wrap;
+      }
+
+      .method {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      .method-get {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      .method-post {
+        background: rgba(43, 125, 233, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(43, 125, 233, 0.3);
+      }
+      .method-del {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .endpoint-path {
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        color: var(--silver);
+      }
+
+      .endpoint-desc {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-left: auto;
+      }
+
+      .endpoint-group {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        border-top: 3px solid;
+        border-image: linear-gradient(90deg, var(--blue), var(--orange)) 1;
+      }
+
+      .endpoint-group h4 {
+        margin-top: 0;
+        color: var(--blue);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+      }
+
+      /* ── Component tree ── */
+      .component-tree {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.7;
+        color: #b8cce8;
+      }
+
+      .component-tree .comp-name {
+        color: var(--blue);
+      }
+      .component-tree .file-ref {
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      /* ── HR ── */
+      hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2rem 0;
+      }
+
+      /* ── Scroll indicator (top bar) ── */
+      #scroll-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--blue), var(--orange));
+        transform-origin: left;
+        transform: scaleX(0);
+        z-index: 200;
+        transition: transform 0.1s;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 768px) {
+        :root {
+          --sidebar-w: 0px;
+        }
+
+        #sidebar {
+          width: 100%;
+          height: auto;
+          position: sticky;
+          top: 0;
+          overflow-x: auto;
+          overflow-y: hidden;
+          white-space: nowrap;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding: 0;
+        }
+
+        #sidebar .sidebar-brand {
+          display: none;
+        }
+        #sidebar .nav-section-label {
+          display: none;
+        }
+
+        #sidebar nav ul {
+          display: flex;
+          flex-direction: row;
+        }
+
+        #sidebar nav ul li a {
+          border-left: none;
+          border-bottom: 3px solid transparent;
+          padding: 0.65rem 0.85rem;
+          white-space: nowrap;
+        }
+
+        #sidebar nav ul li a.active,
+        #sidebar nav ul li a:hover {
+          border-bottom-color: var(--blue);
+          border-left-color: transparent;
+        }
+
+        #main {
+          margin-left: 0;
+          padding: 0 1rem 4rem;
+        }
+
+        .gap-badge {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scroll-bar"></div>
+
+    <!-- ── Sidebar ── -->
+    <aside id="sidebar">
+      <div class="sidebar-brand">
+        <h2>Sprout</h2>
+        <span>Blueprint v0.5.0</span>
+      </div>
+      <nav>
+        <div class="nav-section-label">Getting Started</div>
+        <ul>
+          <li><a href="#quick-start">Quick Start</a></li>
+          <li><a href="#overview">Project Overview</a></li>
+        </ul>
+        <div class="nav-section-label">Technical</div>
+        <ul>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#api">API Reference</a></li>
+          <li><a href="#frontend">Frontend Components</a></li>
+          <li><a href="#voice">Voice Features</a></li>
+          <li><a href="#tech-stack">Tech Stack</a></li>
+        </ul>
+        <div class="nav-section-label">Development</div>
+        <ul>
+          <li><a href="#development">Development</a></li>
+          <li>
+            <a href="#gap-analysis"
+              >Gap Analysis <span class="gap-badge">4</span></a
+            >
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main id="main">
+      <!-- ── Header ── -->
+      <div id="site-header">
+        <div class="header-eyebrow">CoreConduit / rpi-sprout</div>
+        <h1><span>Sprout</span> — Blueprint Overview</h1>
+        <p class="tagline">
+          A revival of Microsoft Office 97's animated assistant as a local LLM
+          chat interface, running headless on Raspberry Pi 5. No cloud. No
+          Electron. No display server required.
+        </p>
+        <div class="header-meta">
+          <span class="badge badge-blue">v0.5.0</span>
+          <span class="badge badge-orange">Flask + React SPA</span>
+          <span class="badge badge-green">Pi 5 Ready</span>
+          <a
+            class="header-link"
+            href="https://github.com/bitsandbots/rpi-sprout"
+            >github.com/bitsandbots/rpi-sprout</a
+          >
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+       1. QUICK START
+  ══════════════════════════════════════════ -->
+      <section id="quick-start">
+        <h2><span class="section-num">01</span> Quick Start</h2>
+
+        <ol class="steps">
+          <li>
+            <div>
+              <strong>Install Ollama</strong>
+              <pre><code><span class="hl">curl</span> -fsSL https://ollama.com/install.sh | sh
+sudo systemctl status ollama</code></pre>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Pull a model</strong> (choose based on available RAM — see
+              <a href="#tech-stack" style="color: var(--blue)">Tech Stack</a>
+              for recommendations)
+              <pre><code><span class="cm"># 4 GB Pi — either of these</span>
+ollama pull llama3.2:1b
+ollama pull gemma3:1b
+
+<span class="cm"># 8 GB Pi</span>
+ollama pull qwen3:4b</code></pre>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Clone the repository</strong>
+              <pre><code>git clone https://github.com/bitsandbots/rpi-sprout
+cd rpi-sprout</code></pre>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Run the installer</strong> — installs dependencies, builds
+              the frontend, registers and starts the systemd service
+              <pre><code>bash install.sh</code></pre>
+              Then open <code>http://&lt;pi-ip&gt;:5080</code> from any device
+              on the LAN. Voice features need Piper voices (optional,
+              post-install):
+              <pre><code>bash scripts/setup_voices.sh        <span class="cm"># default voices</span>
+bash scripts/setup_voices.sh all    <span class="cm"># all available</span></code></pre>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       2. OVERVIEW
+  ══════════════════════════════════════════ -->
+      <section id="overview">
+        <h2><span class="section-num">02</span> Project Overview</h2>
+
+        <p>
+          Sprout replaces the original Electron-based Clippy revival with a
+          Flask + React SPA that runs headless on a Raspberry Pi 5, accessible
+          from any browser on the local network. Removing Electron saved ~100 MB
+          of dependencies and eliminated the requirement for a display server.
+        </p>
+
+        <div class="card-grid">
+          <div class="stat-card">
+            <div class="stat-num">5080</div>
+            <div class="stat-label">Default port</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">0 ☁</div>
+            <div class="stat-label">Cloud deps</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">169</div>
+            <div class="stat-label">Backend tests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">77</div>
+            <div class="stat-label">Frontend tests</div>
+          </div>
+        </div>
+
+        <h3>Goals</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Goal</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Local LLM inference via Ollama</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Windows 98-style UI (98.css)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Text-to-Speech via Piper TTS</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Speech-to-Text via Faster-Whisper</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Persistent chat history (JSON files)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Systemd auto-start on boot</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Hardened voice error handling</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Data Flow</h3>
+        <pre><code>User (browser) → textarea → Send
+    │
+    ▼
+React (api.ts) → EventSource /api/llm/stream?uuid=&amp;message=
+    │
+    ▼
+Flask (app.py) → OllamaService.prompt_streaming()
+    │
+    ▼
+Ollama (localhost:11434) → streaming JSON response
+    │
+    ▼
+SSE chunks → React → message display + optional TTS playback</code></pre>
+
+        <h3>Storage Layout</h3>
+        <pre><code>~/.config/Sprout/
+├── settings.json          <span class="cm"># font, model, selectedVoice, etc.</span>
+├── debug.json             <span class="cm"># debug flags (polled every 5 s)</span>
+├── chats/
+│   ├── chats.json         <span class="cm"># index of all conversations</span>
+│   └── &lt;uuid&gt;.json        <span class="cm"># individual chat + messages</span>
+└── voices/
+    ├── &lt;id&gt;.onnx          <span class="cm"># Piper voice model</span>
+    ├── &lt;id&gt;.onnx.json     <span class="cm"># Piper voice config</span>
+    └── &lt;id&gt;.meta.json     <span class="cm"># display metadata</span>
+
+~/.ollama/models/          <span class="cm"># LLM weights (managed by Ollama)</span></code></pre>
+
+        <h3>Non-Goals</h3>
+        <ul>
+          <li>Cloud LLM integration (OpenAI, Anthropic, etc.)</li>
+          <li>Authentication / authorization</li>
+          <li>Cross-device sync</li>
+          <li>Wake-word voice assistant</li>
+          <li>Native mobile app</li>
+        </ul>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       3. ARCHITECTURE
+  ══════════════════════════════════════════ -->
+      <section id="architecture">
+        <h2><span class="section-num">03</span> Architecture</h2>
+
+        <h3>Three-Tier Diagram</h3>
+        <pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                           │
+│  Browser → React SPA (98.css aesthetic)                         │
+│  BubbleWindow.tsx · Sprout.tsx · Settings panels                │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │  HTTP + SSE (port 5080)
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Application Layer (Flask)                    │
+│  app.py — REST routes, SSE endpoints, thread-safe singletons    │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │  Ollama HTTP · File I/O
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Data Layer (Python + FS)                     │
+│  OllamaService  ChatManager  SettingsManager  TTSManager  STT   │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+
+        <h3>Core Python Modules</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Path</th>
+              <th>Responsibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>OllamaService</code></td>
+              <td><code>src/python/ollama_service.py</code></td>
+              <td>
+                LLM inference, model pull fan-out, SSE queues, abort events
+              </td>
+            </tr>
+            <tr>
+              <td><code>ChatManager</code></td>
+              <td><code>src/python/chat_manager.py</code></td>
+              <td>
+                JSON-file CRUD for conversations under
+                <code>~/.config/Sprout/chats/</code>
+              </td>
+            </tr>
+            <tr>
+              <td><code>SettingsManager</code></td>
+              <td><code>src/python/settings_manager.py</code></td>
+              <td>
+                Dot-notation get/set against <code>settings.json</code>; also
+                hosts <code>DebugSettingsManager</code>
+              </td>
+            </tr>
+            <tr>
+              <td><code>TTSManager</code></td>
+              <td><code>src/python/tts_manager.py</code></td>
+              <td>
+                Piper <code>.onnx</code> voice loading, text → WAV synthesis,
+                voice registry
+              </td>
+            </tr>
+            <tr>
+              <td><code>STTManager</code></td>
+              <td><code>src/python/stt_manager.py</code></td>
+              <td>
+                Faster-Whisper model loading, audio → text (base64 or file)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Thread Safety Pattern</h3>
+        <p>
+          All five managers are Flask-thread-safe singletons using
+          double-checked locking:
+        </p>
+        <pre><code><span class="kw">def</span> get_tts_manager() -> TTSManager:
+    <span class="kw">global</span> _tts
+    <span class="kw">if</span> _tts <span class="kw">is None</span>:
+        <span class="kw">with</span> _tts_lock:
+            <span class="kw">if</span> _tts <span class="kw">is None</span>:
+                _tts = TTSManager()
+    <span class="kw">return</span> _tts</code></pre>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Resource</th>
+              <th>Lock</th>
+              <th>Protects</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>_history</code></td>
+              <td><code>_history_lock</code></td>
+              <td>Conversation history (race in streaming + writes)</td>
+            </tr>
+            <tr>
+              <td><code>_loaded_voice</code></td>
+              <td><code>_lock</code></td>
+              <td>Concurrent TTS synthesis</td>
+            </tr>
+            <tr>
+              <td><code>_pull_queues</code></td>
+              <td><code>_pull_lock</code></td>
+              <td>SSE fan-out subscriber list</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>SSE Streaming Patterns</h3>
+        <p>Two SSE mechanisms are used:</p>
+        <ul>
+          <li>
+            <strong>LLM inference</strong> — each client gets a direct
+            generator. Abort via <code>POST /api/llm/abort</code> sets a
+            <code>threading.Event</code> checked per chunk.
+          </li>
+          <li>
+            <strong>Model pull progress</strong> — fan-out via
+            <code>queue.Queue</code> per subscriber. Multiple browser tabs can
+            watch the same pull.
+          </li>
+        </ul>
+
+        <h3>Security Controls</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Concern</th>
+              <th>Mitigation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Path traversal in chat IDs</td>
+              <td>
+                <code>_valid_chat_id()</code> regex
+                <code>^[A-Za-z0-9_-]+$</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Oversized payloads</td>
+              <td>
+                10 MB chat write cap, 1 000 message limit, 32 000-char message
+                limit, ~7 MB audio cap
+              </td>
+            </tr>
+            <tr>
+              <td>No secrets in code</td>
+              <td>All settings in <code>~/.config/Sprout/</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       4. INSTALLATION
+  ══════════════════════════════════════════ -->
+      <section id="installation">
+        <h2><span class="section-num">04</span> Installation</h2>
+
+        <h3>Prerequisites</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Software</th>
+              <th>Minimum</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Python</td>
+              <td>3.11</td>
+              <td>Type hints, pathlib improvements</td>
+            </tr>
+            <tr>
+              <td>Node.js</td>
+              <td>20</td>
+              <td>Frontend build (Vite)</td>
+            </tr>
+            <tr>
+              <td>Ollama</td>
+              <td>any recent</td>
+              <td>Local LLM server — must be running before Sprout starts</td>
+            </tr>
+            <tr>
+              <td>ffmpeg</td>
+              <td>any</td>
+              <td>Audio format conversion for STT input</td>
+            </tr>
+            <tr>
+              <td>libespeak-ng1</td>
+              <td>—</td>
+              <td>eSpeak-NG for Piper TTS</td>
+            </tr>
+            <tr>
+              <td>libsndfile1</td>
+              <td>—</td>
+              <td>Audio file I/O</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Hardware</th>
+              <th>RAM</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Raspberry Pi 5</td>
+              <td>4 GB+</td>
+              <td>Recommended — 8 GB preferred</td>
+            </tr>
+            <tr>
+              <td>Raspberry Pi 4</td>
+              <td>4 GB+</td>
+              <td>Works; slower inference</td>
+            </tr>
+            <tr>
+              <td>Any Linux x86_64</td>
+              <td>—</td>
+              <td>Python 3.11+ required</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>One-Command Install</h3>
+        <pre><code><span class="cm"># 1. Pull a model first</span>
+ollama pull llama3.2:1b
+
+<span class="cm"># 2. Clone and run installer</span>
+git clone https://github.com/bitsandbots/rpi-sprout
+cd rpi-sprout
+bash install.sh</code></pre>
+
+        <p>The installer performs these steps automatically:</p>
+        <ol>
+          <li>Verifies Python 3.11+ and Node.js 20+ are present</li>
+          <li>
+            Installs system apt packages:
+            <code>libespeak-ng1 libsndfile1 ffmpeg</code>
+          </li>
+          <li>
+            Installs Python dependencies from <code>requirements.txt</code>
+          </li>
+          <li>Runs <code>npm install</code></li>
+          <li>
+            Builds the React frontend with <code>npm run build</code> →
+            <code>dist/</code>
+          </li>
+          <li>
+            Generates and installs
+            <code>/etc/systemd/system/sprout.service</code>
+          </li>
+          <li>Runs <code>systemctl enable --now sprout</code></li>
+        </ol>
+
+        <h3>Verify Installation</h3>
+        <pre><code>sudo systemctl status sprout
+curl http://localhost:5080/api/versions
+<span class="cm"># Expected: {"sprout": "0.5.0", "python": "3.11.x", "flask": "3.1.3"}</span>
+
+curl http://localhost:5080/api/state
+<span class="cm"># Expected: {"models": {...}, "settings": {...}}</span></code></pre>
+
+        <h3>Post-Install: Voices</h3>
+        <pre><code><span class="cm"># Default voice pack</span>
+bash scripts/setup_voices.sh
+
+<span class="cm"># Single voice</span>
+bash scripts/setup_voices.sh en_US-amy-medium
+
+<span class="cm"># All available voices</span>
+bash scripts/setup_voices.sh all
+
+<span class="cm"># Verify</span>
+ls -la ~/.config/Sprout/voices/</code></pre>
+
+        <h3>Service Management</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Command</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Status</td>
+              <td><code>sudo systemctl status sprout</code></td>
+            </tr>
+            <tr>
+              <td>Start</td>
+              <td><code>sudo systemctl start sprout</code></td>
+            </tr>
+            <tr>
+              <td>Stop</td>
+              <td><code>sudo systemctl stop sprout</code></td>
+            </tr>
+            <tr>
+              <td>Restart</td>
+              <td><code>sudo systemctl restart sprout</code></td>
+            </tr>
+            <tr>
+              <td>Enable on boot</td>
+              <td><code>sudo systemctl enable sprout</code></td>
+            </tr>
+            <tr>
+              <td>Disable on boot</td>
+              <td><code>sudo systemctl disable sprout</code></td>
+            </tr>
+            <tr>
+              <td>Live logs</td>
+              <td><code>sudo journalctl -u sprout -f</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Service file location: <code>/etc/systemd/system/sprout.service</code>
+        </p>
+
+        <h3>Troubleshooting</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Problem</th>
+              <th>Diagnosis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Service won't start</td>
+              <td>
+                <code>sudo journalctl -u sprout -n 50</code> — check for import
+                errors or missing <code>dist/</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Port 5080 in use</td>
+              <td>
+                <code>sudo lsof -i :5080</code> to find the conflicting process
+              </td>
+            </tr>
+            <tr>
+              <td>Models not loading</td>
+              <td>
+                <code>curl http://localhost:11434/api/tags</code> — verify
+                Ollama is running and has models
+              </td>
+            </tr>
+            <tr>
+              <td>No audio / TTS silent</td>
+              <td>
+                <code>aplay -l</code> for output devices,
+                <code>alsamixer</code> for volume,
+                <code>speaker-test -c 2 -t wav</code> to test
+              </td>
+            </tr>
+            <tr>
+              <td>STT not transcribing</td>
+              <td>
+                <code>ffmpeg -version</code> — required for WebM → WAV
+                conversion; check mic permissions in browser
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       5. API REFERENCE
+  ══════════════════════════════════════════ -->
+      <section id="api">
+        <h2><span class="section-num">05</span> API Reference</h2>
+
+        <p>
+          All endpoints prefixed with <code>/api/</code>. Flask server binds
+          <code>0.0.0.0:5080</code>. Version key in
+          <code>/api/versions</code> response: <code>"sprout"</code>. Message
+          sender field: <code>"sprout"</code>.
+        </p>
+
+        <div class="endpoint-group">
+          <h4>State Management</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-path">/api/state</span>
+            <span class="endpoint-desc"
+              >Full shared state (models + settings)</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-path">/api/state</span>
+            <span class="endpoint-desc"
+              >Set a single setting — body:
+              <code>{"key": "...", "value": ...}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-path">/api/debug-state</span>
+            <span class="endpoint-desc">Read debug flags</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-path">/api/debug-state</span>
+            <span class="endpoint-desc"
+              >Write debug flag — body:
+              <code>{"key": "...", "value": ...}</code></span
+            >
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>Chat CRUD</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/chats</span
+            ><span class="endpoint-desc"
+              >List all chat records (index, no messages)</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/chats/&lt;chat_id&gt;</span
+            ><span class="endpoint-desc"
+              >Get specific chat with all messages</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/chats/&lt;chat_id&gt;</span
+            ><span class="endpoint-desc"
+              >Write chat + messages — max 10 MB, 1 000 messages</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-del">DELETE</span
+            ><span class="endpoint-path">/api/chats/&lt;chat_id&gt;</span
+            ><span class="endpoint-desc">Delete a single chat</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-del">DELETE</span
+            ><span class="endpoint-path">/api/chats</span
+            ><span class="endpoint-desc">Delete all chats</span>
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>Model Management</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/models</span
+            ><span class="endpoint-desc">Model list with download status</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/models/refresh</span
+            ><span class="endpoint-desc">Refresh available model cache</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-path">/api/models/download</span>
+            <span class="endpoint-desc"
+              >Download model — <code>{"tag": "gemma3:1b"}</code> <em>or</em>
+              <code>{"name": "Gemma 3 (1B)"}</code> (tag takes priority)</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/models/delete</span
+            ><span class="endpoint-desc"
+              >Delete model from Ollama — body:
+              <code>{"name": "..."}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/models/remove</span
+            ><span class="endpoint-desc"
+              >Remove from cache without deleting from Ollama</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/models/delete-all</span
+            ><span class="endpoint-desc">Delete all models from Ollama</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/models/pull-progress</span
+            ><span class="endpoint-desc"
+              >SSE stream — model download events (fan-out, multiple clients
+              OK)</span
+            >
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>LLM Session + Streaming</h4>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/llm/create</span
+            ><span class="endpoint-desc"
+              >Create LLM session — model, systemPrompt, temperature, topK</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/llm/destroy</span
+            ><span class="endpoint-desc">Destroy current LLM session</span>
+          </div>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/llm/stream</span
+            ><span class="endpoint-desc"
+              >SSE stream — query params: <code>uuid</code>,
+              <code>message</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/llm/abort</span
+            ><span class="endpoint-desc"
+              >Abort in-progress stream — body:
+              <code>{"uuid": "..."}</code></span
+            >
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>Ollama Connection</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/ollama/status</span
+            ><span class="endpoint-desc"
+              >Connectivity check — returns URL, connected bool,
+              activeModel</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/ollama/url</span
+            ><span class="endpoint-desc"
+              >Change Ollama base URL — refreshes cache, returns updated model
+              state</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/ollama/discover</span
+            ><span class="endpoint-desc"
+              >Scan local subnet for Ollama instances</span
+            >
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>Voice — TTS + STT</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/voice/state</span
+            ><span class="endpoint-desc"
+              >TTS and STT state, voice list, available STT models</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/tts-toggle</span
+            ><span class="endpoint-desc"
+              >Toggle TTS — body: <code>{"enabled": true}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/stt-toggle</span
+            ><span class="endpoint-desc"
+              >Toggle STT — body: <code>{"enabled": true}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/set-voice</span
+            ><span class="endpoint-desc"
+              >Load voice — body: <code>{"voiceId": "en_US-amy-medium"}</code>;
+              persists to settings.json</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/rescan</span
+            ><span class="endpoint-desc"
+              >Rescan <code>~/.config/Sprout/voices/</code> for new voices</span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/speak</span
+            ><span class="endpoint-desc"
+              >TTS synthesis → <code>audio/wav</code> bytes — body:
+              <code>{"text": "...", "lengthScale": 1.0}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/transcribe</span
+            ><span class="endpoint-desc"
+              >STT — body:
+              <code>{"audio": "&lt;base64&gt;", "language": "en"}</code></span
+            >
+          </div>
+          <div class="endpoint">
+            <span class="method method-post">POST</span
+            ><span class="endpoint-path">/api/voice/stt-model</span
+            ><span class="endpoint-desc"
+              >Change STT model — body: <code>{"model": "base"}</code></span
+            >
+          </div>
+        </div>
+
+        <div class="endpoint-group">
+          <h4>Utility</h4>
+          <div class="endpoint">
+            <span class="method method-get">GET</span
+            ><span class="endpoint-path">/api/versions</span
+            ><span class="endpoint-desc"
+              >Version info — returns
+              <code
+                >{"sprout": "0.5.0", "python": "...", "flask": "..."}</code
+              ></span
+            >
+          </div>
+        </div>
+
+        <h3>SSE Event Schemas</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Stream</th>
+              <th>Type</th>
+              <th>Key Fields</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pull progress</td>
+              <td><code>pull_progress</code></td>
+              <td>tag, status, total, completed, elapsed</td>
+            </tr>
+            <tr>
+              <td>Pull progress</td>
+              <td><code>pull_done</code></td>
+              <td>tag</td>
+            </tr>
+            <tr>
+              <td>Pull progress</td>
+              <td><code>pull_error</code></td>
+              <td>tag, error</td>
+            </tr>
+            <tr>
+              <td>LLM stream</td>
+              <td><code>chunk</code></td>
+              <td>uuid, text</td>
+            </tr>
+            <tr>
+              <td>LLM stream</td>
+              <td><code>done</code></td>
+              <td>uuid</td>
+            </tr>
+            <tr>
+              <td>LLM stream</td>
+              <td><code>error</code></td>
+              <td>uuid, error</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Error Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>HTTP</th>
+              <th>Error</th>
+              <th>Cause</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>400</td>
+              <td><code>invalid chat_id</code></td>
+              <td>ID contains chars outside <code>[A-Za-z0-9_-]</code></td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>key required</code></td>
+              <td>POST to <code>/api/state</code> missing key field</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>uuid and message required</code></td>
+              <td>Missing SSE stream query params</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>name required</code></td>
+              <td>Model endpoint missing name</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>voiceId required</code></td>
+              <td>Missing voice ID</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>audio (base64) required</code></td>
+              <td>Missing audio in transcribe</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>text required</code></td>
+              <td>Missing text in speak</td>
+            </tr>
+            <tr>
+              <td>400</td>
+              <td><code>model required</code></td>
+              <td>Missing STT model name</td>
+            </tr>
+            <tr>
+              <td>413</td>
+              <td><code>payload too large</code></td>
+              <td>Request body exceeds 10 MB</td>
+            </tr>
+            <tr>
+              <td>413</td>
+              <td><code>message too long</code></td>
+              <td>Message exceeds 32 000 chars</td>
+            </tr>
+            <tr>
+              <td>413</td>
+              <td><code>audio payload too large</code></td>
+              <td>Audio exceeds ~7 MB</td>
+            </tr>
+            <tr>
+              <td>422</td>
+              <td><code>unknown_voice: &lt;id&gt;</code></td>
+              <td>Voice not in registry — response includes available list</td>
+            </tr>
+            <tr>
+              <td>500</td>
+              <td><code>&lt;exception&gt;</code></td>
+              <td>Unhandled internal error</td>
+            </tr>
+            <tr>
+              <td>503</td>
+              <td><code>TTS not available</code></td>
+              <td>No voice loaded</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Frontend API Shim</h3>
+        <p>
+          <code>src/renderer/sproutApi.tsx</code> is a backward-compat re-export
+          from <code>api.ts</code>. New code should import directly from
+          <code>api.ts</code>.
+        </p>
+        <pre><code><span class="cm">// sproutApi.tsx is a shim — import from api.ts for new code</span>
+<span class="kw">import</span> { sproutApi, electronAi } <span class="kw">from</span> <span class="str">"./sproutApi"</span>;
+
+<span class="cm">// Get full state</span>
+<span class="kw">const</span> state = <span class="kw">await</span> sproutApi.getFullState();
+
+<span class="cm">// Start streaming inference</span>
+electronAi.promptStreaming(
+  <span class="str">"Hello Sprout"</span>,
+  { requestUUID: <span class="str">"req-123"</span> },
+  {
+    onChunk: (text) => console.log(text),
+    onDone:  ()     => console.log(<span class="str">"done"</span>),
+    onError: (err)  => console.error(err),
+  }
+);</code></pre>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       6. FRONTEND COMPONENTS
+  ══════════════════════════════════════════ -->
+      <section id="frontend">
+        <h2><span class="section-num">06</span> Frontend Components</h2>
+
+        <h3>Component Hierarchy</h3>
+        <pre
+          class="component-tree"
+        ><code><span class="comp-name">App</span>                         <span class="file-ref">renderer.tsx → App.tsx</span>
+├── <span class="comp-name">DebugProvider</span>             <span class="file-ref">contexts/DebugContext.tsx</span>
+├── <span class="comp-name">SharedStateProvider</span>       <span class="file-ref">contexts/SharedStateContext.tsx</span>
+│   └── <span class="comp-name">ChatProvider</span>           <span class="file-ref">contexts/ChatContext.tsx</span>
+│       ├── <span class="comp-name">VoiceProvider</span>      <span class="file-ref">contexts/VoiceContext.tsx</span>
+│       ├── <span class="comp-name">BubbleViewProvider</span> <span class="file-ref">contexts/BubbleViewContext.tsx</span>
+│       ├── <span class="comp-name">SproutRoot</span>         <span class="file-ref">components/App.tsx (theming wrapper)</span>
+│       │   └── <span class="comp-name">SproutLayout</span>
+│       │       ├── <span class="comp-name">BubbleWindow</span>   <span class="file-ref">components/BubbleWindow.tsx</span>
+│       │       │   ├── <span class="comp-name">TabList</span>
+│       │       │   ├── <span class="comp-name">BubbleWindowBottomBar</span>
+│       │       │   └── <span class="comp-name">Chat</span>           <span class="file-ref">components/Chat.tsx</span>
+│       │       │       ├── <span class="comp-name">Message</span>    <span class="file-ref">components/Message.tsx</span>
+│       │       │       └── <span class="comp-name">ChatInput</span>  <span class="file-ref">components/ChatInput.tsx</span>
+│       │       └── <span class="comp-name">Sprout</span>         <span class="file-ref">components/Sprout.tsx</span>
+│       │           ├── <span class="comp-name">SproutSprite</span>
+│       │           └── <span class="comp-name">ChatToggle</span>
+│       └── <span class="comp-name">Settings</span>           <span class="file-ref">components/Settings.tsx</span>
+│           ├── <span class="comp-name">SettingsAppearance</span>
+│           ├── <span class="comp-name">SettingsVoice</span>
+│           ├── <span class="comp-name">SettingsLLM</span>
+│           ├── <span class="comp-name">SettingsParameters</span>
+│           └── <span class="comp-name">SettingsModel</span></code></pre>
+
+        <h3>Context Providers</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>File</th>
+              <th>State Managed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>DebugProvider</code></td>
+              <td><code>DebugContext.tsx</code></td>
+              <td>Debug flags, 5 s polling</td>
+            </tr>
+            <tr>
+              <td><code>SharedStateProvider</code></td>
+              <td><code>SharedStateContext.tsx</code></td>
+              <td>Models list, global settings, 2 s polling</td>
+            </tr>
+            <tr>
+              <td><code>ChatProvider</code></td>
+              <td><code>ChatContext.tsx</code></td>
+              <td>Messages, chat CRUD, animation key, model-loaded state</td>
+            </tr>
+            <tr>
+              <td><code>VoiceProvider</code></td>
+              <td><code>VoiceContext.tsx</code></td>
+              <td>TTS/STT enabled state, audio playback, mic recording</td>
+            </tr>
+            <tr>
+              <td><code>BubbleViewProvider</code></td>
+              <td><code>BubbleViewContext.tsx</code></td>
+              <td>Active settings tab, bubble view toggle</td>
+            </tr>
+            <tr>
+              <td><code>WindowContext</code></td>
+              <td><code>WindowContext.tsx</code></td>
+              <td>Panel resize and layout state</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Context Hook Reference</h3>
+
+        <h4>useChat()</h4>
+        <pre><code><span class="kw">const</span> {
+  messages,            <span class="cm">// Message[]</span>
+  addMessage,          <span class="cm">// (msg: Message) => Promise&lt;void&gt;</span>
+  setMessages,
+  animationKey,        <span class="cm">// string — e.g. "Wave"</span>
+  setAnimationKey,
+  status,              <span class="cm">// "idle" | "thinking" | "responding"</span>
+  setStatus,
+  isModelLoaded,       <span class="cm">// boolean</span>
+  isChatWindowOpen,
+  setIsChatWindowOpen,
+  chatRecords,         <span class="cm">// Record&lt;string, ChatRecord&gt;</span>
+  currentChatRecord,
+  selectChat,          <span class="cm">// (chatId: string) => Promise&lt;void&gt;</span>
+  startNewChat,
+  deleteChat,
+  deleteAllChats,
+} = useChat();</code></pre>
+
+        <h4>useVoice()</h4>
+        <pre><code><span class="kw">const</span> {
+  ttsEnabled,          <span class="cm">// boolean</span>
+  sttEnabled,          <span class="cm">// boolean</span>
+  currentVoice,        <span class="cm">// string | null</span>
+  voices,              <span class="cm">// Record&lt;string, VoiceInfo&gt;</span>
+  sttModel,            <span class="cm">// string</span>
+  availableSttModels,  <span class="cm">// string[]</span>
+  isSpeaking,          <span class="cm">// boolean</span>
+  setTtsEnabled,       <span class="cm">// (enabled: boolean) => Promise&lt;void&gt;</span>
+  setSttEnabled,
+  selectVoice,         <span class="cm">// (voiceId: string) => Promise&lt;void&gt;</span>
+  changeSttModel,
+  speak,               <span class="cm">// (text: string) => Promise&lt;void&gt;</span>
+  transcribe,          <span class="cm">// (audioBase64: string) => Promise&lt;string&gt;</span>
+  stopSpeaking,
+  rescan,
+} = useVoice();</code></pre>
+
+        <h4>useSharedState()</h4>
+        <pre><code><span class="kw">const</span> { models, settings } = useSharedState();
+<span class="cm">// models: ModelState (flat dict currently — see Gap Analysis §11)</span>
+<span class="cm">// settings: SettingsState</span></code></pre>
+
+        <h3>Animation System</h3>
+        <p>
+          Character animations are driven by keywords embedded in LLM responses.
+          Sprout's system prompt instructs the model to include keywords like
+          <code>[Wave]</code> in replies.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Keyword in response</th>
+              <th>Animation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>[Wave]</code></td>
+              <td>Waving hand</td>
+            </tr>
+            <tr>
+              <td><code>[Idle]</code></td>
+              <td>Standing still</td>
+            </tr>
+            <tr>
+              <td><code>[Thinking]</code></td>
+              <td>Thinking bubble</td>
+            </tr>
+            <tr>
+              <td><code>[Happy]</code></td>
+              <td>Happy expression</td>
+            </tr>
+            <tr>
+              <td><code>[Sad]</code></td>
+              <td>Sad expression</td>
+            </tr>
+            <tr>
+              <td><code>[Listen]</code></td>
+              <td>Listening pose</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">&#9888;</span>
+          <div>
+            <strong>Gotcha:</strong> <code>Chat.tsx</code> also handles
+            <code>Key: text</code> colon format as a fallback when the LLM omits
+            bracket syntax. Preserve this fallback if you modify message
+            rendering.
+          </div>
+        </div>
+
+        <p>
+          Two animation sets are defined: <code>SPROUT_ANIMATIONS</code> (the
+          custom Sprout character) and <code>CLIPPY_ANIMATIONS</code> (classic
+          Microsoft Clippy). The active character is controlled via Settings →
+          Appearance. Default character: <code>"sprout"</code>. Characters are
+          registered in <code>src/renderer/character-animations.tsx</code>.
+        </p>
+
+        <p>
+          Animation assets are extracted from
+          <code>assets/animations/</code> into
+          <code>src/renderer/images/animations/</code> using
+          <code>tools/extract-animations.sh</code> (run via
+          <code>npm run extract-animations</code>). Only needed when updating
+          source animation assets.
+        </p>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       7. VOICE FEATURES
+  ══════════════════════════════════════════ -->
+      <section id="voice">
+        <h2><span class="section-num">07</span> Voice Features</h2>
+
+        <h3>Text-to-Speech (TTS)</h3>
+        <p>
+          Piper TTS synthesizes WAV audio from LLM response text. The browser
+          plays audio via the Web Audio API. Voices are
+          <code>.onnx</code> neural models loaded lazily on first use.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Voice ID</th>
+              <th>Gender</th>
+              <th>Description</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>en_US-amy-medium</code></td>
+              <td>Female</td>
+              <td>Clear American English</td>
+              <td>~63 MB</td>
+            </tr>
+            <tr>
+              <td><code>en_US-lessac-medium</code></td>
+              <td>Male</td>
+              <td>Warm American English</td>
+              <td>~63 MB</td>
+            </tr>
+            <tr>
+              <td><code>en_US-ryan-high</code></td>
+              <td>Male</td>
+              <td>High-quality, slightly slower</td>
+              <td>~63 MB</td>
+            </tr>
+            <tr>
+              <td><code>en_US-kusal-medium</code></td>
+              <td>Male</td>
+              <td>Friendly American English</td>
+              <td>~63 MB</td>
+            </tr>
+            <tr>
+              <td><code>en_GB-alan-medium</code></td>
+              <td>Male</td>
+              <td>British English</td>
+              <td>~63 MB</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Speed Control</h4>
+        <p>
+          The <code>POST /api/voice/speak</code> endpoint accepts a
+          <code>lengthScale</code> parameter. Values below 1.0 speed up speech;
+          above 1.0 slow it down. Default is 1.0. See Gap Analysis for UI
+          status.
+        </p>
+
+        <h4>Custom Voices</h4>
+        <ol>
+          <li>
+            Download <code>.onnx</code> and <code>.onnx.json</code> from the
+            Piper repository
+          </li>
+          <li>Place in <code>~/.config/Sprout/voices/</code></li>
+          <li>Optionally add a <code>.meta.json</code> for display metadata</li>
+          <li>Click <strong>Rescan Voices</strong> in Settings → Voice</li>
+        </ol>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">&#8505;</span>
+          <div>
+            Voice files smaller than 1 KB are skipped automatically (likely a
+            failed partial download). A warning is written to the server console
+            for each skipped file.
+          </div>
+        </div>
+
+        <h3>Speech-to-Text (STT)</h3>
+        <p>
+          Faster-Whisper with CTranslate2 backend handles transcription. The
+          browser records WebM audio via <code>MediaRecorder</code>, sends it as
+          base64, and the backend converts it to 16 kHz mono WAV via ffmpeg
+          before feeding it to Whisper.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Size</th>
+              <th>Accuracy</th>
+              <th>Speed</th>
+              <th>Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tiny</code></td>
+              <td>~39 MB</td>
+              <td>Basic</td>
+              <td>Fastest</td>
+              <td>Pi 5 (4 GB)</td>
+            </tr>
+            <tr>
+              <td><code>base</code></td>
+              <td>~74 MB</td>
+              <td>Good</td>
+              <td>Fast</td>
+              <td>Pi 5 (4 GB)</td>
+            </tr>
+            <tr>
+              <td><code>small</code></td>
+              <td>~243 MB</td>
+              <td>Good</td>
+              <td>Medium</td>
+              <td>Pi 5 (8 GB)</td>
+            </tr>
+            <tr>
+              <td><code>medium</code></td>
+              <td>~769 MB</td>
+              <td>High</td>
+              <td>Slow</td>
+              <td>Desktop Linux</td>
+            </tr>
+            <tr>
+              <td><code>large</code></td>
+              <td>~1 550 MB</td>
+              <td>Highest</td>
+              <td>Slowest</td>
+              <td>High-RAM only</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Voice File Locations</h3>
+        <pre><code>~/.config/Sprout/
+├── settings.json          <span class="cm"># selectedVoice persisted here</span>
+└── voices/
+    ├── en_US-amy-medium.onnx
+    ├── en_US-amy-medium.onnx.json
+    └── en_US-amy-medium.meta.json
+
+<span class="cm"># STT model cache (auto-managed by faster-whisper)</span>
+~/.config/Sprout/stt_cache/</code></pre>
+
+        <h3>Troubleshooting</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Symptom</th>
+              <th>Check</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TTS produces no audio</td>
+              <td>
+                <code>ls ~/.config/Sprout/voices/*.onnx</code> — verify files
+                exist; check browser isn't muted
+              </td>
+            </tr>
+            <tr>
+              <td>TTS error 503</td>
+              <td>
+                No voice is loaded. POST <code>/api/voice/set-voice</code> or
+                enable via Settings
+              </td>
+            </tr>
+            <tr>
+              <td>STT fails silently</td>
+              <td>
+                <code>ffmpeg -version</code> — required for WebM → WAV; check
+                browser mic permission
+              </td>
+            </tr>
+            <tr>
+              <td>Mic button disabled</td>
+              <td>STT is not enabled in Settings → Voice</td>
+            </tr>
+            <tr>
+              <td>No mic devices listed</td>
+              <td>
+                <code>arecord -l</code> — ALSA capture devices; browser requires
+                HTTPS or localhost
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       8. TECH STACK
+  ══════════════════════════════════════════ -->
+      <section id="tech-stack">
+        <h2><span class="section-num">08</span> Tech Stack</h2>
+
+        <h3>Frontend</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Technology</th>
+              <th>Version</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>React</td>
+              <td>19.0.0</td>
+              <td>UI rendering (functional components + hooks)</td>
+            </tr>
+            <tr>
+              <td>TypeScript</td>
+              <td>5.8.3</td>
+              <td>Type safety</td>
+            </tr>
+            <tr>
+              <td>Vite</td>
+              <td>5.4.14</td>
+              <td>Build tool, dev server, <code>/api</code> proxy</td>
+            </tr>
+            <tr>
+              <td>Vitest</td>
+              <td>2.0.0</td>
+              <td>Frontend test runner (77 tests)</td>
+            </tr>
+            <tr>
+              <td>98.css</td>
+              <td>0.1.21</td>
+              <td>Windows 95/98 aesthetic</td>
+            </tr>
+            <tr>
+              <td>react-markdown</td>
+              <td>10.1.0</td>
+              <td>Markdown rendering in chat messages</td>
+            </tr>
+            <tr>
+              <td>date-fns</td>
+              <td>4.1.0</td>
+              <td>Date formatting utilities</td>
+            </tr>
+            <tr>
+              <td>Prettier</td>
+              <td>—</td>
+              <td>Code formatting (<code>npm run lint</code>)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Backend</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Library</th>
+              <th>Version</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Flask</td>
+              <td>3.1.3</td>
+              <td>HTTP server, routing, SSE streaming</td>
+            </tr>
+            <tr>
+              <td>Requests</td>
+              <td>2.32.3</td>
+              <td>Ollama HTTP client</td>
+            </tr>
+            <tr>
+              <td>piper-tts</td>
+              <td>1.4.2</td>
+              <td>TTS synthesis from <code>.onnx</code> voice models</td>
+            </tr>
+            <tr>
+              <td>faster-whisper</td>
+              <td>1.2.1</td>
+              <td>STT transcription (CTranslate2 backend)</td>
+            </tr>
+            <tr>
+              <td>pytest</td>
+              <td>8.0+</td>
+              <td>Backend test runner (169 tests)</td>
+            </tr>
+            <tr>
+              <td>pytest-mock</td>
+              <td>3.12+</td>
+              <td>Mock fixtures</td>
+            </tr>
+            <tr>
+              <td>pytest-flask</td>
+              <td>1.3+</td>
+              <td>Flask test client</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Infrastructure</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Technology</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Python 3.11+</td>
+              <td>Runtime</td>
+            </tr>
+            <tr>
+              <td>Node.js 20+</td>
+              <td>Frontend build (dev-only dependency)</td>
+            </tr>
+            <tr>
+              <td>Ollama</td>
+              <td>Local LLM server (binds <code>localhost:11434</code>)</td>
+            </tr>
+            <tr>
+              <td>systemd</td>
+              <td>Service management (<code>sprout.service</code>)</td>
+            </tr>
+            <tr>
+              <td>libespeak-ng1 / libsndfile1 / ffmpeg</td>
+              <td>System deps for voice features</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Model Recommendations by RAM</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Tag</th>
+              <th>Size</th>
+              <th>Min RAM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TinyLlama</td>
+              <td><code>tinyllama</code></td>
+              <td>637 MB</td>
+              <td>4 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Llama 3.2</td>
+              <td><code>llama3.2:1b</code></td>
+              <td>808 MB</td>
+              <td>4 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Gemma 3</td>
+              <td><code>gemma3:1b</code></td>
+              <td>806 MB</td>
+              <td>4 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Llama 3.2</td>
+              <td><code>llama3.2:3b</code></td>
+              <td>2.0 GB</td>
+              <td>8 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Phi-4 Mini</td>
+              <td><code>phi4-mini</code></td>
+              <td>2.5 GB</td>
+              <td>8 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Qwen3</td>
+              <td><code>qwen3:4b</code></td>
+              <td>2.5 GB</td>
+              <td>8 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Gemma 3</td>
+              <td><code>gemma3:4b</code></td>
+              <td>2.5 GB</td>
+              <td>8 GB Pi</td>
+            </tr>
+            <tr>
+              <td>Gemma 3</td>
+              <td><code>gemma3:12b</code></td>
+              <td>5.6 GB</td>
+              <td>16 GB Pi</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       9. DEVELOPMENT
+  ══════════════════════════════════════════ -->
+      <section id="development">
+        <h2><span class="section-num">09</span> Development</h2>
+
+        <h3>Dev Mode (Hot Reload)</h3>
+        <pre><code><span class="cm"># Terminal 1 — Flask backend</span>
+python3 app.py
+
+<span class="cm"># Terminal 2 — Vite dev server (port 5173, proxies /api → 5080)</span>
+npm run dev
+
+<span class="cm"># Open http://localhost:5173</span></code></pre>
+
+        <h3>Running Tests</h3>
+        <pre><code><span class="cm"># Install Python dev dependencies first</span>
+pip install -r requirements-dev.txt
+
+<span class="cm"># Backend (pytest) — 169 tests</span>
+python3 -m pytest -q
+python3 -m pytest tests/test_routes.py -q
+
+<span class="cm"># Frontend (Vitest) — 77 tests</span>
+npm run test          <span class="cm"># one-shot</span>
+npm run test:watch    <span class="cm"># watch mode</span></code></pre>
+
+        <h3>Building for Production</h3>
+        <pre><code><span class="cm"># Build React → dist/ (minified, content-hashed)</span>
+npm run build
+
+<span class="cm"># Flask serves dist/ automatically at port 5080</span>
+python3 app.py</code></pre>
+
+        <h3>Code Formatting</h3>
+        <pre><code><span class="cm"># TypeScript / TSX</span>
+npm run lint    <span class="cm"># Prettier</span>
+
+<span class="cm"># Python — Black (88-char line length)</span>
+black src/python/ app.py</code></pre>
+
+        <h3>Release Workflow</h3>
+        <ol>
+          <li>
+            Bump version in <code>app.py</code> (the
+            <code>SPROUT_VERSION</code> constant, returned by
+            <code>GET /api/versions</code>)
+          </li>
+          <li>Run full test suite (pytest + Vitest)</li>
+          <li>
+            Run <code>npm run build</code> to verify clean production build
+          </li>
+          <li>Tag the commit: <code>git tag v0.x.0</code></li>
+        </ol>
+
+        <h3>Adding New API Routes</h3>
+        <div class="callout callout-warn">
+          <span class="callout-icon">&#9888;</span>
+          <div>
+            New routes that write chat data <strong>must</strong> call
+            <code>_validate_chat_payload()</code> — bypassing it removes payload
+            size and message-count protections.
+          </div>
+        </div>
+
+        <h3>Adding New SSE Endpoints</h3>
+        <p>
+          Follow the existing abort pattern:
+          <code>POST /api/llm/abort</code> sets a
+          <code>threading.Event</code> that the SSE generator checks per chunk.
+          Do not use socket close as the abort mechanism — Flask's threaded
+          server does not propagate socket disconnects reliably.
+        </p>
+
+        <h3>Regenerating Animation Assets</h3>
+        <pre><code><span class="cm"># Rebuilds Sprout sprite frames from assets/animations/</span>
+npm run extract-animations
+
+<span class="cm"># Regenerate Sprout character assets from source</span>
+python3 tools/generate-sprout-assets.py</code></pre>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+       10. GAP ANALYSIS
+  ══════════════════════════════════════════ -->
+      <section id="gap-analysis">
+        <h2><span class="section-num">10</span> Gap Analysis</h2>
+
+        <p>
+          These items are documented as planned or partially implemented but are
+          not yet complete. They are tracked as future work.
+        </p>
+
+        <div class="gap-box">
+          <div class="gap-title">Hybrid Model Catalog</div>
+          <div class="gap-status">
+            STATUS: Design approved — backend partially migrated, frontend
+            incomplete
+          </div>
+          <p>
+            The <code>get_model_state()</code> function is being migrated to
+            return <code>{catalog: {...}, orphans: [...]}</code> instead of a
+            flat model dict, enabling display of models installed in Ollama that
+            aren't in the built-in catalog ("orphans").
+          </p>
+          <p>
+            <strong>Current state:</strong> TypeScript types exist
+            (<code>HybridModelState</code>,
+            <code>ManagedModel.actualTag</code>). Python backend is partially
+            migrated. <code>SettingsModel.tsx</code> still reads the flat model
+            dict in parts. <code>ChatContext.tsx</code> uses
+            <code>ollamaTag</code> instead of the resolved
+            <code>actualTag</code>.
+          </p>
+          <p>
+            <strong>Impact:</strong> Tag resolution mismatches (e.g., catalog
+            lists <code>qwen3:4b-Q4_K_M</code> but Ollama has
+            <code>qwen3:4b</code>) cause model-not-found errors at inference
+            time. The <code>_resolve_tag()</code> workaround in
+            <code>ollama_service.py</code> mitigates this at the Python layer.
+          </p>
+          <p>
+            <strong>Spec:</strong>
+            <code>docs/superpowers/specs/hybrid-model-catalog.md</code>
+          </p>
+        </div>
+
+        <div class="gap-box">
+          <div class="gap-title">Docker Deployment</div>
+          <div class="gap-status">
+            STATUS: Mentioned in docs — untested / unsupported
+          </div>
+          <p>
+            The installation guide includes a sample
+            <code>Dockerfile</code> with a note that Docker is "not officially
+            supported." Key obstacles: Ollama access requires
+            <code>--network host</code>, and audio device passthrough
+            (<code>/dev/snd</code>) is complex in containers. No CI pipeline
+            validates the Docker build.
+          </p>
+          <p>
+            <strong>Resolution needed:</strong> Either validate and document the
+            Docker path fully, or remove the Dockerfile snippet from docs to
+            avoid confusion.
+          </p>
+        </div>
+
+        <div class="gap-box">
+          <div class="gap-title">TTS Speed Control UI</div>
+          <div class="gap-status">
+            STATUS: API complete — no frontend slider
+          </div>
+          <p>
+            The <code>POST /api/voice/speak</code> endpoint accepts a
+            <code>lengthScale</code> parameter (float, default 1.0). Values
+            below 1.0 speed up speech; above 1.0 slow it down. The
+            <code>TTSManager.synthesize()</code> method accepts
+            <code>length_scale</code> as a parameter.
+          </p>
+          <p>
+            <strong>Missing:</strong> <code>SettingsVoice.tsx</code> has no
+            slider for this parameter. Users cannot adjust speaking speed
+            through the UI; the default speed can only be changed by modifying
+            <code>settings_manager.py DEFAULT_SETTINGS</code>.
+          </p>
+        </div>
+
+        <div class="gap-box">
+          <div class="gap-title">Character Selection Persistence</div>
+          <div class="gap-status">
+            STATUS: Needs verification — default set, UI unverified
+          </div>
+          <p>
+            The application defaults to the <code>"sprout"</code> character (set
+            as <code>DEFAULT_CHARACTER</code>). A character selector exists in
+            Settings → Appearance to switch between Sprout and classic Clippy.
+            The persistence of this choice across page reloads — via
+            <code>settings.json</code> — has not been fully verified.
+          </p>
+          <p>
+            <strong>Characters available:</strong>
+            <code>SPROUT_ANIMATIONS</code> (custom green-themed character) and
+            <code>CLIPPY_ANIMATIONS</code> (classic). Registered in
+            <code>src/renderer/character-animations.tsx</code>.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Scroll progress bar
+      var bar = document.getElementById("scroll-bar");
+      window.addEventListener(
+        "scroll",
+        function () {
+          var scrolled =
+            window.scrollY / (document.body.scrollHeight - window.innerHeight);
+          bar.style.transform = "scaleX(" + Math.min(scrolled, 1) + ")";
+        },
+        { passive: true },
+      );
+
+      // Sidebar scroll-spy
+      var sections = document.querySelectorAll("section[id]");
+      var links = document.querySelectorAll("#sidebar nav a");
+
+      function setActive() {
+        var scrollY = window.scrollY + 80;
+        var current = "";
+        sections.forEach(function (s) {
+          if (s.offsetTop <= scrollY) current = s.id;
+        });
+        links.forEach(function (link) {
+          link.classList.toggle(
+            "active",
+            link.getAttribute("href") === "#" + current,
+          );
+        });
+      }
+
+      window.addEventListener("scroll", setActive, { passive: true });
+      setActive();
+    </script>
+  </body>
+</html>

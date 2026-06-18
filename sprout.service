@@ -1,0 +1,18 @@
+[Unit]
+Description=Sprout — local LLM chat assistant (Flask/Ollama)
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=coreconduit
+WorkingDirectory=/home/coreconduit/rpi-sprout
+ExecStart=/usr/bin/python3 /home/coreconduit/rpi-sprout/app.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sprout
+
+[Install]
+WantedBy=multi-user.target

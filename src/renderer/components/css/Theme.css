@@ -1,25 +1,25 @@
 /* Default Theme */
-.clippy {
+.sprout {
   font-family: Tahoma, Arial, sans-serif;
   font-size: var(--font-size, 16px);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Font Family */
-.clippy[data-font="Tahoma"] {
+.sprout[data-font="Tahoma"] {
   font-family: Tahoma, Arial, sans-serif;
 }
 
-.clippy[data-font="Comic Sans MS"] {
+.sprout[data-font="Comic Sans MS"] {
   font-family: "Comic Sans MS", Tahoma, Arial, sans-serif;
 }
 
-.clippy[data-font="Pixelated MS Sans Serif"] {
+.sprout[data-font="Pixelated MS Sans Serif"] {
   font-family: "Pixelated MS Sans Serif", Tahoma, Arial, sans-serif;
   -webkit-font-smoothing: none;
 }
 
-.clippy[data-font="System Default"] {
+.sprout[data-font="System Default"] {
   font-family:
     system-ui,
     -apple-system,
@@ -36,31 +36,31 @@
 
 /* Apply it all */
 
-.clippy .title-bar,
-.clippy .window,
-.clippy button,
-.clippy input,
-.clippy label,
-.clippy legend,
-.clippy li[role="tab"],
-.clippy option,
-.clippy select,
-.clippy table,
-.clippy textarea,
-.clippy ul.tree-view {
+.sprout .title-bar,
+.sprout .window,
+.sprout button,
+.sprout input,
+.sprout label,
+.sprout legend,
+.sprout li[role="tab"],
+.sprout option,
+.sprout select,
+.sprout table,
+.sprout textarea,
+.sprout ul.tree-view {
   font-family: inherit !important;
   font-size: inherit !important;
   -webkit-font-smoothing: inherit !important;
 }
 
-.clippy h1 {
+.sprout h1 {
   font-size: 1.5rem;
 }
 
-.clippy h2 {
+.sprout h2 {
   font-size: 1.25rem;
 }
 
-.clippy h3 {
+.sprout h3 {
   font-size: 1rem;
 }

@@ -22,10 +22,10 @@ from typing import Tuple
 from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CLIPPY_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
-SPROUT_ANIMATIONS_DIR = CLIPPY_ANIMATIONS_DIR / "sprout"
+SPROUT_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
+SPROUT_ANIMATIONS_DIR = SPROUT_ANIMATIONS_DIR / "sprout"
 SPROUT_TSX_FILE = PROJECT_ROOT / "src" / "renderer" / "sprout-animations.tsx"
-CLIPPY_ANIMATIONS_JSON = (
+SPROUT_ANIMATIONS_JSON = (
     PROJECT_ROOT / "assets" / "animations" / "clippy" / "animations.json"
 )
 SPROUT_ASSETS_DIR = PROJECT_ROOT / "assets" / "animations" / "sprout"
@@ -159,23 +159,23 @@ def generate_sprout_tsx(durations: dict[str, int]) -> str:
 
 
 def main() -> int:
-    if not CLIPPY_ANIMATIONS_DIR.exists():
-        print(f"Clippy animations directory not found: {CLIPPY_ANIMATIONS_DIR}")
+    if not SPROUT_ANIMATIONS_DIR.exists():
+        print(f"Sprout animations directory not found: {SPROUT_ANIMATIONS_DIR}")
         return 1
 
     SPROUT_ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
     SPROUT_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Copy the source animation manifest for reference
-    if CLIPPY_ANIMATIONS_JSON.exists():
-        with open(CLIPPY_ANIMATIONS_JSON, "r", encoding="utf-8") as f:
+    if SPROUT_ANIMATIONS_JSON.exists():
+        with open(SPROUT_ANIMATIONS_JSON, "r", encoding="utf-8") as f:
             manifest = json.load(f)
         sprout_manifest_path = SPROUT_ASSETS_DIR / "animations.json"
         with open(sprout_manifest_path, "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
 
     durations: dict[str, int] = {}
-    png_files = sorted(p for p in CLIPPY_ANIMATIONS_DIR.iterdir() if p.suffix.lower() == ".png")
+    png_files = sorted(p for p in SPROUT_ANIMATIONS_DIR.iterdir() if p.suffix.lower() == ".png")
 
     for source_path in png_files:
         dest_path = SPROUT_ANIMATIONS_DIR / source_path.name

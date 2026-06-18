@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# install.sh — set up and enable the Clippy systemd service
+# install.sh — set up and enable the Sprout systemd service
 # Usage: bash install.sh
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_NAME="clippy"
+SERVICE_NAME="sprout"
 SERVICE_DEST="/etc/systemd/system/$SERVICE_NAME.service"
 INSTALL_USER="${SUDO_USER:-$(whoami)}"
 
 VERSION=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/package.json'))['version'])" 2>/dev/null || echo "unknown")
-echo "==> Installing Clippy v$VERSION"
+echo "==> Installing Sprout v$VERSION"
 echo "    User: $INSTALL_USER"
 echo "    Dir:  $SCRIPT_DIR"
 
@@ -44,7 +44,7 @@ npm run build
 echo "--> Installing systemd service to $SERVICE_DEST..."
 sudo tee "$SERVICE_DEST" > /dev/null << EOF
 [Unit]
-Description=Clippy — local LLM chat assistant (Flask/Ollama)
+Description=Sprout — local LLM chat assistant (Flask/Ollama)
 After=network.target ollama.service
 Wants=ollama.service
 
@@ -57,7 +57,7 @@ Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=clippy
+SyslogIdentifier=sprout
 
 [Install]
 WantedBy=multi-user.target
@@ -70,18 +70,18 @@ sudo systemctl restart "$SERVICE_NAME"
 # ── 6. Status ──────────────────────────────────────────────────────────────
 LOCAL_IP=$(hostname -I | awk '{print $1}')
 echo ""
-echo "✓ Clippy v$VERSION installed and running."
+echo "✓ Sprout v$VERSION installed and running."
 echo ""
 sudo systemctl status "$SERVICE_NAME" --no-pager -l || true
 echo ""
-echo "Access Clippy at:"
+echo "Access Sprout at:"
 echo "  Local:   http://localhost:5080"
 echo "  Network: http://$LOCAL_IP:5080"
 echo ""
 echo "Useful commands:"
-echo "  sudo systemctl status clippy"
-echo "  sudo journalctl -u clippy -f"
-echo "  sudo systemctl restart clippy"
+echo "  sudo systemctl status sprout"
+echo "  sudo journalctl -u sprout -f"
+echo "  sudo systemctl restart sprout"
 echo ""
 echo "Optional: download Piper TTS voice models for text-to-speech:"
 echo "  bash scripts/setup_voices.sh        # default voices (~200 MB)"

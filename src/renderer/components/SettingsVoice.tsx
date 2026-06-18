@@ -147,13 +147,13 @@ export const SettingsVoice: React.FC = () => {
           </>
         ) : (
           <p style={{ margin: 0 }}>
-            No voices found in <code>~/.config/Clippy/voices/</code>.
+            No voices found in <code>~/.config/Sprout/voices/</code>.
           </p>
         )}
 
         <p style={{ fontSize: "0.9em", margin: "8px 0 0", color: "#555" }}>
           Place custom <code>.onnx</code> voice files in{" "}
-          <code>~/.config/Clippy/voices/</code>
+          <code>~/.config/Sprout/voices/</code>
         </p>
       </fieldset>
 

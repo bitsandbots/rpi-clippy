@@ -1,4 +1,4 @@
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { useSharedState } from "../contexts/SharedStateContext";
 
 interface ErrorLoadModelMessageContentProps {
@@ -11,12 +11,12 @@ export const ErrorLoadModelMessageContent: React.FC<
   const { settings } = useSharedState();
 
   const handleCopyDebugInfo = async () => {
-    clippyApi.clipboardWrite({
+    sproutApi.clipboardWrite({
       text: JSON.stringify(
         {
           error,
           settings,
-          state: await clippyApi.getDebugInfo(),
+          state: await sproutApi.getDebugInfo(),
         },
         null,
         2,
@@ -27,8 +27,8 @@ export const ErrorLoadModelMessageContent: React.FC<
   return (
     <div className="error-message">
       <p>
-        Sadly, Clippy failed to successfully load the model. This could be an
-        issue with Clippy itself, the selected model, or your system. You can
+        Sadly, Sprout failed to successfully load the model. This could be an
+        issue with Sprout itself, the selected model, or your system. You can
         report this error at{" "}
         <a
           href="https://github.com/felixrieseberg/clippy/issues"

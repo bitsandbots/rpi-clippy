@@ -2,7 +2,7 @@ import { Column, TableView } from "./TableView";
 import { Progress } from "./Progress";
 import React, { useState } from "react";
 import { useSharedState } from "../contexts/SharedStateContext";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { downloadModelByTag } from "../api";
 import { prettyDownloadSpeed } from "../helpers/convert-download-speed";
 import { ManagedModel } from "../../models";
@@ -91,15 +91,15 @@ export const SettingsModel: React.FC = () => {
   const handleDeleteOrRemove = async () => {
     if (!selectedModel) return;
     if (selectedModel.imported) {
-      await clippyApi.removeModelByName(selectedModel.name);
+      await sproutApi.removeModelByName(selectedModel.name);
     } else {
-      await clippyApi.deleteModelByName(selectedModel.name);
+      await sproutApi.deleteModelByName(selectedModel.name);
     }
   };
 
   const handleMakeDefault = async () => {
     if (selectedModel) {
-      await clippyApi.setState("settings.selectedModel", selectedModel.name);
+      await sproutApi.setState("settings.selectedModel", selectedModel.name);
     }
   };
 
@@ -112,7 +112,7 @@ export const SettingsModel: React.FC = () => {
       <p>
         Select the model you want to use for your chat. The larger the model,
         the more powerful the chat, but the slower it will be - and the more
-        memory it will use. Clippy uses models in the GGUF format.{" "}
+        memory it will use. Sprout uses models in the GGUF format.{" "}
         <a
           href="https://github.com/felixrieseberg/clippy?tab=readme-ov-file#downloading-more-models"
           target="_blank"
@@ -183,8 +183,8 @@ export const SettingsModel: React.FC = () => {
                   onClick={handleMakeDefault}
                 >
                   {isDefaultModel
-                    ? "Clippy uses this model"
-                    : "Make Clippy use this model"}
+                    ? "Sprout uses this model"
+                    : "Make Sprout use this model"}
                 </button>
                 <button onClick={handleDeleteOrRemove}>
                   {selectedModel?.imported ? "Remove" : "Delete"} Model

@@ -109,7 +109,7 @@ class STTManager:
             return {"error": f"base64_decode_failed: {exc}"}
 
         suffix = ".webm"
-        fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix="clippy_stt_")
+        fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix="sprout_stt_")
         try:
             os.write(fd, audio_bytes)
             os.close(fd)

@@ -29,7 +29,7 @@ curl http://localhost:5080/api/state
   },
   "settings": {
     "selectedModel": "Gemma 3 (1B)",
-    "systemPrompt": "You are Clippy...",
+    "systemPrompt": "You are Sprout...",
     "temperature": 0.7,
     "topK": 10,
     "defaultFont": "Tahoma",
@@ -54,6 +54,24 @@ curl -X POST http://localhost:5080/api/state \
 { "status": "ok" }
 ```
 
+#### GET `/api/debug-state`
+
+Return debug flags (polling interval, verbose logging, etc.).
+
+```bash
+curl http://localhost:5080/api/debug-state
+```
+
+#### POST `/api/debug-state`
+
+Set a single debug flag. Body: `{key, value}`.
+
+```bash
+curl -X POST http://localhost:5080/api/debug-state \
+  -H "Content-Type: application/json" \
+  -d '{"key": "verboseLogging", "value": true}'
+```
+
 ### Chats
 
 #### GET `/api/chats`
@@ -72,7 +90,7 @@ curl http://localhost:5080/api/chats
     "id": "chat-uuid-1",
     "createdAt": 1234567890,
     "updatedAt": 1234567890,
-    "preview": "Hello Clippy"
+    "preview": "Hello Sprout"
   }
 }
 ```
@@ -120,12 +138,18 @@ Refresh the available model cache.
 
 #### POST `/api/models/download`
 
-Download a model by display name.
+Download a model. Accepts either a catalog display name or a raw Ollama tag (`tag` takes priority when both are provided).
 
 ```bash
+# By catalog display name
 curl -X POST http://localhost:5080/api/models/download \
   -H "Content-Type: application/json" \
   -d '{"name": "Gemma 3 (1B)"}'
+
+# By raw Ollama tag (preferred)
+curl -X POST http://localhost:5080/api/models/download \
+  -H "Content-Type: application/json" \
+  -d '{"tag": "gemma3:1b"}'
 ```
 
 #### POST `/api/models/delete`
@@ -198,7 +222,7 @@ curl -X POST http://localhost:5080/api/llm/create \
   -d '{
     "modelAlias": "Gemma 3 (1B)",
     "ollamaTag": "gemma3:1b",
-    "systemPrompt": "You are Clippy...",
+    "systemPrompt": "You are Sprout...",
     "topK": 10,
     "temperature": 0.7,
     "initialPrompts": []
@@ -413,7 +437,7 @@ curl http://localhost:5080/api/versions
 
 ```json
 {
-  "clippy": "0.5.0",
+  "sprout": "0.5.0",
   "python": "3.11.2",
   "flask": "3.1.3"
 }
@@ -437,24 +461,24 @@ curl http://localhost:5080/api/versions
 | 500    | `<exception>`               | Internal error                      |
 | 503    | `TTS not available`         | No voice loaded                     |
 
-## Frontend API (clippyApi.tsx)
+## Frontend API (sproutApi.tsx)
 
 The frontend uses the same REST API but exposes it through TypeScript.
 
 ```typescript
-import { clippyApi, electronAi } from "./clippyApi";
+import { sproutApi, electronAi } from "./sproutApi";
 
 // Get full state
-const state = await clippyApi.getFullState();
+const state = await sproutApi.getFullState();
 
 // Set a setting
-await clippyApi.setState("settings.defaultFontSize", 18);
+await sproutApi.setState("settings.defaultFontSize", 18);
 
 // Create LLM session
-await clippyApi.llmCreate({
+await sproutApi.llmCreate({
   modelAlias: "Gemma 3 (1B)",
   ollamaTag: "gemma3:1b",
-  systemPrompt: "You are Clippy...",
+  systemPrompt: "You are Sprout...",
   topK: 10,
   temperature: 0.7,
   initialPrompts: [],

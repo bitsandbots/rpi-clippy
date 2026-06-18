@@ -7,13 +7,13 @@ import {
   useCallback,
 } from "react";
 import { Message } from "../components/Message";
-import { clippyApi, electronAi } from "../clippyApi";
+import { sproutApi, electronAi } from "../sproutApi";
 import { SharedStateContext } from "./SharedStateContext";
 import { areAnyModelsReadyOrDownloading } from "../../helpers/model-helpers";
 import { WelcomeMessageContent } from "../components/WelcomeMessageContent";
 import { ChatRecord, MessageRecord } from "../../types/interfaces";
 import { useDebugState } from "./DebugContext";
-import { ANIMATION_KEYS_BRACKETS } from "../clippy-animation-helpers";
+import { ANIMATION_KEYS_BRACKETS } from "../sprout-animation-helpers";
 import { ErrorLoadModelMessageContent } from "../components/ErrorLoadModelMessageContent";
 import { randomUUID } from "../helpers/uuid";
 
@@ -26,7 +26,7 @@ interface LanguageModelPrompt {
   content: string;
 }
 
-type ClippyNamedStatus =
+type SproutNamedStatus =
   | "welcome"
   | "idle"
   | "responding"
@@ -39,8 +39,8 @@ export type ChatContextType = {
   setMessages: (messages: Message[]) => void;
   animationKey: string;
   setAnimationKey: (animationKey: string) => void;
-  status: ClippyNamedStatus;
-  setStatus: (status: ClippyNamedStatus) => void;
+  status: SproutNamedStatus;
+  setStatus: (status: SproutNamedStatus) => void;
   isModelLoaded: boolean;
   isChatWindowOpen: boolean;
   setIsChatWindowOpen: (isChatWindowOpen: boolean) => void;
@@ -68,7 +68,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     {},
   );
   const [animationKey, setAnimationKey] = useState<string>("");
-  const [status, setStatus] = useState<ClippyNamedStatus>("welcome");
+  const [status, setStatus] = useState<SproutNamedStatus>("welcome");
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const { settings, models } = useContext(SharedStateContext);
   const debug = useDebugState();
@@ -93,7 +93,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const selectChat = useCallback(
     async (chatId: string) => {
       try {
-        const chatWithMessages = await clippyApi.getChatWithMessages(chatId);
+        const chatWithMessages = await sproutApi.getChatWithMessages(chatId);
 
         if (chatWithMessages) {
           setMessages(chatWithMessages.messages);
@@ -166,7 +166,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         addMessage({
           id: randomUUID(),
           children: <ErrorLoadModelMessageContent error={error} />,
-          sender: "clippy",
+          sender: "sprout",
           createdAt: Date.now(),
         });
       }
@@ -182,7 +182,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const deleteChat = useCallback(
     async (chatId: string) => {
-      await clippyApi.deleteChat(chatId);
+      await sproutApi.deleteChat(chatId);
 
       setChatRecords((prevChatRecords) => {
         const newChatRecords = { ...prevChatRecords };
@@ -198,7 +198,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 
   const deleteAllChats = useCallback(async () => {
-    await clippyApi.deleteAllChats();
+    await sproutApi.deleteAllChats();
 
     setChatRecords({});
     setMessages([]);
@@ -222,7 +222,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     setCurrentChatRecord(updatedChatRecord);
 
-    clippyApi.writeChatWithMessages(chatWithMessages).catch((error) => {
+    sproutApi.writeChatWithMessages(chatWithMessages).catch((error) => {
       console.error(error);
     });
   }, [messages]);
@@ -266,14 +266,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       );
 
       if (downloadedModel) {
-        clippyApi.setState("settings.selectedModel", downloadedModel.name);
+        sproutApi.setState("settings.selectedModel", downloadedModel.name);
       }
     }
   }, [models]);
 
   // At app startup, initially load the chat records from the main process
   useEffect(() => {
-    clippyApi.getChatRecords().then((chatRecords) => {
+    sproutApi.getChatRecords().then((chatRecords) => {
       setChatRecords(chatRecords);
     });
   }, []);
@@ -298,16 +298,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     addMessage({
       id: randomUUID(),
       children: <WelcomeMessageContent />,
-      content: "Welcome to Clippy!",
-      sender: "clippy",
+      content: "Welcome to Sprout!",
+      sender: "sprout",
       createdAt: Date.now(),
     });
 
     const downloadModelIfNoneReady = async () => {
-      await clippyApi.downloadModelByName("Gemma 3 (1B)");
+      await sproutApi.downloadModelByName("Gemma 3 (1B)");
 
       setTimeout(async () => {
-        await clippyApi.updateModelState();
+        await sproutApi.updateModelState();
       }, 500);
     };
 
@@ -316,13 +316,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Subscribe to the main process's newChat event
   useEffect(() => {
-    clippyApi.offNewChat();
-    clippyApi.onNewChat(async () => {
+    sproutApi.offNewChat();
+    sproutApi.onNewChat(async () => {
       await startNewChat();
     });
 
     return () => {
-      clippyApi.offNewChat();
+      sproutApi.offNewChat();
     };
   }, [startNewChat]);
 
@@ -373,7 +373,7 @@ function getPreviewFromMessages(messages: Message[]): string {
   }
 
   if (messages[0].sender === "clippy") {
-    return "Welcome to Clippy!";
+    return "Welcome to Sprout!";
   }
 
   // Remove newlines and limit to 100 characters

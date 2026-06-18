@@ -1,5 +1,5 @@
 /**
- * Clippy frontend API — replaces the Electron IPC surface with fetch + EventSource.
+ * Sprout frontend API — replaces the Electron IPC surface with fetch + EventSource.
  * All paths are relative so Vite's dev proxy (/api → localhost:5080) works
  * the same as the production Flask server.
  */

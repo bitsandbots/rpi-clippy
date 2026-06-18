@@ -76,7 +76,7 @@ export function Bubble() {
       }}
     >
       <div className="title-bar">
-        <div className="title-bar-text">Chat with Clippy</div>
+        <div className="title-bar-text">Chat with Sprout</div>
         <div className="title-bar-controls">
           <button
             style={{

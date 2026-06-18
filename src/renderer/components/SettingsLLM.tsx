@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSharedState } from "../contexts/SharedStateContext";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import {
   getOllamaStatus,
   setOllamaUrl,
@@ -173,7 +173,7 @@ export const SettingsLLM: React.FC = () => {
         <legend>Active Model</legend>
         <p style={{ marginTop: 0 }}>
           Use the <strong>Model</strong> tab to download and select which model
-          Clippy uses. The selected model is loaded on next chat session.
+          Sprout uses. The selected model is loaded on next chat session.
         </p>
         <div className="field-row">
           <label style={{ width: 70 }}>Selected:</label>
@@ -181,7 +181,7 @@ export const SettingsLLM: React.FC = () => {
         </div>
         <div className="field-row" style={{ marginTop: "6px" }}>
           <button
-            onClick={() => clippyApi.setState("settings.selectedModel", null)}
+            onClick={() => sproutApi.setState("settings.selectedModel", null)}
             disabled={!settings.selectedModel}
           >
             Clear selection

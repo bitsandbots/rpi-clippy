@@ -5,7 +5,7 @@ import "./css/Theme.css";
 import "./css/Win95Enhanced.css";
 import "./css/Win95Expressive.css";
 
-import { Clippy } from "./Clippy";
+import { Sprout } from "./Sprout";
 import { ChatProvider } from "../contexts/ChatContext";
 import { Bubble } from "./BubbleWindow";
 import { SharedStateProvider } from "../contexts/SharedStateContext";
@@ -15,7 +15,7 @@ import { VoiceProvider } from "../contexts/VoiceContext";
 import { useChat } from "../contexts/ChatContext";
 import { useSharedState } from "../contexts/SharedStateContext";
 
-function ClippyLayout() {
+function SproutLayout() {
   const { isChatWindowOpen } = useChat();
 
   return (
@@ -50,22 +50,22 @@ function ClippyLayout() {
           </div>
         )}
 
-        {/* Clippy sprite — always visible */}
+        {/* Sprout sprite — always visible */}
         <div style={{ pointerEvents: "auto" }}>
-          <Clippy />
+          <Sprout />
         </div>
       </div>
     </div>
   );
 }
 
-function ClippyRoot({ children }: { children: React.ReactNode }) {
+function SproutRoot({ children }: { children: React.ReactNode }) {
   const { settings } = useSharedState();
   const themeClass =
     settings.uiTheme === "expressive" ? "theme-expressive" : "";
   return (
     <div
-      className={`clippy ${themeClass}`}
+      className={`sprout ${themeClass}`}
       style={
         {
           "--font-size": `${settings.defaultFontSize}px`,
@@ -86,9 +86,9 @@ export function App() {
         <ChatProvider>
           <VoiceProvider>
             <BubbleViewProvider>
-              <ClippyRoot>
-                <ClippyLayout />
-              </ClippyRoot>
+              <SproutRoot>
+                <SproutLayout />
+              </SproutRoot>
             </BubbleViewProvider>
           </VoiceProvider>
         </ChatProvider>

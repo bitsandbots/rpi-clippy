@@ -1,7 +1,7 @@
 import Markdown from "react-markdown";
 import questionIcon from "../images/icons/question.png";
-import defaultClippy from "../images/animations/Default.png";
-import defaultSprout from "../images/animations/sprout/Default.png";
+import defaultClippyIcon from "../images/animations/Default.png";
+import defaultSproutIcon from "../images/animations/sprout/Default.png";
 import { MessageRecord } from "../../types/interfaces";
 import { useSharedState } from "../contexts/SharedStateContext";
 import { CHARACTERS, DEFAULT_CHARACTER } from "../character-animations";
@@ -11,19 +11,19 @@ export interface Message extends MessageRecord {
   content?: string;
   children?: React.ReactNode;
   createdAt: number;
-  sender: "user" | "clippy";
+  sender: "user" | "sprout";
 }
 
 const DEFAULT_ICONS: Record<string, string> = {
-  clippy: defaultClippy,
-  sprout: defaultSprout,
+  clippy: defaultClippyIcon,
+  sprout: defaultSproutIcon,
 };
 
 export function Message({ message }: { message: Message }) {
   const { settings } = useSharedState();
   const characterId = settings.character || DEFAULT_CHARACTER;
   const character = CHARACTERS[characterId] || CHARACTERS[DEFAULT_CHARACTER];
-  const assistantIcon = DEFAULT_ICONS[character.id] || defaultClippy;
+  const assistantIcon = DEFAULT_ICONS[character.id] || defaultSproutIcon;
 
   return (
     <div

@@ -273,7 +273,7 @@ def test_transcribe_base64_cleans_up_tempfile(tmp_path, mocker):
         mgr.transcribe_base64(audio_b64)
 
     assert len(deleted_paths) == 1
-    assert "clippy_stt_" in deleted_paths[0]
+    assert "sprout_stt_" in deleted_paths[0]
 
 
 # ---------------------------------------------------------------------------

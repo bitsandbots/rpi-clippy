@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { EMPTY_SHARED_STATE, SharedState } from "../../sharedState";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { subscribePullProgress } from "../api";
 
 export const SharedStateContext =
@@ -16,7 +16,7 @@ export const SharedStateProvider = ({
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchState = async () => {
-    const state = await clippyApi.getFullState();
+    const state = await sproutApi.getFullState();
     setSharedState(state);
   };
 

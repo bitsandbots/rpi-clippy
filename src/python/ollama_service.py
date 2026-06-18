@@ -1,6 +1,6 @@
 """
 Ollama service — importable class that wraps all Ollama HTTP calls.
-Replaces the stdin/stdout subprocess pattern of clippy_llm.py with a
+Replaces the stdin/stdout subprocess pattern of sprout_llm.py with a
 module-level API that Flask routes can call directly.
 """
 

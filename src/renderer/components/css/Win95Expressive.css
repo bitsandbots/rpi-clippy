@@ -3,7 +3,7 @@
  *
  * Late-90s internet aesthetic: brighter colors, more personality,
  * animated cursor trails, playful hover states, rainbow accents.
- * ICQ/AIM-inspired chat vibes with Clippy personality.
+ * ICQ/AIM-inspired chat vibes with Sprout personality.
  */
 
 /* ============================================================================
@@ -116,8 +116,8 @@
   }
 }
 
-/* Clippy messages — bright yellow with sparkle */
-.bubble-container.expressive .message[data-sender="clippy"] .message-content {
+/* Sprout messages — bright yellow with sparkle */
+.bubble-container.expressive .message[data-sender="sprout"] .message-content {
   background: linear-gradient(135deg, #ffff00, #ffcc00);
   border: 3px solid var(--expressive-primary);
   border-radius: 12px 12px 12px 0;
@@ -127,9 +127,9 @@
   padding: 12px 16px;
 }
 
-/* Sparkle effect on Clippy messages */
+/* Sparkle effect on Sprout messages */
 .bubble-container.expressive
-  .message[data-sender="clippy"]
+  .message[data-sender="sprout"]
   .message-content::before {
   content: "✨";
   position: absolute;

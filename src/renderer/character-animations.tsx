@@ -24,4 +24,4 @@ export const CHARACTERS: Record<CharacterId, Character> = {
   },
 };
 
-export const DEFAULT_CHARACTER: CharacterId = "clippy";
+export const DEFAULT_CHARACTER: CharacterId = "sprout";

@@ -168,7 +168,7 @@ def test_messages_served_from_cache(tmp_path, mocker):
 
 def test_index_survives_corruption(tmp_path):
     """Corrupt chats.json on disk; a fresh manager returns empty records."""
-    config_dir = Path(tmp_path) / "Clippy" / "chats"
+    config_dir = Path(tmp_path) / "Sprout" / "chats"
     config_dir.mkdir(parents=True)
     (config_dir / "chats.json").write_text("NOT VALID JSON")
 
@@ -185,7 +185,7 @@ def test_chat_id_path_traversal_does_not_escape(tmp_path):
     mgr = make_manager()
     evil_id = "../evil"
     path = mgr._chat_path(evil_id)
-    chats_dir = Path(tmp_path) / "Clippy" / "chats"
+    chats_dir = Path(tmp_path) / "Sprout" / "chats"
     # The resolved path must NOT leave the chats directory
     try:
         resolved = path.resolve()

@@ -1,6 +1,6 @@
 """
-Settings manager — reads/writes ~/.config/Clippy/settings.json.
-Ignores Electron-only keys (clippyAlwaysOnTop, chatAlwaysOnTop, disableAutoUpdate).
+Settings manager — reads/writes ~/.config/Sprout/settings.json.
+Ignores Electron-only keys (sproutAlwaysOnTop, chatAlwaysOnTop, disableAutoUpdate).
 """
 
 import json
@@ -8,16 +8,16 @@ import os
 import threading
 from pathlib import Path
 
-ELECTRON_ONLY_KEYS = {"clippyAlwaysOnTop", "chatAlwaysOnTop", "disableAutoUpdate"}
+ELECTRON_ONLY_KEYS = {"sproutAlwaysOnTop", "chatAlwaysOnTop", "disableAutoUpdate"}
 
 DEFAULT_SETTINGS = {
     "alwaysOpenChat": True,
     "systemPrompt": (
-        "You are Clippy, a helpful digital assistant running locally on the user's computer. "
+        "You are Sprout, a helpful digital assistant running locally on the user's computer. "
         "Your primary purpose is to assist users with their questions and tasks. "
         'When asked "who are you?" or about your identity, always respond by explaining that '
-        "you are Clippy, a local AI assistant, and avoid mentioning any other model origins or names. "
-        "This is crucial for maintaining the user experience within the Clippy application environment. "
+        "you are Sprout, a local AI assistant, and avoid mentioning any other model origins or names. "
+        "This is crucial for maintaining the user experience within the Sprout application environment. "
         "Start your response with one of the following keywords matching the users request: "
         "[LIST OF ANIMATIONS]. Use only one of the keywords for each response. "
         "Use it only at the beginning of your response. Always start with one."
@@ -46,11 +46,11 @@ DEBUG_DEFAULTS = {
 
 
 def _config_dir() -> Path:
-    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Clippy"
+    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Sprout"
 
 
 class SettingsManager:
-    """Manages app settings persisted to ~/.config/Clippy/settings.json."""
+    """Manages app settings persisted to ~/.config/Sprout/settings.json."""
 
     def __init__(self, filename: str = "settings.json"):
         self._path = _config_dir() / filename
@@ -107,7 +107,7 @@ class SettingsManager:
 
 
 class DebugSettingsManager(SettingsManager):
-    """Manages debug state persisted to ~/.config/Clippy/debug.json."""
+    """Manages debug state persisted to ~/.config/Sprout/debug.json."""
 
     def __init__(self):
         super().__init__("debug.json")
