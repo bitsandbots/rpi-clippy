@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Generate Sprout character assets by recoloring Clippy animations.
 
-This script reads the existing Clippy APNG animation files from
-src/renderer/images/animations/, applies a plant/garden green color
-palette, and writes the resulting Sprout animation files to
-src/renderer/images/animations/sprout/.
+Reads Clippy APNG source files from a directory you supply via --source
+(default: assets/animations/clippy/frames/), recolors them to Sprout's
+green palette, downscales to 124 px wide with LANCZOS, and writes the
+results to src/renderer/images/animations/sprout/.
 
-It also generates the corresponding TypeScript animation module at
-src/renderer/sprout-animations.tsx.
+Also regenerates src/renderer/sprout-animations.tsx.
+
+The Clippy source APNGs are not stored in this repository. To obtain
+them, extract frames from the original Clippy APNG archive and place
+them in the source directory before running this script.
 """
 
 from __future__ import annotations
@@ -23,8 +26,8 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CLIPPY_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
-SPROUT_OUTPUT_DIR = CLIPPY_ANIMATIONS_DIR / "sprout"
+CLIPPY_ANIMATIONS_DIR = PROJECT_ROOT / "assets" / "animations" / "clippy" / "frames"
+SPROUT_OUTPUT_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations" / "sprout"
 SPROUT_TSX_FILE = PROJECT_ROOT / "src" / "renderer" / "sprout-animations.tsx"
 SPROUT_ANIMATIONS_JSON = (
     PROJECT_ROOT / "assets" / "animations" / "clippy" / "animations.json"
