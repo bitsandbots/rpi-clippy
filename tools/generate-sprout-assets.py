@@ -22,8 +22,8 @@ from typing import Tuple
 from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SPROUT_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
-SPROUT_ANIMATIONS_DIR = SPROUT_ANIMATIONS_DIR / "sprout"
+CLIPPY_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
+SPROUT_OUTPUT_DIR = CLIPPY_ANIMATIONS_DIR / "sprout"
 SPROUT_TSX_FILE = PROJECT_ROOT / "src" / "renderer" / "sprout-animations.tsx"
 SPROUT_ANIMATIONS_JSON = (
     PROJECT_ROOT / "assets" / "animations" / "clippy" / "animations.json"
@@ -31,11 +31,11 @@ SPROUT_ANIMATIONS_JSON = (
 SPROUT_ASSETS_DIR = PROJECT_ROOT / "assets" / "animations" / "sprout"
 
 # Shadow → highlight green palette (R, G, B)
-SHADOW_COLOR = (40, 80, 30)      # dark leafy green
-MIDTONE_COLOR = (60, 160, 60)    # leaf green
-HIGHLIGHT_COLOR = (180, 240, 140)  # light lime highlight
+SHADOW_COLOR = (30, 70, 20)      # deep forest green
+MIDTONE_COLOR = (70, 170, 70)    # fresh leaf green
+HIGHLIGHT_COLOR = (190, 250, 150)  # vibrant lime highlight
 EYE_WHITE = (255, 255, 255)
-EYE_BLACK = (10, 10, 10)
+EYE_BLACK = (5, 5, 5)
 
 
 def lerp_color(c1: Tuple[int, int, int], c2: Tuple[int, int, int], t: float) -> Tuple[int, int, int]:
@@ -46,38 +46,36 @@ def lerp_color(c1: Tuple[int, int, int], c2: Tuple[int, int, int], t: float) -> 
 def recolor_pixel(r: int, g: int, b: int, a: int) -> Tuple[int, int, int, int]:
     """Map a Clippy pixel to a Sprout plant-themed color.
 
-    Very dark and very light pixels are preserved as eyes/highlights.
-    Grayscale-ish body pixels are mapped to a green gradient based on
-    perceived brightness.
+    Preserves high-contrast eyes and glints while mapping the body
+    to a smooth green gradient based on luminance.
     """
     if a < 10:
         return (r, g, b, a)
 
-    brightness = max(r, g, b)
-    min_channel = min(r, g, b)
-    saturation = brightness - min_channel
+    # Use perceived luminance for a more natural mapping
+    # Formula: 0.299R + 0.587G + 0.114B
+    luminance = 0.299 * r + 0.587 * g + 0.114 * b
 
     # Preserve pure-ish black (eyes) and pure-ish white (eye glints)
-    if brightness < 40:
+    if luminance < 35:
         return (*EYE_BLACK, a)
-    if brightness > 245 and saturation < 20:
+    if luminance > 245:
         return (*EYE_WHITE, a)
 
-    # Normalize brightness to 0..1
-    t = brightness / 255.0
+    # Normalize luminance to 0..1
+    t = luminance / 255.0
 
-    if t < 0.5:
+    if t < 0.4:
         # Shadows: blend between dark shadow and leaf green
-        local_t = t / 0.5
+        local_t = t / 0.4
         new_color = lerp_color(SHADOW_COLOR, MIDTONE_COLOR, local_t)
     else:
         # Highlights: blend between leaf green and light lime
-        local_t = (t - 0.5) / 0.5
+        local_t = (t - 0.4) / 0.6
         new_color = lerp_color(MIDTONE_COLOR, HIGHLIGHT_COLOR, local_t)
 
-    # Retain a hint of the original saturation/texture by mixing with the
-    # recolored value rather than fully replacing it.
-    mix = 0.85
+    # Mix with original to preserve some texture/noise, but favor the new palette
+    mix = 0.9
     final = tuple(int(o * (1 - mix) + n * mix) for o, n in zip((r, g, b), new_color))
     return (*final, a)  # type: ignore[return-value]
 
@@ -85,8 +83,8 @@ def recolor_pixel(r: int, g: int, b: int, a: int) -> Tuple[int, int, int, int]:
 def recolor_frame(frame: Image.Image) -> Image.Image:
     """Return a recolored copy of a single frame."""
     rgba = frame.convert("RGBA")
-    pixels = list(rgba.get_flattened_data())
-    new_pixels = [recolor_pixel(r, g, b, a) for r, g, b, a in pixels]
+    pixels = list(rgba.getdata())
+    new_pixels = [recolor_pixel(*p) for p in pixels]
     new_frame = Image.new("RGBA", rgba.size)
     new_frame.putdata(new_pixels)
     return new_frame
@@ -159,11 +157,11 @@ def generate_sprout_tsx(durations: dict[str, int]) -> str:
 
 
 def main() -> int:
-    if not SPROUT_ANIMATIONS_DIR.exists():
-        print(f"Sprout animations directory not found: {SPROUT_ANIMATIONS_DIR}")
+    if not CLIPPY_ANIMATIONS_DIR.exists():
+        print(f"Clippy animations directory not found: {CLIPPY_ANIMATIONS_DIR}")
         return 1
 
-    SPROUT_ANIMATIONS_DIR.mkdir(parents=True, exist_ok=True)
+    SPROUT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     SPROUT_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Copy the source animation manifest for reference
@@ -175,10 +173,14 @@ def main() -> int:
             json.dump(manifest, f, indent=2)
 
     durations: dict[str, int] = {}
-    png_files = sorted(p for p in SPROUT_ANIMATIONS_DIR.iterdir() if p.suffix.lower() == ".png")
+    # Only process PNG files in the base directory, skipping the 'sprout' subdirectory
+    png_files = sorted(
+        p for p in CLIPPY_ANIMATIONS_DIR.iterdir()
+        if p.is_file() and p.suffix.lower() == ".png"
+    )
 
     for source_path in png_files:
-        dest_path = SPROUT_ANIMATIONS_DIR / source_path.name
+        dest_path = SPROUT_OUTPUT_DIR / source_path.name
         print(f"Processing {source_path.name}...")
         total_duration = recolor_apng(source_path, dest_path)
         durations[source_path.stem] = total_duration
@@ -187,7 +189,7 @@ def main() -> int:
     with open(SPROUT_TSX_FILE, "w", encoding="utf-8") as f:
         f.write(tsx_content)
 
-    print(f"Generated {len(durations)} Sprout animations in {SPROUT_ANIMATIONS_DIR}")
+    print(f"Generated {len(durations)} Sprout animations in {SPROUT_OUTPUT_DIR}")
     print(f"Generated TypeScript module at {SPROUT_TSX_FILE}")
     return 0
 
