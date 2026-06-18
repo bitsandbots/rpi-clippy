@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS, CharacterId } from "../../sharedState";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { useSharedState } from "../contexts/SharedStateContext";
 import { UITheme } from "../../sharedState";
 import { CHARACTERS } from "../character-animations";
@@ -10,26 +10,26 @@ export const SettingsAppearance: React.FC = () => {
   const onChangeFontSize = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
     if (!isNaN(newSize)) {
-      clippyApi.setState("settings.defaultFontSize", newSize);
+      sproutApi.setState("settings.defaultFontSize", newSize);
     }
   };
 
   const onChangeTheme = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    clippyApi.setState("settings.uiTheme", event.target.value as UITheme);
+    sproutApi.setState("settings.uiTheme", event.target.value as UITheme);
   };
 
   const onChangeCharacter = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    clippyApi.setState("settings.character", event.target.value as CharacterId);
+    sproutApi.setState("settings.character", event.target.value as CharacterId);
   };
 
   const onReset = () => {
-    clippyApi.setState("settings.defaultFont", DEFAULT_SETTINGS.defaultFont);
-    clippyApi.setState(
+    sproutApi.setState("settings.defaultFont", DEFAULT_SETTINGS.defaultFont);
+    sproutApi.setState(
       "settings.defaultFontSize",
       DEFAULT_SETTINGS.defaultFontSize,
     );
-    clippyApi.setState("settings.uiTheme", DEFAULT_SETTINGS.uiTheme);
-    clippyApi.setState("settings.character", DEFAULT_SETTINGS.character);
+    sproutApi.setState("settings.uiTheme", DEFAULT_SETTINGS.uiTheme);
+    sproutApi.setState("settings.character", DEFAULT_SETTINGS.character);
   };
 
   return (
@@ -89,7 +89,7 @@ export const SettingsAppearance: React.FC = () => {
             id="defaultFont"
             value={settings.defaultFont}
             onChange={(event) => {
-              clippyApi.setState("settings.defaultFont", event.target.value);
+              sproutApi.setState("settings.defaultFont", event.target.value);
             }}
           >
             <option value="Pixelated MS Sans Serif">

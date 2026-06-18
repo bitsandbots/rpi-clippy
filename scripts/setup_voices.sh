@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup_voices.sh — Download starter Piper TTS voices to ~/.config/Clippy/voices/
+# setup_voices.sh — Download starter Piper TTS voices to ~/.config/Sprout/voices/
 #
 # Usage:
 #   bash scripts/setup_voices.sh            # download default voices
@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-VOICES_DIR="${HOME}/.config/Clippy/voices"
+VOICES_DIR="${HOME}/.config/Sprout/voices"
 BASE_URL="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0"
 
 mkdir -p "$VOICES_DIR"
@@ -105,4 +105,4 @@ echo ""
 echo "Voices installed to: $VOICES_DIR"
 ls -1 "$VOICES_DIR"/*.onnx 2>/dev/null | sed 's|.*/||; s|\.onnx$||' || echo "(none)"
 echo ""
-echo "Restart Clippy or click 'Rescan Voices' in Settings > Voice to pick them up."
+echo "Restart Sprout or click 'Rescan Voices' in Settings > Voice to pick them up."

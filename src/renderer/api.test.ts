@@ -500,10 +500,10 @@ describe("setSttModel", () => {
 
 describe("getVersions", () => {
   it("calls GET /api/versions", async () => {
-    mockFetch({ clippy: "0.4.3", python: "3.11", flask: "3.0" });
+    mockFetch({ sprout: "0.4.3", python: "3.11", flask: "3.0" });
     const result = await getVersions();
     expect(fetch).toHaveBeenCalledWith("/api/versions");
-    expect(result.clippy).toBe("0.4.3");
+    expect(result.sprout).toBe("0.4.3");
   });
 });
 

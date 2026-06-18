@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { useSharedState } from "../contexts/SharedStateContext";
 import { DEFAULT_SYSTEM_PROMPT } from "../../sharedState";
 
@@ -21,7 +21,7 @@ export const SettingsParameters: React.FC = () => {
         tempTemperature !== settings.temperature;
 
       if (isNewSettings) {
-        clippyApi.setState("settings", {
+        sproutApi.setState("settings", {
           ...settings,
           systemPrompt: tempSystemPrompt,
           topK: tempTopK,

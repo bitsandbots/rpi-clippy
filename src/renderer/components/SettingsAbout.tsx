@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 
 export const SettingsAbout: React.FC = () => {
   const [versions, setVersions] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    clippyApi.getVersions().then(setVersions);
+    sproutApi.getVersions().then(setVersions);
   }, []);
 
   return (
@@ -14,7 +14,7 @@ export const SettingsAbout: React.FC = () => {
       <fieldset>
         <legend>Version</legend>
         <p>
-          Clippy <code>{versions.clippy || "Unknown"}</code> — Python{" "}
+          Sprout <code>{versions.sprout || "Unknown"}</code> — Python{" "}
           <code>{versions.python || "Unknown"}</code>, Flask{" "}
           <code>{versions.flask || "Unknown"}</code>
         </p>

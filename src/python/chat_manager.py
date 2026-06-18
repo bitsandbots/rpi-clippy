@@ -1,5 +1,5 @@
 """
-Chat manager — reads/writes chat JSON files under ~/.config/Clippy/chats/.
+Chat manager — reads/writes chat JSON files under ~/.config/Sprout/chats/.
 File format is identical to the Electron version for full compatibility.
 """
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 def _chats_dir() -> Path:
-    config = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Clippy"
+    config = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Sprout"
     return config / "chats"
 
 

@@ -15,7 +15,7 @@ class ErrorBoundary extends Component<
     return { error };
   }
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Clippy crashed:", error, info);
+    console.error("Sprout crashed:", error, info);
   }
   render() {
     if (this.state.error) {
@@ -28,7 +28,7 @@ class ErrorBoundary extends Component<
             background: "#fff",
           }}
         >
-          <b>Clippy crashed:</b>
+          <b>Sprout crashed:</b>
           <pre style={{ whiteSpace: "pre-wrap" }}>
             {this.state.error.message}
           </pre>

@@ -1,7 +1,7 @@
 import { useChat } from "../contexts/ChatContext";
 import { TableView } from "./TableView";
 import { formatDistance } from "date-fns";
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { useState } from "react";
 
 export type SettingsTab = "general" | "model" | "advanced" | "about";

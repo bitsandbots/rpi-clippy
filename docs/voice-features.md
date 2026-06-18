@@ -2,7 +2,7 @@
 
 ## Overview
 
-Clippy supports two voice features:
+Sprout supports two voice features:
 
 1. **Text-to-Speech (TTS)** - Voice responses via Piper TTS
 2. **Speech-to-Text (STT)** - Voice input via Faster-Whisper STT
@@ -27,14 +27,14 @@ ollama pull llama3.2:1b
 
 ### How It Works
 
-1. Clippy receives LLM response text
+1. Sprout receives LLM response text
 2. `TTSManager.synthesize()` converts text to WAV audio
 3. Audio plays via browser's Web Audio API
 4. Uses Piper `.onnx` voice models
 
 ### Voice Models
 
-Voices are stored in `~/.config/Clippy/voices/`
+Voices are stored in `~/.config/Sprout/voices/`
 
 | Voice                 | Gender | Description            | File Size |
 | --------------------- | ------ | ---------------------- | --------- |
@@ -128,7 +128,7 @@ curl -X POST http://localhost:5080/api/voice/transcribe \
 
 ```bash
 # Check voice files exist
-ls -la ~/.config/Clippy/voices/*.onnx
+ls -la ~/.config/Sprout/voices/*.onnx
 
 # Check piper-tts is installed
 python3 -c "from piper import PiperVoice; print('OK')"
@@ -197,7 +197,7 @@ alsamixer
 ### Add Custom Voice
 
 1. Download `.onnx` and `.onnx.json` from the [Piper repository](https://github.com/rhasspy/piper)
-2. Place both files in `~/.config/Clippy/voices/`
+2. Place both files in `~/.config/Sprout/voices/`
 3. Optionally create a `.meta.json` alongside for display metadata:
 
 ```json
@@ -259,7 +259,7 @@ tts = get_tts_manager()
 tts.enabled = True
 tts.load_voice("en_US-amy-medium")
 
-wav_bytes = tts.synthesize("Hello, this is Clippy!")
+wav_bytes = tts.synthesize("Hello, this is Sprout!")
 print(f"Generated {len(wav_bytes)} bytes of audio")
 ```
 
@@ -287,7 +287,7 @@ print(result["text"])
 ## File Locations
 
 ```
-~/.config/Clippy/
+~/.config/Sprout/
 ├── settings.json          # TTS/STT enabled flags
 ├── voices/                # TTS models
 │   ├── en_US-amy-medium.onnx

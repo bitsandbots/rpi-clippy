@@ -16,7 +16,7 @@ export const WelcomeMessageContent: React.FC = () => {
 
   return (
     <div className="welcome-message">
-      <strong>Welcome to Clippy!</strong>
+      <strong>Welcome to Sprout!</strong>
       <p>
         This little app is a love letter and homage to the late, great Clippy,
         the assistant from Microsoft Office 1997. The character was designed by
@@ -26,8 +26,8 @@ export const WelcomeMessageContent: React.FC = () => {
         art or satire.
       </p>
       <p>
-        This version of Clippy can run a Large Language Model (LLM) locally, so
-        that you can chat with it offline.
+        Sprout can run a Large Language Model (LLM) locally, so that you can
+        chat with it offline.
       </p>
       <p>
         It supports a variety of models, including Google's Gemma3, Meta's
@@ -37,7 +37,7 @@ export const WelcomeMessageContent: React.FC = () => {
       </p>
       <p>
         By the way, you can open or close this chat window by clicking right on
-        Clippy's head.
+        Sprout's head.
       </p>
 
       {downloadingModel && (
@@ -57,7 +57,7 @@ export const WelcomeMessageContent: React.FC = () => {
 
       {!downloadingModel && readyModel && (
         <div className="success-message">
-          {readyModel.name} is ready! You can now start chatting with Clippy.
+          {readyModel.name} is ready! You can now start chatting with Sprout.
         </div>
       )}
 

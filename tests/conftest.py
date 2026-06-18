@@ -1,9 +1,9 @@
 """
-Shared pytest fixtures for rpi-clippy tests.
+Shared pytest fixtures for rpi-sprout tests.
 
 Isolation strategy:
   - XDG_CONFIG_HOME is redirected to a per-test tmp_path so all managers
-    write to a throwaway directory instead of ~/.config/Clippy.
+    write to a throwaway directory instead of ~/.config/Sprout.
   - All module-level singletons are reset to None before each test via
     monkeypatch, so get_*() factories produce fresh instances.
   - OllamaService's background refresh thread is patched to a no-op to

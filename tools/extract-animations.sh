@@ -16,7 +16,7 @@ usage() {
     echo "  -s, --spritesheet FILE Spritesheet PNG file (required)"
     echo "  -a, --animations LIST  Comma-separated list of animations to extract (optional)"
     echo "  -o, --output DIR       Output directory (default: <json_basename>_output)"
-    echo "  -t, --tsx FILE         Generate TSX file with animation info (default: ../src/renderer/clippy-animations.tsx)"
+    echo "  -t, --tsx FILE         Generate TSX file with animation info (default: ../src/renderer/sprout-animations.tsx)"
     echo "  --no-tsx               Don't generate TSX file"
     echo "  -f, --force            Force overwrite existing animations"
     echo "  -h, --help             Display this help message"
@@ -74,7 +74,7 @@ fi
 # Set default TSX output file if not specified
 if [ "$GENERATE_TSX" = true ] && [ -z "$TSX_OUTPUT_FILE" ]; then
     SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    TSX_OUTPUT_FILE="${SCRIPT_DIR}/../src/renderer/clippy-animations.tsx"
+    TSX_OUTPUT_FILE="${SCRIPT_DIR}/../src/renderer/sprout-animations.tsx"
 fi
 
 # Check if ImageMagick is installed

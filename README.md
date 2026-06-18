@@ -1,8 +1,12 @@
-# Clippy — Pi 5 / Ollama Fork
+# Sprout — Pi 5 / Ollama Fork
 
-A revival of Microsoft Office 97's Clippy as a local LLM chat interface, rebuilt for the Raspberry Pi 5. This fork replaces the original Electron desktop app with a **Flask web server** so Clippy runs headlessly, needs no display, and is accessible from any device on your local network.
+A revival of Microsoft Office 97's Sprout as a local LLM chat interface, rebuilt for the Raspberry Pi 5. This fork replaces the original Electron desktop app with a **Flask web server** so Sprout runs headlessly, needs no display, and is accessible from any device on your local network.
 
 All inference runs locally through [Ollama](https://ollama.com) — no cloud, no C++ compilation, no GPU required.
+
+---
+
+**Full docs:** [`docs/Blueprint_Overview.html`](docs/Blueprint_Overview.html) — architecture, API reference, gap analysis.
 
 ---
 
@@ -46,8 +50,8 @@ ollama pull llama3.2:1b   # fast, ~800 MB
 ### 2. Clone and install
 
 ```bash
-git clone https://github.com/CoreConduit/rpi-clippy
-cd rpi-clippy
+git clone https://github.com/CoreConduit/rpi-sprout
+cd rpi-sprout
 bash install.sh
 ```
 
@@ -56,7 +60,7 @@ bash install.sh
 - Install system deps (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
 - Install Python deps (`flask`, `requests`, `piper-tts`, `faster-whisper`)
 - Run `npm install` and `npm run build`
-- Install and start the `clippy` systemd service
+- Install and start the `sprout` systemd service
 
 ### 3. (Optional) Download Piper TTS voices
 
@@ -65,7 +69,7 @@ bash scripts/setup_voices.sh        # default voices (~200 MB)
 bash scripts/setup_voices.sh all    # all available voices
 ```
 
-Voices are saved to `~/.config/Clippy/voices/`. Enable TTS in **Settings → Voice**.
+Voices are saved to `~/.config/Sprout/voices/`. Enable TTS in **Settings → Voice**.
 
 ### 4. Open in your browser
 
@@ -126,11 +130,11 @@ The Settings → Model panel uses a **hybrid catalog**: curated entries above ma
 ## Service Management
 
 ```bash
-sudo systemctl status clippy       # current status
-sudo systemctl restart clippy      # restart after config changes
-sudo systemctl stop clippy         # stop
-sudo systemctl disable clippy      # don't start on boot
-sudo journalctl -u clippy -f       # live logs
+sudo systemctl status sprout       # current status
+sudo systemctl restart sprout      # restart after config changes
+sudo systemctl stop sprout         # stop
+sudo systemctl disable sprout      # don't start on boot
+sudo journalctl -u sprout -f       # live logs
 ```
 
 ---
@@ -156,8 +160,8 @@ Flask app.py (port 5080)
 
 src/python/
   ├─ ollama_service.py   — LLM sessions, model management, Ollama HTTP client
-  ├─ chat_manager.py     — chat JSON files (~/.config/Clippy/chats/)
-  ├─ settings_manager.py — settings JSON (~/.config/Clippy/settings.json)
+  ├─ chat_manager.py     — chat JSON files (~/.config/Sprout/chats/)
+  ├─ settings_manager.py — settings JSON (~/.config/Sprout/settings.json)
   ├─ tts_manager.py      — Piper TTS, lazy-loads .onnx voice models
   └─ stt_manager.py      — Faster-Whisper STT, lazy-loads Whisper model
 ```
@@ -168,10 +172,10 @@ Streaming uses **Server-Sent Events (SSE)** — one persistent connection per ac
 
 ## Storage
 
-All data lives in `~/.config/Clippy/`:
+All data lives in `~/.config/Sprout/`:
 
 ```
-~/.config/Clippy/
+~/.config/Sprout/
   settings.json        — app settings
   debug.json           — debug flags
   chats/
@@ -187,12 +191,12 @@ All data lives in `~/.config/Clippy/`:
 
 ## Configuration
 
-Settings are persisted to `~/.config/Clippy/settings.json`. The most useful keys:
+Settings are persisted to `~/.config/Sprout/settings.json`. The most useful keys:
 
 | Key               | Default          | Description                                      |
 | ----------------- | ---------------- | ------------------------------------------------ |
 | `selectedModel`   | `null`           | Display name of the active model                 |
-| `systemPrompt`    | (Clippy persona) | System prompt sent to the LLM                    |
+| `systemPrompt`    | (Sprout persona) | System prompt sent to the LLM                    |
 | `temperature`     | `0.7`            | Sampling temperature                             |
 | `topK`            | `10`             | Top-K sampling                                   |
 | `defaultFont`     | `Tahoma`         | UI font (changeable in Settings → Appearance)    |
@@ -220,9 +224,9 @@ curl http://localhost:5080/api/state
 
 ## Acknowledgements
 
-- Original Clippy app by [Felix Rieseberg](https://github.com/felixrieseberg)
+- Original Sprout app by [Felix Rieseberg](https://github.com/felixrieseberg)
 - Windows 98 styling by [Jordan Scales](https://github.com/jdan) (98.css)
-- Clippy character designed by [Kevan Atteberry](https://www.kevanatteberry.com/)
+- Sprout character designed by [Kevan Atteberry](https://www.kevanatteberry.com/)
 - Pi 5 / Ollama port by [CoreConduit](https://github.com/CoreConduit)
 
-Clippy and all visual assets are owned by Microsoft. This project is not affiliated with Microsoft.
+Sprout and all visual assets are owned by Microsoft. This project is not affiliated with Microsoft.

@@ -1,5 +1,5 @@
 """
-Piper TTS manager — scans ~/.config/Clippy/voices/ for .onnx voice models,
+Piper TTS manager — scans ~/.config/Sprout/voices/ for .onnx voice models,
 loads them lazily, and synthesizes text to WAV bytes.
 
 Voices must be downloaded separately (see scripts/setup_voices.sh).
@@ -17,7 +17,7 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-VOICES_DIR = Path.home() / ".config" / "Clippy" / "voices"
+VOICES_DIR = Path.home() / ".config" / "Sprout" / "voices"
 
 
 class VoiceInfo:

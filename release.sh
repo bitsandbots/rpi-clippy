@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# release.sh — bump version, run tests, build, tag, and push a Clippy release
+# release.sh — bump version, run tests, build, tag, and push a Sprout release
 # Usage: bash release.sh <major|minor|patch>
 #   bash release.sh patch   # 0.5.0 → 0.5.1
 #   bash release.sh minor   # 0.5.0 → 0.6.0
@@ -45,9 +45,9 @@ with open('package.json', 'w') as f: json.dump(d, f, indent=2)
 print('  package.json updated')
 "
 
-# Update app.py version if present
-if grep -q "CLIPPY_VERSION" app.py; then
-  sed -i "s/CLIPPY_VERSION = \"[^\"]*\"/CLIPPY_VERSION = \"$NEW_VERSION\"/" app.py
+# Update app.py VERSION constant if present
+if grep -q "^VERSION = " app.py; then
+  sed -i "s/^VERSION = \"[^\"]*\"/VERSION = \"$NEW_VERSION\"/" app.py
   echo "  app.py updated"
 fi
 
@@ -56,9 +56,7 @@ echo "--> Running Python tests..."
 python3 -m pytest -q || { echo "ERROR: Python tests failed — aborting release"; exit 1; }
 
 echo "--> Running frontend tests..."
-node node_modules/vitest/dist/cli.js run --reporter=verbose 2>&1 | tail -8
-# Check exit code
-node node_modules/vitest/dist/cli.js run --silent || { echo "ERROR: Frontend tests failed — aborting release"; exit 1; }
+npm run test -- --run || { echo "ERROR: Frontend tests failed — aborting release"; exit 1; }
 
 # ── Build frontend ─────────────────────────────────────────────────────────
 echo "--> Building frontend..."

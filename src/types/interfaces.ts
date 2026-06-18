@@ -1,7 +1,7 @@
 export interface MessageRecord {
   id: string;
   content?: string;
-  sender: "user" | "clippy";
+  sender: "user" | "sprout";
   createdAt: number;
 }
 
@@ -20,7 +20,7 @@ export interface ChatWithMessages {
 export type ChatRecordsState = Record<string, ChatRecord>;
 
 export interface Versions extends NodeJS.ProcessVersions {
-  clippy: string;
+  sprout: string;
   electron: string;
   nodeLlamaCpp: string;
   chromium: string;
@@ -30,7 +30,7 @@ export type NestedRecord<T> = {
   [key: string]: T | NestedRecord<T>;
 };
 
-export interface ClippyDebugInfo {
+export interface SproutDebugInfo {
   platform: string;
   arch: string;
   versions: Record<string, string>;

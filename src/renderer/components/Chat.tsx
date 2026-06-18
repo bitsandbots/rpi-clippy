@@ -5,10 +5,10 @@ import { ChatInput } from "./ChatInput";
 import {
   ANIMATION_KEYS,
   ANIMATION_KEYS_BRACKETS,
-} from "../clippy-animation-helpers";
+} from "../sprout-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
-import { electronAi } from "../clippyApi";
+import { electronAi } from "../sproutApi";
 import { randomUUID } from "../helpers/uuid";
 
 export type ChatProps = {
@@ -80,7 +80,7 @@ export function Chat({ style }: ChatProps) {
           addMessage({
             id: randomUUID(),
             content: filteredContent,
-            sender: "clippy",
+            sender: "sprout",
             createdAt: Date.now(),
           });
           setStreamingMessageContent("");
@@ -94,7 +94,7 @@ export function Chat({ style }: ChatProps) {
           addMessage({
             id: randomUUID(),
             content: `_Could not get a response — ${error}_`,
-            sender: "clippy",
+            sender: "sprout",
             createdAt: Date.now(),
           });
           setStreamingMessageContent("");
@@ -114,7 +114,7 @@ export function Chat({ style }: ChatProps) {
           message={{
             id: "streaming",
             content: streamingMessageContent,
-            sender: "clippy",
+            sender: "sprout",
             createdAt: Date.now(),
           }}
         />

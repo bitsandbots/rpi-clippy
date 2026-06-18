@@ -16,8 +16,8 @@ describe("CHARACTERS", () => {
     expect(CHARACTERS.sprout.animations).toBe(SPROUT_ANIMATIONS);
   });
 
-  it("default character is clippy", () => {
-    expect(DEFAULT_CHARACTER).toBe("clippy");
+  it("default character is sprout", () => {
+    expect(DEFAULT_CHARACTER).toBe("sprout");
   });
 
   it("every character has the same animation keys as Clippy", () => {

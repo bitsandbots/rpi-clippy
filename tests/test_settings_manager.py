@@ -129,16 +129,16 @@ def test_electron_keys_not_in_defaults(tmp_path):
 
 def test_electron_keys_stripped_on_load(tmp_path):
     """If a disk file contains Electron-only keys they should be stripped."""
-    config_dir = Path(tmp_path) / "Clippy"
+    config_dir = Path(tmp_path) / "Sprout"
     config_dir.mkdir(parents=True)
     settings_path = config_dir / "settings.json"
-    dirty = {"topK": 5, "clippyAlwaysOnTop": True, "chatAlwaysOnTop": False}
+    dirty = {"topK": 5, "sproutAlwaysOnTop": True, "chatAlwaysOnTop": False}
     settings_path.write_text(json.dumps(dirty))
 
     mgr = make_manager(tmp_path)
     data = mgr.get_all()
     assert data["topK"] == 5
-    assert "clippyAlwaysOnTop" not in data
+    assert "sproutAlwaysOnTop" not in data
     assert "chatAlwaysOnTop" not in data
 
 
@@ -147,7 +147,7 @@ def test_electron_keys_stripped_on_load(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_corrupted_json_returns_defaults(tmp_path):
-    config_dir = Path(tmp_path) / "Clippy"
+    config_dir = Path(tmp_path) / "Sprout"
     config_dir.mkdir(parents=True)
     (config_dir / "settings.json").write_text("this is not json {{{{")
 
@@ -157,7 +157,7 @@ def test_corrupted_json_returns_defaults(tmp_path):
 
 
 def test_partial_json_merges_with_defaults(tmp_path):
-    config_dir = Path(tmp_path) / "Clippy"
+    config_dir = Path(tmp_path) / "Sprout"
     config_dir.mkdir(parents=True)
     (config_dir / "settings.json").write_text(json.dumps({"topK": 42}))
 

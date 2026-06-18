@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 import { Animation } from "../clippy-animations";
 import {
   EMPTY_ANIMATION,
   getRandomIdleAnimation,
-} from "../clippy-animation-helpers";
+} from "../sprout-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
 import { log } from "../logging";
 import { useDebugState } from "../contexts/DebugContext";
@@ -13,7 +13,7 @@ import { CHARACTERS, DEFAULT_CHARACTER } from "../character-animations";
 
 const WAIT_TIME = 6000;
 
-export function Clippy() {
+export function Sprout() {
   const {
     animationKey,
     status,
@@ -28,25 +28,22 @@ export function Clippy() {
     CHARACTERS[DEFAULT_CHARACTER];
   const animations = character.animations;
   const [animation, setAnimation] = useState<Animation>(EMPTY_ANIMATION);
-  const [animationTimeoutId, setAnimationTimeoutId] = useState<
-    number | undefined
-  >(undefined);
+  const animationTimeoutRef = useRef<number | undefined>(undefined);
 
   const playAnimation = useCallback(
     (key: string) => {
       if (animations[key]) {
         log(`Playing animation`, { key, character: character.id });
 
-        if (animationTimeoutId) {
-          window.clearTimeout(animationTimeoutId);
+        if (animationTimeoutRef.current) {
+          window.clearTimeout(animationTimeoutRef.current);
         }
 
         setAnimation(animations[key]);
-        setAnimationTimeoutId(
-          window.setTimeout(() => {
-            setAnimation(animations.Default);
-          }, animations[key].length + 200),
-        );
+        animationTimeoutRef.current = window.setTimeout(() => {
+          animationTimeoutRef.current = undefined;
+          setAnimation(animations.Default);
+        }, animations[key].length + 200);
       } else {
         log(`Animation not found`, { key, character: character.id });
       }
@@ -65,15 +62,14 @@ export function Clippy() {
       const randomIdleAnimation = getRandomIdleAnimation(animation, animations);
       setAnimation(randomIdleAnimation);
 
-      // Reset back to default after 6 seconds and schedule next animation
-      setAnimationTimeoutId(
-        window.setTimeout(() => {
-          setAnimation(animations.Default);
-          setAnimationTimeoutId(
-            window.setTimeout(playRandomIdleAnimation, WAIT_TIME),
-          );
-        }, randomIdleAnimation.length),
-      );
+      // Reset back to default after the animation finishes, then schedule next
+      animationTimeoutRef.current = window.setTimeout(() => {
+        setAnimation(animations.Default);
+        animationTimeoutRef.current = window.setTimeout(
+          playRandomIdleAnimation,
+          WAIT_TIME,
+        );
+      }, randomIdleAnimation.length);
     };
 
     if (status === "welcome" && animation === EMPTY_ANIMATION) {
@@ -82,20 +78,25 @@ export function Clippy() {
         setStatus("idle");
       }, animations.Show.length + 200);
     } else if (status === "idle") {
-      if (!animationTimeoutId) {
+      if (!animationTimeoutRef.current) {
         playRandomIdleAnimation();
       }
     }
 
-    // Clean up timeouts when component unmounts or status changes
+    // Clear any pending timers when status or character changes
     return () => {
-      if (animationTimeoutId) {
-        window.clearTimeout(animationTimeoutId);
+      if (animationTimeoutRef.current) {
+        window.clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = undefined;
       }
     };
   }, [status, animations]);
 
   useEffect(() => {
+    if (animationTimeoutRef.current) {
+      window.clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = undefined;
+    }
     setAnimation(animations.Default);
   }, [character.id, animations]);
 

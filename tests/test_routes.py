@@ -36,7 +36,7 @@ def delete_json(client, url, body=None):
 def test_root_returns_html_or_placeholder(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"html" in resp.data.lower() or b"Clippy" in resp.data
+    assert b"html" in resp.data.lower() or b"Sprout" in resp.data
 
 
 def test_api_path_returns_json_not_html(client):
@@ -474,11 +474,11 @@ def test_versions_returns_expected_keys(client):
     resp = client.get("/api/versions")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert "clippy" in data
+    assert "sprout" in data
     assert "python" in data
     assert "flask" in data
 
 
-def test_versions_clippy_is_string(client):
+def test_versions_sprout_is_string(client):
     resp = client.get("/api/versions")
-    assert isinstance(resp.get_json()["clippy"], str)
+    assert isinstance(resp.get_json()["sprout"], str)

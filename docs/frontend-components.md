@@ -11,14 +11,14 @@ App (root)
 │   └── ChatContext
 │       ├── VoiceProvider
 │       ├── BubbleViewProvider
-│       ├── ClippyRoot (theming)
-│       │   └── ClippyLayout
+│       ├── SproutRoot (theming)
+│       │   └── SproutLayout
 │       │       ├── BubbleWindow (chat bubble)
 │       │       │   ├── TabList (settings tabs)
 │       │       │   ├── BubbleWindowBottomBar (settings controls)
 │       │       │   └── Chat (chat messages)
-│       │       └── Clippy (animated sprite)
-│       │           ├── ClippySprite (SVG animation)
+│       │       └── Sprout (animated sprite)
+│       │           ├── SproutSprite (SVG animation)
 │       │           └── ChatToggle (button)
 │       └── Settings (modal)
 ```
@@ -35,16 +35,16 @@ App (root)
 
 ## Core Components
 
-### Clippy.tsx
+### Sprout.tsx
 
-**Location**: `src/renderer/components/Clippy.tsx`
+**Location**: `src/renderer/components/Sprout.tsx`
 
-The animated Clippy sprite with mouse hover effects.
+The animated Sprout sprite with mouse hover effects.
 
 **Props**:
 
 ```typescript
-type ClippyProps = {
+type SproutProps = {
   style?: React.CSSProperties;
   onClick?: () => void;
 };
@@ -117,7 +117,7 @@ type MessageProps = {
     id: string;
     content?: string;
     children?: React.ReactNode;
-    sender: "user" | "clippy";
+    sender: "user" | "sprout";
     createdAt: number;
   };
 };
@@ -126,7 +126,7 @@ type MessageProps = {
 **Features**:
 
 - `react-markdown` for message content
-- Different styles for user vs clippy
+- Different styles for user vs sprout
 - Timestamp display
 
 ### Settings.tsx
@@ -195,7 +195,7 @@ The chat bubble container window.
 - `isChatWindowOpen`: Toggle visibility
 - `bubbleView`: "chat" or "settings"
 
-### ClippyRoot.tsx
+### SproutRoot.tsx
 
 **Location**: `src/renderer/components/App.tsx`
 
@@ -205,7 +205,7 @@ Root component with theming.
 
 - Sets `--font-size` CSS variable
 - Sets `data-font` attribute for font family
-- Scopes styles to `.clippy` class
+- Scopes styles to `.sprout` class
 
 ## Context Hooks
 
@@ -221,7 +221,7 @@ const {
   animationKey, // string (e.g., "Wave")
   setAnimationKey, // (key: string) => void
   status, // "idle" | "thinking" | "responding"
-  setStatus, // (status: ClippyNamedStatus) => void
+  setStatus, // (status: SproutNamedStatus) => void
   isModelLoaded, // boolean
   isChatWindowOpen, // boolean
   setIsChatWindowOpen, // (open: boolean) => void
@@ -286,7 +286,7 @@ Animations are controlled by keywords in LLM responses:
 
 ### Animation Helpers
 
-**Location**: `src/renderer/clippy-animation-helpers.tsx`
+**Location**: `src/renderer/sprout-animation-helpers.tsx`
 
 ```typescript
 // Available animations
@@ -313,17 +313,17 @@ getRandomIdleAnimation(current?: Animation);
 
 ## API Client
 
-### clippyApi.tsx
+### sproutApi.tsx
 
-**Location**: `src/renderer/clippyApi.tsx`
+**Location**: `src/renderer/sproutApi.tsx`
 
 Compatibility shim that re-exports API functions.
 
 ```typescript
-import { clippyApi, electronAi } from "./clippyApi";
+import { sproutApi, electronAi } from "./sproutApi";
 ```
 
-**clippyApi Interface**:
+**sproutApi Interface**:
 
 ```typescript
 {
@@ -379,25 +379,25 @@ src/renderer/
 ├── css/
 │   ├── App.css           # Main app styles
 │   ├── 98.extended.css   # 98.css extensions
-│   └── Theme.css         # Clippy-specific theming
+│   └── Theme.css         # Sprout-specific theming
 ├── components/           # Component styles (inlined or CSS modules)
 ```
 
 ### Theming Variables
 
 ```css
-/* Set by ClippyRoot */
-.clippy {
+/* Set by SproutRoot */
+.sprout {
   --font-size: 16px;
   --font-family: Tahoma;
 }
 
 /* Color scheme */
---clippy-color-bg: #c0c0c0;
---clippy-color-border: #808080;
---clippy-color-text: #000000;
---clippy-color-highlight: #ffffff;
---clippy-color-shadow: #808080;
+--sprout-color-bg: #c0c0c0;
+--sprout-color-border: #808080;
+--sprout-color-text: #000000;
+--sprout-color-highlight: #ffffff;
+--sprout-color-shadow: #808080;
 ```
 
 ## Responsive Design

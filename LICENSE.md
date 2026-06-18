@@ -8,6 +8,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---
 
-## Clippy
+## Sprout
 
-The Clippy character, imagery, and associated assets are copyrighted by Microsoft Corporation. This project uses these assets under fair use for nostalgic/educational purposes. The MIT license above applies only to the code written for this project, not to any Microsoft-owned intellectual property.
+The Sprout character, imagery, and associated assets are copyrighted by Microsoft Corporation. This project uses these assets under fair use for nostalgic/educational purposes. The MIT license above applies only to the code written for this project, not to any Microsoft-owned intellectual property.

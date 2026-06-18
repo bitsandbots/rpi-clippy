@@ -52,9 +52,9 @@ sudo systemctl status ollama
 # Pull a model first
 ollama pull llama3.2:1b
 
-# Clone and install Clippy
-git clone https://github.com/bitsandbots/rpi-clippy
-cd rpi-clippy
+# Clone and install Sprout
+git clone https://github.com/bitsandbots/rpi-sprout
+cd rpi-sprout
 bash install.sh
 ```
 
@@ -65,21 +65,21 @@ The `install.sh` script will:
 3. Install Python dependencies from `requirements.txt`
 4. Install npm dependencies
 5. Build the React frontend
-6. Generate and install the `clippy` systemd service (scoped to the current user)
+6. Generate and install the `sprout` systemd service (scoped to the current user)
 7. Enable and start the service
 
 ### Verify Installation
 
 ```bash
 # Check service status
-sudo systemctl status clippy
+sudo systemctl status sprout
 
 # View logs
-sudo journalctl -u clippy -f
+sudo journalctl -u sprout -f
 
 # Test API (requires Ollama running)
 curl http://localhost:5080/api/versions
-# Expected: {"clippy": "0.5.0", "python": "3.11.x", "flask": "3.1.3"}
+# Expected: {"sprout": "0.5.0", "python": "3.11.x", "flask": "3.1.3"}
 
 curl http://localhost:5080/api/state
 # Expected: {"models": {...}, "settings": {...}}
@@ -97,7 +97,7 @@ bash scripts/setup_voices.sh
 bash scripts/setup_voices.sh all
 
 # Verify voices installed
-ls -la ~/.config/Clippy/voices/
+ls -la ~/.config/Sprout/voices/
 ```
 
 ### 2. Enable Voice Features
@@ -169,38 +169,38 @@ npm run dev
 ### Check Status
 
 ```bash
-sudo systemctl status clippy
+sudo systemctl status sprout
 ```
 
 ### Start/Stop
 
 ```bash
-sudo systemctl start clippy
-sudo systemctl stop clippy
-sudo systemctl restart clippy
+sudo systemctl start sprout
+sudo systemctl stop sprout
+sudo systemctl restart sprout
 ```
 
 ### Auto-Start on Boot
 
 ```bash
 # Already enabled by install.sh
-sudo systemctl enable clippy
+sudo systemctl enable sprout
 
 # To disable
-sudo systemctl disable clippy
+sudo systemctl disable sprout
 ```
 
 ### View Logs
 
 ```bash
 # All logs
-sudo journalctl -u clippy
+sudo journalctl -u sprout
 
 # Live logs
-sudo journalctl -u clippy -f
+sudo journalctl -u sprout -f
 
 # Filter by time
-sudo journalctl -u clippy --since "2026-04-01"
+sudo journalctl -u sprout --since "2026-04-01"
 ```
 
 ## Troubleshooting
@@ -209,13 +209,13 @@ sudo journalctl -u clippy --since "2026-04-01"
 
 ```bash
 # Check the service file
-cat /etc/systemd/system/clippy.service
+cat /etc/systemd/system/sprout.service
 
 # Check for errors
-sudo journalctl -u clippy -n 50
+sudo journalctl -u sprout -n 50
 
 # Check Python syntax
-python3 -m py_compile /home/coreconduit/rpi-clippy/app.py
+python3 -m py_compile /home/coreconduit/rpi-sprout/app.py
 ```
 
 ### Port 5080 Already in Use
@@ -224,7 +224,7 @@ python3 -m py_compile /home/coreconduit/rpi-clippy/app.py
 # Find process using port 5080
 sudo lsof -i :5080
 
-# Change port in clippy.service (requires manual edit)
+# Change port in sprout.service (requires manual edit)
 # Edit ExecStart line to use different port
 ```
 
@@ -255,20 +255,20 @@ alsamixer
 
 ```bash
 # Stop and disable service
-sudo systemctl stop clippy
-sudo systemctl disable clippy
+sudo systemctl stop sprout
+sudo systemctl disable sprout
 
 # Remove service file
-sudo rm /etc/systemd/system/clippy.service
+sudo rm /etc/systemd/system/sprout.service
 sudo systemctl daemon-reload
 
 # Remove data (optional)
-rm -rf ~/.config/Clippy
+rm -rf ~/.config/Sprout
 ```
 
 ## Docker (Alternative)
 
-While not officially supported, Clippy can run in Docker:
+While not officially supported, Sprout can run in Docker:
 
 ```dockerfile
 FROM python:3.11-slim

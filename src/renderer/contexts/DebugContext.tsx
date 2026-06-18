@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { clippyApi } from "../clippyApi";
+import { sproutApi } from "../sproutApi";
 import { DebugState, EMPTY_DEBUG_STATE } from "../../debugState";
 
 export const DebugContext = createContext<DebugState>(EMPTY_DEBUG_STATE);
@@ -10,7 +10,7 @@ export const DebugProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const fetchDebugState = async () => {
-      const state = await clippyApi.getFullDebugState();
+      const state = await sproutApi.getFullDebugState();
       setDebugState(state);
     };
     fetchDebugState();

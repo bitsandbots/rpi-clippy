@@ -2,7 +2,7 @@
 
 ## Project Purpose
 
-Clippy is a revival of Microsoft Office 97's iconic animated assistant, reimagined as a **local LLM chat interface** running on Raspberry Pi 5. This fork replaces the original Electron desktop application with a **Flask + React web application** to enable:
+Sprout is a revival of Microsoft Office 97's iconic animated assistant, reimagined as a **local LLM chat interface** running on Raspberry Pi 5. This fork replaces the original Electron desktop application with a **Flask + React web application** to enable:
 
 1. **Headless Operation** - No display or desktop environment required
 2. **Network Access** - Accessible from any device on the local network
@@ -72,7 +72,7 @@ Clippy is a revival of Microsoft Office 97's iconic animated assistant, reimagin
 
 ### Streaming Architecture
 
-Clippy uses **Server-Sent Events (SSE)** for real-time communication:
+Sprout uses **Server-Sent Events (SSE)** for real-time communication:
 
 | Stream Type       | Endpoint                        | Purpose                    |
 | ----------------- | ------------------------------- | -------------------------- |
@@ -93,10 +93,10 @@ State is shared between frontend and backend:
 
 ## Storage
 
-All persistent data stored in `~/.config/Clippy/`:
+All persistent data stored in `~/.config/Sprout/`:
 
 ```
-~/.config/Clippy/
+~/.config/Sprout/
 ├── settings.json           # App settings (font, model, etc.)
 ├── debug.json              # Debug flags
 ├── chats/                  # Conversation history

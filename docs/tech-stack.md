@@ -86,7 +86,7 @@
 ## Dependencies Tree
 
 ```
-rpi-clippy/
+rpi-sprout/
 ├── Flask (Python)
 │   ├── requests (for Ollama)
 │   └── threading (concurrency)
