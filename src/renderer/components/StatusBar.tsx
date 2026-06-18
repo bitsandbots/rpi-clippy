@@ -19,7 +19,7 @@ export function StatusBar() {
   );
 }
 
-function getStatusText(status: string, isLoaded: boolean): string {
+export function getStatusText(status: string, isLoaded: boolean): string {
   if (!isLoaded) return "Loading model...";
   switch (status) {
     case "thinking":

@@ -1,17 +1,18 @@
 :root {
-  background: transparent;
+  background: #0d1926;
 }
 
 html,
 body {
-  background: transparent;
+  background: #0d1926;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   user-select: none;
 }
 
 body {
-  background: transparent;
+  background: #0d1926;
 }
 
 .app-no-select {

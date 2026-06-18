@@ -9,7 +9,7 @@ import { StatusBar } from "./StatusBar";
 
 export function Bubble() {
   const { currentView, setCurrentView } = useBubbleView();
-  const { setIsChatWindowOpen, status } = useChat();
+  const { status } = useChat();
 
   const chatStyle = {
     padding: "15px",
@@ -57,21 +57,22 @@ export function Bubble() {
   return (
     <div
       className={`chat-panel${isActive ? " chat-panel--active" : ""}`}
-      style={{ width: "calc(100% - 6px)", height: "calc(100% - 6px)", margin: 0 }}
+      style={{ width: "100%", height: "100%" }}
     >
-      <div className="chat-panel-header">
-        <div className="chat-panel-title">Sprout</div>
-        <div className="chat-panel-controls">
-          <button onClick={handleChatsClick}>Chats</button>
-          <button onClick={handleSettingsClick}>⚙</button>
-          <button
-            className="btn-close"
-            aria-label="Close"
-            onClick={() => setIsChatWindowOpen(false)}
-          >
-            ×
-          </button>
-        </div>
+      <div className="chat-nav-bar">
+        <button
+          className={currentView === "chats" ? "chat-nav-btn active" : "chat-nav-btn"}
+          onClick={handleChatsClick}
+        >
+          Chats
+        </button>
+        <button
+          className={currentView.startsWith("settings") ? "chat-nav-btn active" : "chat-nav-btn"}
+          onClick={handleSettingsClick}
+          aria-label="Settings"
+        >
+          ⚙
+        </button>
       </div>
       <div
         className="chat-panel-body"

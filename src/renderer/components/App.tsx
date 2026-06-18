@@ -8,46 +8,24 @@ import { SharedStateProvider } from "../contexts/SharedStateContext";
 import { BubbleViewProvider } from "../contexts/BubbleViewContext";
 import { DebugProvider } from "../contexts/DebugContext";
 import { VoiceProvider } from "../contexts/VoiceContext";
-import { useChat } from "../contexts/ChatContext";
 import { useSharedState } from "../contexts/SharedStateContext";
 
 function SproutLayout() {
-  const { isChatWindowOpen } = useChat();
-
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        pointerEvents: "none",
+        flexDirection: "row",
+        alignItems: "stretch",
+        width: "100vw",
+        height: "100vh",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          pointerEvents: "none",
-        }}
-      >
-        {isChatWindowOpen && (
-          <div
-            style={{
-              width: "450px",
-              height: "650px",
-              pointerEvents: "auto",
-            }}
-          >
-            <Bubble />
-          </div>
-        )}
-
-        <div style={{ pointerEvents: "auto" }}>
-          <Sprout />
-        </div>
+      <div style={{ flex: 1, minWidth: "320px", display: "flex", flexDirection: "column" }}>
+        <Bubble />
+      </div>
+      <div style={{ width: "186px", flexShrink: 0, display: "flex", alignItems: "flex-end" }}>
+        <Sprout />
       </div>
     </div>
   );

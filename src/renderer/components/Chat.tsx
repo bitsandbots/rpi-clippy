@@ -130,7 +130,7 @@ export function Chat({ style }: ChatProps) {
  * @param content - The content of the message
  * @returns The text and animation key
  */
-function filterMessageContent(content: string): {
+export function filterMessageContent(content: string): {
   text: string;
   animationKey: string;
 } {
