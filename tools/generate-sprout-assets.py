@@ -19,7 +19,8 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
-from PIL import Image
+import numpy as np
+from PIL import Image, ImageFilter
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CLIPPY_ANIMATIONS_DIR = PROJECT_ROOT / "src" / "renderer" / "images" / "animations"
@@ -31,67 +32,69 @@ SPROUT_ANIMATIONS_JSON = (
 SPROUT_ASSETS_DIR = PROJECT_ROOT / "assets" / "animations" / "sprout"
 
 # Shadow → highlight green palette (R, G, B)
-SHADOW_COLOR = (30, 70, 20)      # deep forest green
-MIDTONE_COLOR = (70, 170, 70)    # fresh leaf green
-HIGHLIGHT_COLOR = (190, 250, 150)  # vibrant lime highlight
-EYE_WHITE = (255, 255, 255)
-EYE_BLACK = (5, 5, 5)
+SHADOW_COLOR = np.array([30, 70, 20], dtype=np.float32)      # deep forest green
+MIDTONE_COLOR = np.array([70, 170, 70], dtype=np.float32)    # fresh leaf green
+HIGHLIGHT_COLOR = np.array([190, 250, 150], dtype=np.float32) # vibrant lime highlight
+EYE_BLACK = np.array([5, 5, 5], dtype=np.float32)
+EYE_WHITE = np.array([255, 255, 255], dtype=np.float32)
 
+# Output display width in pixels — matches Sprout.tsx `width: "124px"`
+OUTPUT_WIDTH = 124
 
-def lerp_color(c1: Tuple[int, int, int], c2: Tuple[int, int, int], t: float) -> Tuple[int, int, int]:
-    """Linearly interpolate between two RGB colors."""
-    return tuple(int(a + (b - a) * t) for a, b in zip(c1, c2))  # type: ignore[return-value]
-
-
-def recolor_pixel(r: int, g: int, b: int, a: int) -> Tuple[int, int, int, int]:
-    """Map a Clippy pixel to a Sprout plant-themed color.
-
-    Preserves high-contrast eyes and glints while mapping the body
-    to a smooth green gradient based on luminance.
-    """
-    if a < 10:
-        return (r, g, b, a)
-
-    # Use perceived luminance for a more natural mapping
-    # Formula: 0.299R + 0.587G + 0.114B
-    luminance = 0.299 * r + 0.587 * g + 0.114 * b
-
-    # Preserve pure-ish black (eyes) and pure-ish white (eye glints)
-    if luminance < 35:
-        return (*EYE_BLACK, a)
-    if luminance > 245:
-        return (*EYE_WHITE, a)
-
-    # Normalize luminance to 0..1
-    t = luminance / 255.0
-
-    if t < 0.4:
-        # Shadows: blend between dark shadow and leaf green
-        local_t = t / 0.4
-        new_color = lerp_color(SHADOW_COLOR, MIDTONE_COLOR, local_t)
-    else:
-        # Highlights: blend between leaf green and light lime
-        local_t = (t - 0.4) / 0.6
-        new_color = lerp_color(MIDTONE_COLOR, HIGHLIGHT_COLOR, local_t)
-
-    # Mix with original to preserve some texture/noise, but favor the new palette
-    mix = 0.9
-    final = tuple(int(o * (1 - mix) + n * mix) for o, n in zip((r, g, b), new_color))
-    return (*final, a)  # type: ignore[return-value]
+# Light unsharp mask after LANCZOS downscale to recover edge crispness
+UNSHARP_MASK = ImageFilter.UnsharpMask(radius=0.6, percent=130, threshold=3)
 
 
 def recolor_frame(frame: Image.Image) -> Image.Image:
-    """Return a recolored copy of a single frame."""
-    rgba = frame.convert("RGBA")
-    pixels = list(rgba.getdata())
-    new_pixels = [recolor_pixel(*p) for p in pixels]
-    new_frame = Image.new("RGBA", rgba.size)
-    new_frame.putdata(new_pixels)
-    return new_frame
+    """Recolor a single frame using numpy vectorized operations.
+
+    Maps Clippy's beige/tan palette to Sprout's green palette via luminance,
+    preserving eye-black and eye-white regions.
+    """
+    arr = np.array(frame.convert("RGBA"), dtype=np.float32)
+    r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
+
+    lum = 0.299 * r + 0.587 * g + 0.114 * b
+    t = lum / 255.0
+
+    transparent = a < 10
+    eye_black = ~transparent & (lum < 35)
+    eye_white = ~transparent & (lum > 245)
+    shadow_region = ~transparent & ~eye_black & ~eye_white & (t < 0.4)
+    highlight_region = ~transparent & ~eye_black & ~eye_white & (t >= 0.4)
+
+    out = arr.copy()
+
+    # Eye preservation
+    for ch in range(3):
+        out[:, :, ch] = np.where(eye_black, EYE_BLACK[ch], out[:, :, ch])
+        out[:, :, ch] = np.where(eye_white, EYE_WHITE[ch], out[:, :, ch])
+
+    # Shadow band: lerp(SHADOW, MIDTONE, t/0.4)
+    local_t = np.clip(t / 0.4, 0.0, 1.0)
+    for ch in range(3):
+        blended = SHADOW_COLOR[ch] + (MIDTONE_COLOR[ch] - SHADOW_COLOR[ch]) * local_t
+        out[:, :, ch] = np.where(shadow_region, blended, out[:, :, ch])
+
+    # Highlight band: lerp(MIDTONE, HIGHLIGHT, (t-0.4)/0.6)
+    local_t = np.clip((t - 0.4) / 0.6, 0.0, 1.0)
+    for ch in range(3):
+        blended = MIDTONE_COLOR[ch] + (HIGHLIGHT_COLOR[ch] - MIDTONE_COLOR[ch]) * local_t
+        out[:, :, ch] = np.where(highlight_region, blended, out[:, :, ch])
+
+    return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def scale_and_sharpen(frame: Image.Image) -> Image.Image:
+    """Downscale to OUTPUT_WIDTH using LANCZOS, then apply light unsharp mask."""
+    src_w, src_h = frame.size
+    out_h = round(src_h * OUTPUT_WIDTH / src_w)
+    scaled = frame.resize((OUTPUT_WIDTH, out_h), Image.LANCZOS)
+    return scaled.filter(UNSHARP_MASK)
 
 
 def recolor_apng(source_path: Path, dest_path: Path) -> int:
-    """Recolor an APNG file and save it. Returns total duration in ms."""
+    """Recolor and downscale an APNG file and save it. Returns total duration in ms."""
     source = Image.open(source_path)
     frames: list[Image.Image] = []
     durations: list[int] = []
@@ -99,7 +102,8 @@ def recolor_apng(source_path: Path, dest_path: Path) -> int:
 
     for frame_index in range(getattr(source, "n_frames", 1)):
         source.seek(frame_index)
-        frames.append(recolor_frame(source))
+        recolored = recolor_frame(source)
+        frames.append(scale_and_sharpen(recolored))
         duration = int(source.info.get("duration", 100))
         durations.append(duration)
         total_duration += duration
@@ -173,7 +177,6 @@ def main() -> int:
             json.dump(manifest, f, indent=2)
 
     durations: dict[str, int] = {}
-    # Only process PNG files in the base directory, skipping the 'sprout' subdirectory
     png_files = sorted(
         p for p in CLIPPY_ANIMATIONS_DIR.iterdir()
         if p.is_file() and p.suffix.lower() == ".png"
