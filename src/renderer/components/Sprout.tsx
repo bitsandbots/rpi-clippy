@@ -18,8 +18,6 @@ export function Sprout() {
     animationKey,
     status,
     setStatus,
-    setIsChatWindowOpen,
-    isChatWindowOpen,
   } = useChat();
   const { enableDragDebug } = useDebugState();
   const { settings } = useSharedState();
@@ -51,9 +49,6 @@ export function Sprout() {
     [animations, character.id],
   );
 
-  const toggleChat = useCallback(() => {
-    setIsChatWindowOpen(!isChatWindowOpen);
-  }, [isChatWindowOpen, setIsChatWindowOpen]);
 
   useEffect(() => {
     const playRandomIdleAnimation = () => {
@@ -128,9 +123,7 @@ export function Sprout() {
             zIndex: 10,
             right: "60px",
             top: "3px",
-            cursor: "help",
           }}
-          onClick={toggleChat}
         ></div>
       </div>
       <img

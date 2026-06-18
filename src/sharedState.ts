@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   topK: 10,
   temperature: 0.7,
   defaultFont: "Sans-serif",
-  defaultFontSize: 14,
+  defaultFontSize: 28,
   character: "sprout",
 };
 
