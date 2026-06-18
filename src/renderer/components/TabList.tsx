@@ -15,7 +15,6 @@ export interface TabListProps {
 export function TabList({ tabs, activeTab, onTabChange }: TabListProps) {
   const [internalActiveTab, setInternalActiveTab] = React.useState(0);
 
-  // Find the active tab index based on value
   const activeTabIndex = activeTab
     ? tabs.findIndex((tab) => tab.key === activeTab)
     : internalActiveTab;
@@ -29,24 +28,22 @@ export function TabList({ tabs, activeTab, onTabChange }: TabListProps) {
   };
 
   return (
-    <div className="window-body">
-      <menu role="tablist">
+    <div className="tab-container">
+      <div className="tab-nav" role="tablist">
         {tabs.map((tab, index) => (
-          <li
+          <button
             key={index}
             role="tab"
             aria-selected={activeTabIndex === index}
+            className={`tab-item${activeTabIndex === index ? " active" : ""}`}
             onClick={() => handleTabClick(index)}
-            style={{
-              cursor: "pointer",
-            }}
           >
-            <a>{tab.label}</a>
-          </li>
+            {tab.label}
+          </button>
         ))}
-      </menu>
-      <div className="window" role="tabpanel">
-        <div className="window-body">{tabs[activeTabIndex]?.content}</div>
+      </div>
+      <div className="tab-body" role="tabpanel">
+        {tabs[activeTabIndex]?.content}
       </div>
     </div>
   );

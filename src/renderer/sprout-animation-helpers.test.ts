@@ -7,7 +7,7 @@ import {
   getRandomAnimation,
   getRandomIdleAnimation,
 } from "./sprout-animation-helpers";
-import { ANIMATIONS, Animation } from "./clippy-animations";
+import { SPROUT_ANIMATIONS as ANIMATIONS, Animation } from "./sprout-animations";
 
 describe("ANIMATION_KEYS", () => {
   it("matches Object.keys(ANIMATIONS)", () => {

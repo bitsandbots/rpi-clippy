@@ -1,10 +1,7 @@
 import Markdown from "react-markdown";
 import questionIcon from "../images/icons/question.png";
-import defaultClippyIcon from "../images/animations/Default.png";
 import defaultSproutIcon from "../images/animations/sprout/Default.png";
 import { MessageRecord } from "../../types/interfaces";
-import { useSharedState } from "../contexts/SharedStateContext";
-import { CHARACTERS, DEFAULT_CHARACTER } from "../character-animations";
 
 export interface Message extends MessageRecord {
   id: string;
@@ -14,16 +11,8 @@ export interface Message extends MessageRecord {
   sender: "user" | "sprout";
 }
 
-const DEFAULT_ICONS: Record<string, string> = {
-  clippy: defaultClippyIcon,
-  sprout: defaultSproutIcon,
-};
-
 export function Message({ message }: { message: Message }) {
-  const { settings } = useSharedState();
-  const characterId = settings.character || DEFAULT_CHARACTER;
-  const character = CHARACTERS[characterId] || CHARACTERS[DEFAULT_CHARACTER];
-  const assistantIcon = DEFAULT_ICONS[character.id] || defaultSproutIcon;
+  const assistantIcon = defaultSproutIcon;
 
   return (
     <div
@@ -33,7 +22,7 @@ export function Message({ message }: { message: Message }) {
     >
       <img
         src={message.sender === "user" ? questionIcon : assistantIcon}
-        alt={`${message.sender === "user" ? "You" : character.name}`}
+        alt={message.sender === "user" ? "You" : "Sprout"}
         style={{ width: "24px", height: "24px", marginRight: "8px" }}
       />
       <div className="message-content">

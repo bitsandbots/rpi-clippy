@@ -1,8 +1,4 @@
-import {
-  ANIMATIONS as CLIPPY_ANIMATIONS,
-  Animation,
-} from "./clippy-animations";
-import { SPROUT_ANIMATIONS } from "./sprout-animations";
+import { SPROUT_ANIMATIONS, Animation } from "./sprout-animations";
 import { CharacterId } from "../sharedState";
 
 export interface Character {
@@ -12,11 +8,6 @@ export interface Character {
 }
 
 export const CHARACTERS: Record<CharacterId, Character> = {
-  clippy: {
-    id: "clippy",
-    name: "Clippy",
-    animations: CLIPPY_ANIMATIONS,
-  },
   sprout: {
     id: "sprout",
     name: "Sprout",

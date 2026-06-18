@@ -1,0 +1,406 @@
+/* ============================================================
+   Sprout Design System
+   Colors: navy #0d1926 · surface #111f33 · blue #2b7de9
+           green #3dbb68 · orange #e07018 · text #dce3ef
+   ============================================================ */
+
+:root {
+  --sc-bg:        #0d1926;
+  --sc-surface:   #111f33;
+  --sc-surface-2: #162540;
+  --sc-border:    rgba(43, 125, 233, 0.15);
+  --sc-text:      #dce3ef;
+  --sc-muted:     #5a7299;
+  --sc-blue:      #2b7de9;
+  --sc-green:     #3dbb68;
+  --sc-orange:    #e07018;
+  --sc-radius:    10px;
+  --sc-radius-sm: 5px;
+  --sc-font:      system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sc-font-serif: Georgia, "Times New Roman", serif;
+  --sc-font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+}
+
+/* --- Root font application ----------------------------------- */
+.sprout {
+  font-family: var(--sc-font);
+  font-size: var(--font-size, 14px);
+  -webkit-font-smoothing: antialiased;
+  color: var(--sc-text);
+}
+
+.sprout[data-font="Serif"]     { font-family: var(--sc-font-serif); }
+.sprout[data-font="Monospace"] { font-family: var(--sc-font-mono); }
+
+.sprout button,
+.sprout input,
+.sprout label,
+.sprout legend,
+.sprout option,
+.sprout select,
+.sprout table,
+.sprout textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* --- Chat panel (main floating window) ----------------------- */
+.chat-panel {
+  background: var(--sc-surface);
+  border-radius: var(--sc-radius);
+  border: 1px solid var(--sc-border);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(43, 125, 233, 0.07);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+/* pulse: header accent shifts to blue on activity */
+.chat-panel--active .chat-panel-header {
+  border-top-color: var(--sc-blue);
+}
+
+/* --- Header -------------------------------------------------- */
+.chat-panel-header {
+  background: var(--sc-bg);
+  border-bottom: 1px solid var(--sc-border);
+  border-top: 2px solid var(--sc-green);
+  padding: 0 10px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.chat-panel-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sc-text);
+  letter-spacing: 0.1px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.chat-panel-title::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--sc-green);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chat-panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- Body ---------------------------------------------------- */
+.chat-panel-body {
+  flex: 1;
+  overflow: auto;
+  background: var(--sc-surface);
+  scrollbar-width: thin;
+  scrollbar-color: var(--sc-border) transparent;
+}
+
+.chat-panel-body::-webkit-scrollbar       { width: 5px; }
+.chat-panel-body::-webkit-scrollbar-thumb {
+  background: var(--sc-border);
+  border-radius: 3px;
+}
+
+/* --- Buttons ------------------------------------------------- */
+.sprout button {
+  background: var(--sc-surface-2);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.sprout button:hover:not(:disabled) {
+  background: rgba(43, 125, 233, 0.12);
+  border-color: var(--sc-blue);
+}
+
+.sprout button:active:not(:disabled) {
+  background: rgba(43, 125, 233, 0.22);
+}
+
+.sprout button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.btn-close {
+  padding: 2px 7px !important;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--sc-muted) !important;
+}
+
+.btn-close:hover:not(:disabled) {
+  background: rgba(224, 112, 24, 0.12) !important;
+  border-color: var(--sc-orange) !important;
+  color: var(--sc-orange) !important;
+}
+
+/* --- Inputs -------------------------------------------------- */
+.sprout input,
+.sprout textarea,
+.sprout select {
+  background: var(--sc-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text);
+  padding: 5px 8px;
+}
+
+.sprout input:focus,
+.sprout textarea:focus,
+.sprout select:focus {
+  outline: none;
+  border-color: var(--sc-blue);
+  box-shadow: 0 0 0 2px rgba(43, 125, 233, 0.14);
+}
+
+/* --- Fieldsets (settings sections) --------------------------- */
+.sprout fieldset {
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  padding: 10px 14px 12px;
+  background: var(--sc-surface-2);
+  margin: 0;
+}
+
+.sprout fieldset:not(:first-child) {
+  margin-top: 12px;
+}
+
+.sprout legend {
+  color: var(--sc-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  padding: 0 6px;
+}
+
+.sprout label {
+  color: var(--sc-muted);
+  font-size: 12px;
+}
+
+/* --- Form rows ----------------------------------------------- */
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+/* --- Messages ------------------------------------------------ */
+.message[data-sender="user"] {
+  background: rgba(43, 125, 233, 0.04);
+}
+
+.message-content {
+  color: var(--sc-text);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.message-content p             { margin: 0 0 6px; }
+.message-content p:last-child  { margin-bottom: 0; }
+
+.message-content code {
+  font-family: var(--sc-font-mono);
+  background: var(--sc-bg);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.88em;
+}
+
+.message-content pre {
+  background: var(--sc-bg);
+  border-radius: var(--sc-radius-sm);
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--sc-font-mono);
+  font-size: 0.88em;
+}
+
+.message-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* --- Status bar --------------------------------------------- */
+.sc-statusbar {
+  background: var(--sc-bg);
+  border-top: 1px solid var(--sc-border);
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--sc-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sc-statusbar span:last-child {
+  margin-left: auto;
+  color: var(--sc-muted);
+}
+
+/* --- Tabs ---------------------------------------------------- */
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 2px;
+  padding: 8px 8px 0;
+  background: var(--sc-bg);
+  border-bottom: 1px solid var(--sc-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tab-item {
+  padding: 5px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--sc-muted) !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important;
+  border-radius: var(--sc-radius-sm) var(--sc-radius-sm) 0 0 !important;
+  background: transparent !important;
+  transition: color 0.12s, background 0.12s !important;
+}
+
+.tab-item:hover:not(:disabled) {
+  color: var(--sc-text) !important;
+  background: rgba(43, 125, 233, 0.08) !important;
+  border-color: var(--sc-border) !important;
+}
+
+.tab-item.active,
+.tab-item[aria-selected="true"] {
+  color: var(--sc-text) !important;
+  background: var(--sc-surface) !important;
+  border-color: var(--sc-border) !important;
+}
+
+.tab-body {
+  padding: 14px;
+  overflow: auto;
+  flex: 1;
+  background: var(--sc-surface);
+}
+
+/* --- Table --------------------------------------------------- */
+.sprout table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.sprout th {
+  color: var(--sc-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--sc-border);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sprout td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--sc-border);
+  color: var(--sc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sprout tr:hover td           { background: rgba(43, 125, 233, 0.06); }
+.sprout tr.highlighted td     { background: rgba(43, 125, 233, 0.16); }
+
+/* --- Sunken panel (table container) ------------------------- */
+.sunken-panel {
+  background: var(--sc-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+  overflow: auto;
+}
+
+/* --- Model detail panel ------------------------------------- */
+.model-details {
+  background: var(--sc-surface-2);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+}
+
+/* --- Progress bar ------------------------------------------- */
+progress {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  width: 100%;
+  border: none;
+  border-radius: 2px;
+  background: var(--sc-bg);
+  display: block;
+}
+
+progress::-webkit-progress-bar {
+  background: var(--sc-bg);
+  border-radius: 2px;
+}
+
+progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--sc-blue), var(--sc-green));
+  border-radius: 2px;
+}
+
+progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--sc-blue), var(--sc-green));
+  border-radius: 2px;
+}
+
+/* --- Typography --------------------------------------------- */
+.sprout h1 { font-size: 1.35rem; color: var(--sc-text); margin: 0 0 12px; }
+.sprout h2 { font-size: 1.15rem; color: var(--sc-text); }
+.sprout h3 { font-size: 0.95rem; color: var(--sc-text); }
+.sprout p  { color: var(--sc-text); font-size: 13px; line-height: 1.5; margin: 0 0 8px; }
+.sprout a  { color: var(--sc-blue); text-decoration: none; }
+.sprout a:hover { color: var(--sc-green); }
+.sprout code { font-family: var(--sc-font-mono); }
+
+.sprout hr {
+  border: none;
+  border-top: 1px solid var(--sc-border);
+  margin: 10px 0;
+}

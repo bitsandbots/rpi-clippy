@@ -1,9 +1,5 @@
 import "./css/App.css";
-import "../../../node_modules/98.css/dist/98.css";
-import "./css/98.extended.css";
-import "./css/Theme.css";
-import "./css/Win95Enhanced.css";
-import "./css/Win95Expressive.css";
+import "./css/SproutTheme.css";
 
 import { Sprout } from "./Sprout";
 import { ChatProvider } from "../contexts/ChatContext";
@@ -37,7 +33,6 @@ function SproutLayout() {
           pointerEvents: "none",
         }}
       >
-        {/* Chat bubble — above the sprite */}
         {isChatWindowOpen && (
           <div
             style={{
@@ -50,7 +45,6 @@ function SproutLayout() {
           </div>
         )}
 
-        {/* Sprout sprite — always visible */}
         <div style={{ pointerEvents: "auto" }}>
           <Sprout />
         </div>
@@ -61,18 +55,15 @@ function SproutLayout() {
 
 function SproutRoot({ children }: { children: React.ReactNode }) {
   const { settings } = useSharedState();
-  const themeClass =
-    settings.uiTheme === "expressive" ? "theme-expressive" : "";
   return (
     <div
-      className={`sprout ${themeClass}`}
+      className="sprout"
       style={
         {
           "--font-size": `${settings.defaultFontSize}px`,
         } as React.CSSProperties
       }
       data-font={settings.defaultFont}
-      data-theme={settings.uiTheme}
     >
       {children}
     </div>

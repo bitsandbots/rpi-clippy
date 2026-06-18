@@ -1,10 +1,6 @@
 import { useChat } from "../contexts/ChatContext";
 import { useSharedState } from "../contexts/SharedStateContext";
 
-/**
- * StatusBar — Authentic Windows 95 status bar component
- * Displays current status and model information
- */
 export function StatusBar() {
   const { status, isModelLoaded } = useChat();
   const { settings } = useSharedState();
@@ -16,14 +12,9 @@ export function StatusBar() {
       : "No model";
 
   return (
-    <div className="status-bar" style={{ marginTop: "auto" }}>
-      <div className="status-bar-field">{statusText}</div>
-      <div
-        className="status-bar-field"
-        style={{ flexGrow: 1, textAlign: "right" }}
-      >
-        {modelText}
-      </div>
+    <div className="sc-statusbar">
+      <span>{statusText}</span>
+      <span>{modelText}</span>
     </div>
   );
 }

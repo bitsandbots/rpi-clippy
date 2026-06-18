@@ -6,21 +6,10 @@ import { useBubbleView } from "../contexts/BubbleViewContext";
 import { Chats } from "./Chats";
 import { useChat } from "../contexts/ChatContext";
 import { StatusBar } from "./StatusBar";
-import { useSharedState } from "../contexts/SharedStateContext";
 
 export function Bubble() {
   const { currentView, setCurrentView } = useBubbleView();
   const { setIsChatWindowOpen, status } = useChat();
-  const { settings } = useSharedState();
-
-  const themeClass = settings.uiTheme === "expressive" ? "expressive" : "";
-
-  const containerStyle = {
-    width: "calc(100% - 6px)",
-    height: "calc(100% - 6px)",
-    margin: 0,
-    overflow: "hidden",
-  };
 
   const chatStyle = {
     padding: "15px",
@@ -62,55 +51,31 @@ export function Bubble() {
     }
   }, [setCurrentView, currentView]);
 
-  const isActivityPulse = status === "thinking" || status === "responding";
-
+  const isActive = status === "thinking" || status === "responding";
   const showStatusBar = currentView === "chat";
 
   return (
     <div
-      className={`bubble-container window${isActivityPulse ? " activity-pulse" : ""}${themeClass ? ` ${themeClass}` : ""}`}
-      style={{
-        ...containerStyle,
-        display: "flex",
-        flexDirection: "column",
-      }}
+      className={`chat-panel${isActive ? " chat-panel--active" : ""}`}
+      style={{ width: "calc(100% - 6px)", height: "calc(100% - 6px)", margin: 0 }}
     >
-      <div className="title-bar">
-        <div className="title-bar-text">Chat with Sprout</div>
-        <div className="title-bar-controls">
+      <div className="chat-panel-header">
+        <div className="chat-panel-title">Sprout</div>
+        <div className="chat-panel-controls">
+          <button onClick={handleChatsClick}>Chats</button>
+          <button onClick={handleSettingsClick}>⚙</button>
           <button
-            style={{
-              marginRight: "8px",
-              paddingLeft: "8px",
-              paddingRight: "8px",
-            }}
-            onClick={handleChatsClick}
-          >
-            Chats
-          </button>
-          <button
-            style={{
-              marginRight: "8px",
-              paddingLeft: "8px",
-              paddingRight: "8px",
-            }}
-            onClick={handleSettingsClick}
-          >
-            Settings
-          </button>
-          <button
+            className="btn-close"
             aria-label="Close"
             onClick={() => setIsChatWindowOpen(false)}
-          ></button>
+          >
+            ×
+          </button>
         </div>
       </div>
       <div
-        className="window-content"
-        style={{
-          ...(currentView === "chat" ? scrollAnchoredAtBottomStyle : {}),
-          flex: 1,
-          overflow: "auto",
-        }}
+        className="chat-panel-body"
+        style={currentView === "chat" ? scrollAnchoredAtBottomStyle : {}}
       >
         {content}
       </div>
