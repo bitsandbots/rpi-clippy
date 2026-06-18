@@ -10,7 +10,7 @@
     "lint": "node node_modules/prettier/bin/prettier.cjs --write --ext .ts,.tsx .",
     "test": "node node_modules/vitest/dist/cli.js run",
     "test:watch": "node node_modules/vitest/dist/cli.js",
-    "extract-animations": "./tools/extract-animations.sh -j ./assets/animations/clippy/animations.json -s ./assets/animations/clippy/map.png -o src/renderer/images/animations"
+    "extract-animations": "./tools/extract-animations.sh -j ./assets/animations/sprout/animations.json -s ./assets/animations/sprout/map.png -o src/renderer/images/animations/sprout"
   },
   "keywords": [],
   "author": {
@@ -33,7 +33,6 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
-    "98.css": "^0.1.21",
     "date-fns": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.1.0",

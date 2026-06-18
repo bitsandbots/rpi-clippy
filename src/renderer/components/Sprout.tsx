@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 
-import { Animation } from "../clippy-animations";
+import { Animation } from "../sprout-animations";
 import {
   EMPTY_ANIMATION,
   getRandomIdleAnimation,

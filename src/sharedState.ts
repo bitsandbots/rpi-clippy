@@ -1,13 +1,8 @@
 import { HybridModelState } from "./models";
 
-export type DefaultFont =
-  | "Pixelated MS Sans Serif"
-  | "Comic Sans MS"
-  | "Tahoma"
-  | "System Default";
+export type DefaultFont = "Sans-serif" | "Serif" | "Monospace";
 export type DefaultFontSize = number;
-export type UITheme = "refined" | "expressive";
-export type CharacterId = "clippy" | "sprout";
+export type CharacterId = "sprout";
 
 export interface SettingsState {
   selectedModel?: string;
@@ -17,7 +12,6 @@ export interface SettingsState {
   temperature?: number;
   defaultFont: DefaultFont;
   defaultFontSize: number;
-  uiTheme: UITheme;
   character: CharacterId;
   ollamaUrl?: string;
 }
@@ -45,9 +39,8 @@ export const DEFAULT_SETTINGS: SettingsState = {
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   topK: 10,
   temperature: 0.7,
-  defaultFont: "Tahoma",
-  defaultFontSize: 16,
-  uiTheme: "refined",
+  defaultFont: "Sans-serif",
+  defaultFontSize: 14,
   character: "sprout",
 };
 

@@ -51,179 +51,179 @@ import Wave from "./images/animations/sprout/Wave.png";
 import Writing from "./images/animations/sprout/Writing.png";
 
 export const SPROUT_ANIMATIONS: Record<string, Animation> = {
-  'Alert': {
+  Alert: {
     src: Alert,
     length: 640,
   },
-  'CheckingSomething': {
+  CheckingSomething: {
     src: CheckingSomething,
     length: 1200,
   },
-  'Congratulate': {
+  Congratulate: {
     src: Congratulate,
     length: 1200,
   },
-  'Default': {
+  Default: {
     src: Default,
     length: 1440,
   },
-  'EmptyTrash': {
+  EmptyTrash: {
     src: EmptyTrash,
     length: 1200,
   },
-  'Explain': {
+  Explain: {
     src: Explain,
     length: 1440,
   },
-  'GestureDown': {
+  GestureDown: {
     src: GestureDown,
     length: 100,
   },
-  'GestureLeft': {
+  GestureLeft: {
     src: GestureLeft,
     length: 100,
   },
-  'GestureRight': {
+  GestureRight: {
     src: GestureRight,
     length: 100,
   },
-  'GestureUp': {
+  GestureUp: {
     src: GestureUp,
     length: 100,
   },
-  'GetArtsy': {
+  GetArtsy: {
     src: GetArtsy,
     length: 1200,
   },
-  'GetAttention': {
+  GetAttention: {
     src: GetAttention,
     length: 800,
   },
-  'GetTechy': {
+  GetTechy: {
     src: GetTechy,
     length: 1200,
   },
-  'GetWizardy': {
+  GetWizardy: {
     src: GetWizardy,
     length: 1200,
   },
-  'GoodBye': {
+  GoodBye: {
     src: GoodBye,
     length: 1000,
   },
-  'Greeting': {
+  Greeting: {
     src: Greeting,
     length: 1000,
   },
-  'Hearing 1': {
+  "Hearing 1": {
     src: Hearing_1,
     length: 1000,
   },
-  'Hide': {
+  Hide: {
     src: Hide,
     length: 1000,
   },
-  'Idle1 1': {
+  "Idle1 1": {
     src: Idle1_1,
     length: 1440,
   },
-  'IdleAtom': {
+  IdleAtom: {
     src: IdleAtom,
     length: 1200,
   },
-  'IdleEyeBrowRaise': {
+  IdleEyeBrowRaise: {
     src: IdleEyeBrowRaise,
     length: 1200,
   },
-  'IdleFingerTap': {
+  IdleFingerTap: {
     src: IdleFingerTap,
     length: 1200,
   },
-  'IdleHeadScratch': {
+  IdleHeadScratch: {
     src: IdleHeadScratch,
     length: 1200,
   },
-  'IdleRopePile': {
+  IdleRopePile: {
     src: IdleRopePile,
     length: 1440,
   },
-  'IdleSideToSide': {
+  IdleSideToSide: {
     src: IdleSideToSide,
     length: 1200,
   },
-  'IdleSnooze': {
+  IdleSnooze: {
     src: IdleSnooze,
     length: 1800,
   },
-  'LookDown': {
+  LookDown: {
     src: LookDown,
     length: 100,
   },
-  'LookDownLeft': {
+  LookDownLeft: {
     src: LookDownLeft,
     length: 100,
   },
-  'LookDownRight': {
+  LookDownRight: {
     src: LookDownRight,
     length: 100,
   },
-  'LookLeft': {
+  LookLeft: {
     src: LookLeft,
     length: 100,
   },
-  'LookRight': {
+  LookRight: {
     src: LookRight,
     length: 100,
   },
-  'LookUp': {
+  LookUp: {
     src: LookUp,
     length: 100,
   },
-  'LookUpLeft': {
+  LookUpLeft: {
     src: LookUpLeft,
     length: 100,
   },
-  'LookUpRight': {
+  LookUpRight: {
     src: LookUpRight,
     length: 100,
   },
-  'Print': {
+  Print: {
     src: Print,
     length: 1200,
   },
-  'Processing': {
+  Processing: {
     src: Processing,
     length: 1200,
   },
-  'RestPose': {
+  RestPose: {
     src: RestPose,
     length: 1440,
   },
-  'Save': {
+  Save: {
     src: Save,
     length: 1200,
   },
-  'Searching': {
+  Searching: {
     src: Searching,
     length: 1200,
   },
-  'SendMail': {
+  SendMail: {
     src: SendMail,
     length: 1200,
   },
-  'Show': {
+  Show: {
     src: Show,
     length: 1000,
   },
-  'Thinking': {
+  Thinking: {
     src: Thinking,
     length: 1800,
   },
-  'Wave': {
+  Wave: {
     src: Wave,
     length: 1000,
   },
-  'Writing': {
+  Writing: {
     src: Writing,
     length: 1200,
   },

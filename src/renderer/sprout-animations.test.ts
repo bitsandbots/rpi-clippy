@@ -52,10 +52,4 @@ describe("SPROUT_ANIMATIONS", () => {
     }
   });
 
-  it("mirrors Clippy animation keys", async () => {
-    const { ANIMATIONS } = await import("./clippy-animations");
-    expect(Object.keys(SPROUT_ANIMATIONS).sort()).toEqual(
-      Object.keys(ANIMATIONS).sort(),
-    );
-  });
 });

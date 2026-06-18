@@ -10,7 +10,7 @@ export const SettingsAbout: React.FC = () => {
 
   return (
     <div>
-      <h1>About</h1>
+      <h1>About Sprout</h1>
       <fieldset>
         <legend>Version</legend>
         <p>
@@ -20,34 +20,21 @@ export const SettingsAbout: React.FC = () => {
         </p>
       </fieldset>
       <p>
-        This app is a love letter and homage to the late, great Clippy, the
-        assistant from Microsoft Office 1997. It is <i>not</i> affiliated,
-        approved, or supported by Microsoft. Consider it software art. If you
-        don't like it, consider it software satire.
+        Sprout is a local LLM chat assistant that runs on Raspberry Pi (and any
+        Linux machine). It uses Ollama for inference — no cloud dependency, no
+        data sent off-device.
       </p>
       <h3>Acknowledgments</h3>
       <p>
-        Originally made by{" "}
+        Originally forked from{" "}
         <a href="https://github.com/felixrieseberg" target="_blank">
           Felix Rieseberg
         </a>
-        . Retro design by{" "}
-        <a href="https://github.com/jdan" target="_blank">
-          Jordan Scales
-        </a>{" "}
-        (98.css). Pi 5 / Ollama port by{" "}
+        {"'s"} rpi-clippy. Pi 5 / Ollama port and Sprout redesign by{" "}
         <a href="https://github.com/CoreConduit" target="_blank">
           CoreConduit
         </a>
         .
-      </p>
-      <p>
-        The character was designed by illustrator{" "}
-        <a href="https://www.kevanatteberry.com/" target="_blank">
-          Kevan Atteberry
-        </a>
-        . Clippy and all visual assets related to Clippy are owned by Microsoft.
-        This app is not affiliated with Microsoft.
       </p>
     </div>
   );
