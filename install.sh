@@ -8,6 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_NAME="sprout"
 SERVICE_DEST="/etc/systemd/system/$SERVICE_NAME.service"
 INSTALL_USER="${SUDO_USER:-$(whoami)}"
+VENV_DIR="$SCRIPT_DIR/.venv"
 
 VERSION=$(python3 -c "import json; print(json.load(open('$SCRIPT_DIR/package.json'))['version'])" 2>/dev/null || echo "unknown")
 echo "==> Installing Sprout v$VERSION"
@@ -23,13 +24,16 @@ node --version &>/dev/null || { echo "ERROR: Node.js not found — install v20+"
 # ── 1. System dependencies ─────────────────────────────────────────────────
 echo "--> Installing system dependencies..."
 sudo apt-get install -y -q \
+  python3-venv \
   libespeak-ng1 \
   libsndfile1 \
   ffmpeg
 
-# ── 2. Python dependencies ─────────────────────────────────────────────────
-echo "--> Installing Python dependencies..."
-pip3 install --break-system-packages -q -r "$SCRIPT_DIR/requirements.txt"
+# ── 2. Python virtual environment ─────────────────────────────────────────
+echo "--> Setting up Python virtual environment at $VENV_DIR..."
+python3 -m venv "$VENV_DIR"
+"$VENV_DIR/bin/pip" install --upgrade pip -q
+"$VENV_DIR/bin/pip" install -q -r "$SCRIPT_DIR/requirements.txt"
 
 # ── 3. Node dependencies ───────────────────────────────────────────────────
 echo "--> Installing Node dependencies..."
@@ -52,7 +56,7 @@ Wants=ollama.service
 Type=simple
 User=$INSTALL_USER
 WorkingDirectory=$SCRIPT_DIR
-ExecStart=/usr/bin/python3 $SCRIPT_DIR/app.py
+ExecStart=$VENV_DIR/bin/python3 $SCRIPT_DIR/app.py
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal

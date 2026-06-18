@@ -61,11 +61,11 @@ bash install.sh
 The `install.sh` script will:
 
 1. Check Python 3.11+ and Node.js 20+ are available
-2. Install system dependencies (`libespeak-ng1`, `libsndfile1`, `ffmpeg`)
-3. Install Python dependencies from `requirements.txt`
+2. Install system dependencies (`python3-venv`, `libespeak-ng1`, `libsndfile1`, `ffmpeg`)
+3. Create a Python virtual environment at `.venv/` and install `requirements.txt` into it
 4. Install npm dependencies
 5. Build the React frontend
-6. Generate and install the `sprout` systemd service (scoped to the current user)
+6. Generate and install the `sprout` systemd service (scoped to the current user, uses `.venv/bin/python3`)
 7. Enable and start the service
 
 ### Verify Installation
