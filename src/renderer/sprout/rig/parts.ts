@@ -36,12 +36,12 @@ export type PartDef = {
 };
 
 export const PARTS: Record<PartId, PartDef> = {
-  // Whole plant above the soil. Rotated about the pot base for stemLean + sway;
+  // Whole plant above the soil. Rotated about the soil line for stemLean;
   // carries the head/stem/arms together so the head never detaches.
   body: {
     id: "body",
     center: [50, 60],
-    rotationOrigin: [50, 83],
+    rotationOrigin: [50, 73.33], // SVG (100,220) — the soil line
     writableAttrs: ["transform"],
   },
   pot: {
@@ -77,30 +77,32 @@ export const PARTS: Record<PartId, PartDef> = {
     rotationOrigin: [50, 40], // SVG (100,120) — neck joint below the head
     writableAttrs: ["transform"],
   },
+  // Arm-leaves — re-homed onto the lower stalk (in segLower), shoulders on the
+  // stem centerline. The brain rotates each about its shoulder for droop/sway.
   leafL: {
     id: "leafL",
-    center: [26, 34],
-    rotationOrigin: [46, 42],
+    center: [27, 50],
+    rotationOrigin: [49, 57.33], // SVG (98,172) — left shoulder on the stalk
     writableAttrs: ["transform", "fill", "opacity"],
   },
   leafR: {
     id: "leafR",
-    center: [74, 34],
-    rotationOrigin: [54, 42],
+    center: [73, 49],
+    rotationOrigin: [51, 55.33], // SVG (102,166) — right shoulder on the stalk
     writableAttrs: ["transform", "fill", "opacity"],
   },
   // Leaf blades — inner groups rotated about the branch/blade joint (the
   // "wrist") for tip curl and the greeting waggle. Nested inside leafL/leafR.
   leafBladeL: {
     id: "leafBladeL",
-    center: [21, 32],
-    rotationOrigin: [33, 36],
+    center: [25, 49],
+    rotationOrigin: [37, 52], // SVG (74,156) — left wrist
     writableAttrs: ["transform"],
   },
   leafBladeR: {
     id: "leafBladeR",
-    center: [79, 32],
-    rotationOrigin: [67, 36],
+    center: [75, 49],
+    rotationOrigin: [63, 50], // SVG (126,150) — right wrist
     writableAttrs: ["transform"],
   },
   face: {

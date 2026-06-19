@@ -40,10 +40,52 @@ const SEG_WEIGHTS = { lower: 0.7, upper: 0.6, head: -0.4 };
 const SEG_LAG = 0.5;
 
 // Arms rest ~35° above horizontal. Droop is amplified so even mild droop swings
-// the arms toward hanging-down, clamped so heavy droop can't over-rotate them
-// behind the stem. Gain 3.2 + 88° cap → ~-53° below horizontal at full wilt.
+// the arms toward hanging-down, clamped so heavy droop reads as wilting leaves
+// rather than legs crossing the pot. Gain 3.2 + 60° cap → ~-25° below horizontal
+// at full wilt (leaves sag but stay clear of the pot).
 const ARM_DROOP_GAIN = 3.2;
-const ARM_DROOP_MAX_DEG = 88;
+const ARM_DROOP_MAX_DEG = 60;
+
+// Activity gestures. Each active state layers a looping gesture on top of the
+// mood pose, evoking the classic PNG Sprout's per-activity animations. All
+// offsets fold into the EXISTING rig transforms in writeRig() — no new attrs or
+// transform-origins are introduced (see tasks/lessons.md). Under reduced-motion
+// the oscillating part collapses (its phase is frozen at 0) but a small static
+// pose offset is kept so the state stays legible.
+
+// Thinking — head cocks aside and slowly rocks; eyes drift up-and-aside; one arm
+// periodically lifts to the "chin" and scratches (classic IdleHeadScratch /
+// Thinking / Processing).
+const THINK_HEAD_COCK_DEG = 6; // static tilt held while thinking
+const THINK_ROCK_DEG = 3; // slow rock added on top of the cock
+const THINK_ROCK_PERIOD_MS = 2600;
+const THINK_EYE_UP_PX = -3; // eyes look up
+const THINK_EYE_ASIDE_PX = 4; // ...and to one side, drifting
+const THINK_SCRATCH_PERIOD_MS = 2500;
+const THINK_SCRATCH_RAISE_DEG = 48; // how far the right arm lifts toward the head
+const THINK_SCRATCH_WAGGLE_DEG = 9;
+const THINK_SCRATCH_WAGGLE_PERIOD_MS = 150;
+
+// Listening — straightens / leans in, eyes wide, brows up, eager little bob
+// (classic Hearing / GetAttention).
+const LISTEN_LEAN_IN_DEG = -2; // negative = straighten toward the viewer
+const LISTEN_BROW_UP_PX = -3;
+const LISTEN_BOB_DEG = 2;
+const LISTEN_BOB_PERIOD_MS = 900;
+
+// Talking — arms gesture in counter-phase and the head nods for emphasis, on top
+// of the mouth oscillation (classic Explain / GetAttention).
+const TALK_GESTURE_DEG = 12;
+const TALK_GESTURE_PERIOD_MS = 620;
+const TALK_NOD_DEG = 3;
+const TALK_NOD_PERIOD_MS = 820;
+
+// Idle fidgets — occasional look-around or eyebrow flash so Idle has life
+// (classic IdleSideToSide / LookLeft-Right / IdleEyeBrowRaise).
+const IDLE_FIDGET_MIN_MS = 7_000;
+const IDLE_FIDGET_RANGE_MS = 7_000;
+const IDLE_FIDGET_LOOK_X = 7;
+const IDLE_FIDGET_LOOK_Y = 3;
 
 export class SproutBrain {
   private sm = new StateMachine("Idle");
@@ -77,6 +119,18 @@ export class SproutBrain {
 
   // Leaf-tip wave oscillation
   private wavePhase = 0;
+
+  // Activity-gesture phases — each advances only while its state is active and
+  // motion is allowed; otherwise it resets so the gesture collapses to its
+  // static pose.
+  private thinkPhase = 0;
+  private listenPhase = 0;
+  private talkGesturePhase = 0;
+
+  // Idle fidget cadence
+  private idleFidgetTimer = 0;
+  private idleFidgetInterval =
+    IDLE_FIDGET_MIN_MS + Math.random() * IDLE_FIDGET_RANGE_MS;
 
   // Idle timeout
   private lastInputMs = 0;
@@ -246,6 +300,42 @@ export class SproutBrain {
       this.wavePhase = 0;
     }
 
+    // Activity-gesture phases — each advances only in its own state and only
+    // when motion is allowed; otherwise it resets to 0 so the gesture collapses
+    // to its static pose (state exit or reduced-motion).
+    this.thinkPhase =
+      !reducedMotion && this.sm.state === "Thinking"
+        ? this.thinkPhase + deltaMs
+        : 0;
+    this.listenPhase =
+      !reducedMotion && this.sm.state === "Listening"
+        ? this.listenPhase + deltaMs
+        : 0;
+    this.talkGesturePhase =
+      !reducedMotion && this.sm.state === "Talking"
+        ? this.talkGesturePhase + deltaMs
+        : 0;
+
+    // Idle fidget — occasional look-around or eyebrow flash so Idle isn't a
+    // dead stare. Look-around reuses the saccade easing; the brow flash is a
+    // one-shot. Suppressed under reduced-motion.
+    if (!reducedMotion && this.sm.state === "Idle") {
+      this.idleFidgetTimer += deltaMs;
+      if (this.idleFidgetTimer >= this.idleFidgetInterval) {
+        this.idleFidgetTimer = 0;
+        this.idleFidgetInterval =
+          IDLE_FIDGET_MIN_MS + Math.random() * IDLE_FIDGET_RANGE_MS;
+        if (Math.random() < 0.5) {
+          this.saccadeTargetX = (Math.random() - 0.5) * 2 * IDLE_FIDGET_LOOK_X;
+          this.saccadeTargetY = (Math.random() - 0.5) * 2 * IDLE_FIDGET_LOOK_Y;
+        } else {
+          this.oneShot.fire(REACTIONS.browRaise);
+        }
+      }
+    } else {
+      this.idleFidgetTimer = 0;
+    }
+
     // Advance overlays then write rig (state expression always written)
     this.oneShot.advance(deltaMs);
 
@@ -288,16 +378,74 @@ export class SproutBrain {
     // Sway is gated to zero under reduced-motion (amp = 0 collapses every
     // sway-derived term below to a still pose). swayPhase is also frozen
     // upstream, so this is belt-and-suspenders.
-    const amp = this.loop.isReducedMotion ? 0 : expr.swayAmplitude;
+    const reduced = this.loop.isReducedMotion;
+    const amp = reduced ? 0 : expr.swayAmplitude;
     const phase = (this.swayPhase / expr.swayPeriod) * Math.PI * 2;
     const swayAngle = amp * Math.sin(phase);
 
-    // Body now carries only the slow mood lean about the pot base. The per-frame
-    // sway lives on the nested stem chain (segLower → segUpper → headBob).
+    // ---- Activity gestures: per-state offsets folded into the writes below ---
+    // Static parts (head cock, lean-in, eyes-up, brows-up) render even under
+    // reduced-motion; oscillating parts sit at 0 because their phase is frozen.
+    let gHead = 0; // extra degrees on headBob (+ cock/nod)
+    let gBody = 0; // extra degrees on the body lean
+    let gBrow = 0; // extra px on brows (− = up)
+    let gEyeX = 0; // extra px on eye gaze
+    let gEyeY = 0;
+    let gArmL = 0; // extra degrees on leafL (+ lowers, matching existing sign)
+    let gArmR = 0; // extra degrees on leafR
+    let armROverride: number | null = null; // absolute leafR angle (chin scratch)
+
+    const state = this.sm.state;
+    if (state === "Thinking") {
+      const rock =
+        THINK_ROCK_DEG *
+        Math.sin((this.thinkPhase / THINK_ROCK_PERIOD_MS) * Math.PI * 2);
+      gHead += THINK_HEAD_COCK_DEG + rock;
+      const drift = Math.sin(
+        (this.thinkPhase / THINK_ROCK_PERIOD_MS) * Math.PI,
+      );
+      gEyeX += THINK_EYE_ASIDE_PX * (reduced ? 1 : 0.5 + 0.5 * drift);
+      gEyeY += THINK_EYE_UP_PX;
+      // Arm-to-chin scratch on a slow cycle: lift the right arm to the head and
+      // waggle within a window; outside it the arm just rests.
+      const c =
+        (this.thinkPhase % THINK_SCRATCH_PERIOD_MS) / THINK_SCRATCH_PERIOD_MS;
+      if (!reduced && c > 0.3 && c < 0.7) {
+        const env = Math.sin(((c - 0.3) / 0.4) * Math.PI); // 0→1→0 over window
+        const waggle =
+          THINK_SCRATCH_WAGGLE_DEG *
+          Math.sin(
+            (this.thinkPhase / THINK_SCRATCH_WAGGLE_PERIOD_MS) * Math.PI * 2,
+          );
+        armROverride = -THINK_SCRATCH_RAISE_DEG * env + waggle; // − lifts it up
+      }
+    } else if (state === "Listening") {
+      gBody += LISTEN_LEAN_IN_DEG;
+      gBrow += LISTEN_BROW_UP_PX;
+      gHead +=
+        LISTEN_BOB_DEG *
+        Math.sin((this.listenPhase / LISTEN_BOB_PERIOD_MS) * Math.PI * 2);
+    } else if (state === "Talking") {
+      const g =
+        TALK_GESTURE_DEG *
+        Math.sin(
+          (this.talkGesturePhase / TALK_GESTURE_PERIOD_MS) * Math.PI * 2,
+        );
+      gArmL += -g; // counter-phase: arms gesture opposite each other
+      gArmR += g;
+      gHead +=
+        TALK_NOD_DEG *
+        Math.sin((this.talkGesturePhase / TALK_NOD_PERIOD_MS) * Math.PI * 2);
+    }
+
+    // Body now carries only the slow mood lean about the soil line (100,220),
+    // so leaning pivots about the planted base instead of swinging it sideways
+    // over the soil. The per-frame sway lives on the nested stem chain
+    // (segLower → segUpper → headBob).
     if (body) {
       body.setAttribute(
         "transform",
-        `rotate(${expr.stemLean.toFixed(2)}, 100, 250)`,
+        `rotate(${(expr.stemLean + gBody).toFixed(2)}, 100, 220)`,
       );
     }
 
@@ -314,7 +462,10 @@ export class SproutBrain {
     }
     if (headBob) {
       const a = amp * SEG_WEIGHTS.head * Math.sin(phase - 2 * SEG_LAG);
-      headBob.setAttribute("transform", `rotate(${a.toFixed(2)}, 100, 120)`);
+      headBob.setAttribute(
+        "transform",
+        `rotate(${(a + gHead).toFixed(2)}, 100, 120)`,
+      );
     }
 
     // Arms: rest angle is baked into the rig geometry, so the brain only adds
@@ -327,14 +478,15 @@ export class SproutBrain {
     if (leafL) {
       leafL.setAttribute(
         "transform",
-        `rotate(${(-armDroop - swayAngle * 0.5).toFixed(2)}, 92, 126)`,
+        `rotate(${(-armDroop - swayAngle * 0.5 + gArmL).toFixed(2)}, 98, 172)`,
       );
     }
     if (leafR) {
-      leafR.setAttribute(
-        "transform",
-        `rotate(${(armDroop + swayAngle * 0.5).toFixed(2)}, 108, 126)`,
-      );
+      const rAngle =
+        armROverride !== null
+          ? armROverride
+          : armDroop + swayAngle * 0.5 + gArmR;
+      leafR.setAttribute("transform", `rotate(${rAngle.toFixed(2)}, 102, 166)`);
     }
 
     // Leaf-blade tip curl at the wrist joint. Mirrored per side so positive
@@ -348,20 +500,20 @@ export class SproutBrain {
     if (leafBladeL) {
       leafBladeL.setAttribute(
         "transform",
-        `rotate(${(-tipCurl).toFixed(2)}, 66, 108)`,
+        `rotate(${(-tipCurl).toFixed(2)}, 74, 156)`,
       );
     }
     if (leafBladeR) {
       leafBladeR.setAttribute(
         "transform",
-        `rotate(${tipCurl.toFixed(2)}, 134, 108)`,
+        `rotate(${tipCurl.toFixed(2)}, 126, 150)`,
       );
     }
 
-    // Eyes: scaleY (openness) + saccade translate
+    // Eyes: scaleY (openness) + saccade translate + gesture gaze offset
     const eyeScaleY = expr.eyeOpenness.toFixed(3);
-    const sx = this.saccadeX.toFixed(2);
-    const sy = this.saccadeY.toFixed(2);
+    const sx = (this.saccadeX + gEyeX).toFixed(2);
+    const sy = (this.saccadeY + gEyeY).toFixed(2);
 
     if (eyeL) {
       eyeL.setAttribute(
@@ -390,8 +542,8 @@ export class SproutBrain {
       );
     }
 
-    // Brows
-    const browY = expr.browOffsetY.toFixed(2);
+    // Brows (+ gesture offset: brows up while Listening, etc.)
+    const browY = (expr.browOffsetY + gBrow).toFixed(2);
     if (browL) browL.setAttribute("transform", `translate(0, ${browY})`);
     if (browR) browR.setAttribute("transform", `translate(0, ${browY})`);
 

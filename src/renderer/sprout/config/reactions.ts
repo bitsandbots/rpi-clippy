@@ -93,6 +93,23 @@ export const REACTIONS: Record<string, OneShotDef> = {
     target: { leafDroop: 0, mouthCurve: 0.8 },
     interruptSelf: false,
   },
+  // Quick eyebrow flash — used as an idle fidget (classic IdleEyeBrowRaise) and
+  // for the GetAttention bracket token.
+  browRaise: {
+    key: "browRaise",
+    durationMs: 700,
+    filteredTracks: ["browOffsetY"],
+    target: { browOffsetY: -5 },
+    interruptSelf: false,
+  },
+  // Brief "here's the thing" emphasis — raises the arms and adds a friendly bob
+  // so an [Explain] token reads as a gesture even outside the Talking state.
+  explain: {
+    key: "explain",
+    durationMs: 1200,
+    filteredTracks: ["leafDroop", "swayAmplitude", "browOffsetY"],
+    target: { leafDroop: 0, swayAmplitude: 5, browOffsetY: -2 },
+  },
 };
 
 // Bracket-token back-compat mapping: [Key] → reaction key
@@ -101,7 +118,8 @@ export const BRACKET_TOKEN_REACTIONS: Record<string, string> = {
   GoodBye: "greet",
   Congratulate: "celebrate",
   LookAround: "surprised",
+  Searching: "surprised",
   Alert: "concern",
-  Explain: "perk",
-  GetAttention: "perk",
+  Explain: "explain",
+  GetAttention: "browRaise",
 };

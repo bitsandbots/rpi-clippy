@@ -108,16 +108,18 @@ describe("SproutBrain", () => {
     expect(brain.state).toBe("Idle");
   });
 
-  it("tickOnce() writes body lean transform about the pot base", () => {
+  it("tickOnce() writes body lean transform about the soil line", () => {
     brain.tickOnce(33);
     const body = refs.body as any;
-    expect(body._attrs["transform"]).toMatch(/rotate\(.*, 100, 250\)/);
+    expect(body._attrs["transform"]).toMatch(/rotate\(.*, 100, 220\)/);
   });
 
   describe("wavy-stem flex", () => {
     // Read the numeric angle out of a `rotate(<angle>, cx, cy)` transform.
     const angleOf = (el: any): number =>
-      parseFloat((el._attrs["transform"] as string).match(/rotate\(([-\d.]+)/)![1]);
+      parseFloat(
+        (el._attrs["transform"] as string).match(/rotate\(([-\d.]+)/)![1],
+      );
 
     it("writes a rotate about the correct joint to each segment group", () => {
       brain.setMoodDebug(1.0, 1.0); // energetic → swayAmplitude > 0
@@ -165,7 +167,7 @@ describe("SproutBrain", () => {
       expect(angleOf(refs.headBob)).toBe(0);
       // Body lean still written.
       expect((refs.body as any)._attrs["transform"]).toMatch(
-        /rotate\(.*, 100, 250\)/,
+        /rotate\(.*, 100, 220\)/,
       );
     });
   });
@@ -321,5 +323,99 @@ describe("SproutBrain", () => {
     // After a single short tick, vitality hasn't jumped to 0.1 yet (tau = 30 s)
     brain.tickOnce(33);
     expect(brain.currentVitality).toBeGreaterThan(0.5);
+  });
+
+  // -------------------------------------------------------------------------
+  // Activity gestures — classic-PNG-style per-state motion
+  // -------------------------------------------------------------------------
+
+  describe("activity gestures", () => {
+    const angleOf = (el: any): number =>
+      parseFloat(
+        (el._attrs["transform"] as string).match(/rotate\(([-\d.]+)/)![1],
+      );
+    const headAngle = () => angleOf(refs.headBob);
+    const bodyLean = () => angleOf(refs.body);
+    const browY = () =>
+      parseFloat(
+        ((refs.browL as any)._attrs["transform"] as string).match(
+          /translate\(0,\s*([-\d.]+)/,
+        )![1],
+      );
+    const eyeY = () =>
+      parseFloat(
+        ((refs.eyeL as any)._attrs["style"] as string).match(
+          /translate\([^,]+,\s*([-\d.]+)px/,
+        )![1],
+      );
+
+    it("Thinking cocks the head well beyond the idle tilt", () => {
+      brain.setMoodDebug(0.8, 0.5);
+      brain.tickOnce(33);
+      const idle = headAngle();
+      signalBus.emit({ type: "STATUS_CHANGE", status: "thinking" });
+      brain.tickOnce(33);
+      const thinking = headAngle();
+      expect(Math.abs(thinking)).toBeGreaterThan(Math.abs(idle) + 3);
+      expect(Math.abs(thinking)).toBeGreaterThan(4);
+    });
+
+    it("Thinking biases the eyes upward", () => {
+      signalBus.emit({ type: "STATUS_CHANGE", status: "thinking" });
+      brain.tickOnce(33);
+      expect(eyeY()).toBeLessThan(-1);
+    });
+
+    it("Talking swings the arms far more than idle (explanatory gesture)", () => {
+      brain.setMoodDebug(0.8, 0.5);
+      const measure = () => {
+        let min = Infinity;
+        let max = -Infinity;
+        for (let i = 0; i < 40; i++) {
+          brain.tickOnce(33);
+          const a = angleOf(refs.leafL);
+          min = Math.min(min, a);
+          max = Math.max(max, a);
+        }
+        return max - min;
+      };
+      const idleSwing = measure();
+      signalBus.emit({ type: "STATUS_CHANGE", status: "responding" });
+      const talkSwing = measure();
+      expect(talkSwing).toBeGreaterThan(idleSwing + 3);
+    });
+
+    it("Listening lifts the brows and leans in", () => {
+      brain.setMoodDebug(0.8, 0.5);
+      brain.tickOnce(33);
+      const idleBrow = browY();
+      const idleLean = bodyLean();
+      signalBus.emit({ type: "INPUT_START" });
+      brain.tickOnce(33);
+      expect(browY()).toBeLessThan(idleBrow); // brows up (more negative)
+      expect(bodyLean()).toBeLessThan(idleLean); // lean-in (more negative)
+    });
+
+    it("reduced-motion keeps the Thinking cock but freezes the rock/scratch", () => {
+      (brain as any).loop.reducedMotion = true;
+      signalBus.emit({ type: "STATUS_CHANGE", status: "thinking" });
+      brain.tickOnce(33);
+      const a1 = headAngle();
+      brain.tickOnce(2000); // would advance the rock if motion were allowed
+      const a2 = headAngle();
+      expect(Math.abs(a1)).toBeGreaterThan(4); // static cock still rendered
+      expect(a2).toBe(a1); // no oscillation: phase frozen, sway gated to 0
+    });
+
+    it("idle fidget fires a browRaise one-shot after its interval", () => {
+      const fireSpy = vi.spyOn((brain as any).oneShot, "fire");
+      (brain as any).idleFidgetInterval = 50;
+      const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.9); // brow branch
+      brain.tickOnce(100); // exceeds the fidget interval
+      expect(fireSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ key: "browRaise" }),
+      );
+      randSpy.mockRestore();
+    });
   });
 });
