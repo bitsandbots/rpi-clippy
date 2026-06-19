@@ -328,6 +328,57 @@ def test_rescan_discovers_new_voices(tmp_path):
     assert "new-voice" in mgr.registry
 
 
+def test_get_state_auto_discovers_voices_added_after_startup(tmp_path):
+    """get_state() must pick up voices dropped in after the manager was built.
+
+    Reproduces the field bug: the long-running server scanned an empty dir at
+    startup, then setup_voices.sh populated it hours later and the UI showed no
+    voices until a manual rescan/restart.
+    """
+    voices = tmp_path / "voices"
+    voices.mkdir()
+    mgr = make_manager(voices)
+    assert mgr.get_state()["voices"] == {}  # empty at startup
+
+    create_voice_files(voices, "late-voice")
+    state = mgr.get_state()  # no manual rescan
+    assert "late-voice" in state["voices"]
+
+
+def test_get_state_auto_drops_removed_voice(tmp_path):
+    """A voice deleted from disk disappears from state on the next poll."""
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "doomed-voice")
+    mgr = make_manager(voices)
+    assert "doomed-voice" in mgr.get_state()["voices"]
+
+    (voices / "doomed-voice.onnx").unlink()
+    assert "doomed-voice" not in mgr.get_state()["voices"]
+
+
+def test_maybe_rescan_skips_when_dir_unchanged(tmp_path):
+    """Unchanged dir mtime must not trigger a rebuild (cheap polling)."""
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "stable-voice")
+    mgr = make_manager(voices)
+
+    with patch.object(mgr, "_build_registry") as build:
+        mgr.get_state()  # mtime unchanged since construction
+        build.assert_not_called()
+
+
+def test_scan_clears_selected_voice_when_removed_from_disk(tmp_path):
+    """A rescan that loses the current voice must clear current_voice_id."""
+    voices = tmp_path / "voices"
+    create_voice_files(voices, "selected-voice")
+    mgr = make_manager(voices)
+    mgr.current_voice_id = "selected-voice"
+
+    (voices / "selected-voice.onnx").unlink()
+    mgr.rescan()
+    assert mgr.current_voice_id is None
+
+
 def test_list_voices_returns_serializable(tmp_path):
     voices = tmp_path / "voices"
     create_voice_files(voices, "list-voice", with_meta=True)

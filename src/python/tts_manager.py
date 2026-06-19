@@ -56,21 +56,30 @@ class TTSManager:
     def __init__(self, voices_dir: Path = VOICES_DIR):
         self.voices_dir = voices_dir
         self.registry: dict[str, VoiceInfo] = {}
+        self._dir_mtime: Optional[float] = None  # voices_dir mtime at last scan
         self._loaded_voice = None  # PiperVoice instance
         self.current_voice_id: Optional[str] = None
         self.enabled: bool = False  # Off by default until user enables
         self._lock = threading.Lock()  # Guards _loaded_voice across Flask threads
         self._scan()
 
-    def _scan(self) -> None:
-        """Discover .onnx voice models in voices_dir."""
+    def _current_dir_mtime(self) -> Optional[float]:
+        """Modification time of voices_dir, or None if it does not exist."""
+        try:
+            return self.voices_dir.stat().st_mtime
+        except OSError:
+            return None
+
+    def _build_registry(self) -> dict[str, VoiceInfo]:
+        """Discover .onnx voice models in voices_dir. Returns a fresh registry."""
+        registry: dict[str, VoiceInfo] = {}
         if not self.voices_dir.exists():
-            return
+            return registry
         try:
             entries = list(self.voices_dir.iterdir())
         except PermissionError as exc:
             log.error("Cannot read voices directory %s: %s", self.voices_dir, exc)
-            return
+            return registry
         for f in entries:
             if f.suffix != ".onnx" or f.name.endswith(".onnx.json"):
                 continue
@@ -90,20 +99,42 @@ class TTSManager:
                     "Skipping voice %s: file too small (%d bytes)", voice_id, file_size
                 )
                 continue
-            self.registry[voice_id] = VoiceInfo(
+            registry[voice_id] = VoiceInfo(
                 voice_id,
                 f,
                 config if config.exists() else None,
                 meta,
             )
+        return registry
 
-    def rescan(self) -> None:
-        """Re-scan voices dir (called after setup_voices.sh)."""
-        self.registry.clear()
-        self._scan()
-        # Clear stale voice if it was removed from disk
+    def _scan(self) -> None:
+        """(Re)build the voice registry and remember voices_dir's mtime.
+
+        The new registry is built into a local dict and swapped in with a single
+        atomic assignment, so concurrent readers never observe a half-populated
+        registry (the old clear()-then-populate had an empty window).
+        """
+        self.registry = self._build_registry()
+        self._dir_mtime = self._current_dir_mtime()
+        # Drop the selected voice if it was removed from disk.
         if self.current_voice_id and self.current_voice_id not in self.registry:
             self.current_voice_id = None
+
+    def _maybe_rescan(self) -> None:
+        """Re-scan only if voices_dir changed since the last scan.
+
+        TTSManager is a process-lifetime singleton, so voices added or removed
+        after startup (e.g. by setup_voices.sh) would otherwise stay invisible
+        until a manual rescan or server restart. Adding/removing a file bumps
+        the directory's mtime, which lets us catch the change cheaply (one stat)
+        on the next state poll — no manual "Rescan Voices" click required.
+        """
+        if self._current_dir_mtime() != self._dir_mtime:
+            self._scan()
+
+    def rescan(self) -> None:
+        """Force a re-scan of voices_dir (called after setup_voices.sh)."""
+        self._scan()
 
     def load_voice(self, voice_id: str) -> dict:
         """Load (or hot-swap) a Piper voice model. Returns status dict."""
@@ -178,6 +209,7 @@ class TTSManager:
         return {vid: v.to_dict() for vid, v in self.registry.items()}
 
     def get_state(self) -> dict:
+        self._maybe_rescan()  # pick up voices added/removed since startup
         return {
             "enabled": self.enabled,
             "currentVoice": self.current_voice_id,
