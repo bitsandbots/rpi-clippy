@@ -34,11 +34,11 @@ logic the reactive path still imports from the classic-named helper.
 - [x] 6. `src/sharedState.ts`: `CharacterId = "sprout"` (backend has no classic ref).
 - [x] 7. Deleted `sprout-classic-animations.tsx(+test)`, `sprout-classic-animation-helpers.tsx(+test)`.
 - [x] 8. Deleted assets: `images/animations/sprout/` (2.5MB), `assets/animations/sprout/`,
-       `tools/extract-animations.sh`, `package.json` `extract-animations` script.
+     `tools/extract-animations.sh`, `package.json` `extract-animations` script.
 - [x] 8b. Fixed fallout: `Message.tsx` avatar repointed from the deleted classic
-       `Default.png` to the reactive `sprout_flower_preview.png`.
+      `Default.png` to the reactive `sprout_flower_preview.png`.
 - [x] 9. Updated `CLAUDE.md` (character-system + file map). Historical docs/ ADR/spec
-       left as point-in-time records.
+     left as point-in-time records.
 - [x] 10. Verified: build green, 156 frontend + 200 backend tests green, prettier clean.
 
 ## Verification gate — PASSED
