@@ -6,8 +6,11 @@ import {
   EMPTY_ANIMATION,
   getRandomAnimation,
   getRandomIdleAnimation,
-} from "./sprout-animation-helpers";
-import { SPROUT_ANIMATIONS as ANIMATIONS, Animation } from "./sprout-animations";
+} from "./sprout-classic-animation-helpers";
+import {
+  SPROUT_ANIMATIONS as ANIMATIONS,
+  Animation,
+} from "./sprout-classic-animations";
 
 describe("ANIMATION_KEYS", () => {
   it("matches Object.keys(ANIMATIONS)", () => {

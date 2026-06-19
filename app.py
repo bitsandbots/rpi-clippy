@@ -28,6 +28,7 @@ from ollama_service import get_ollama_service, set_ollama_base
 from settings_manager import get_debug_settings, get_settings
 from tts_manager import get_tts_manager
 from stt_manager import get_stt_manager
+from garden_service import get_garden_service
 
 PORT = 5080
 DIST_DIR = Path(__file__).parent / "dist"
@@ -537,6 +538,53 @@ def set_stt_model():
     if "error" not in result:
         get_settings().set("sttModel", model)
     return jsonify(result)
+
+
+# ---------------------------------------------------------------------------
+# Garden telemetry (hydroMazing HTTP API adapter)
+# ---------------------------------------------------------------------------
+
+
+@app.route("/api/garden/state")
+def garden_state():
+    """Return the latest normalized GardenState snapshot (poll fallback)."""
+    state = get_garden_service().get_state()
+    if state is None:
+        return jsonify({"error": "garden telemetry unavailable"}), 503
+    return jsonify(state)
+
+
+@app.route("/api/garden/refresh", methods=["POST"])
+def garden_refresh():
+    """Force an immediate hydroMazing poll and return the result."""
+    state = get_garden_service().force_refresh()
+    if state is None:
+        return jsonify({"error": "garden telemetry unavailable"}), 503
+    return jsonify(state)
+
+
+@app.route("/api/garden/stream")
+def garden_stream():
+    """SSE stream — pushes GARDEN_STATE_UPDATE events to connected clients."""
+    svc = get_garden_service()
+    q = svc.subscribe_events()
+
+    def generate():
+        try:
+            while True:
+                try:
+                    event = q.get(timeout=30)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except Exception:
+                    yield ": keepalive\n\n"
+        finally:
+            svc.unsubscribe_events(q)
+
+    return Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------------------------------------------------------------------------

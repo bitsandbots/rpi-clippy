@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
+import { signalBus } from "../sprout/engine/signals";
 
 export type ChatInputProps = {
   onSend: (message: string) => void;
@@ -52,6 +53,15 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
     if (isModelLoaded && textareaRef.current) textareaRef.current.focus();
   }, [isModelLoaded]);
 
+  // Bridge typing state → signal bus
+  useEffect(() => {
+    if (message.trim()) {
+      signalBus.emit({ type: "INPUT_START" });
+    } else {
+      signalBus.emit({ type: "INPUT_STOP" });
+    }
+  }, [message]);
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -66,6 +76,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
         stream.getTracks().forEach((t) => t.stop());
         setIsRecording(false);
         setIsTranscribing(true);
+        signalBus.emit({ type: "INPUT_STOP" });
         try {
           const blob = new Blob(chunksRef.current, { type: "audio/webm" });
           const base64 = await blobToBase64(blob);
@@ -79,6 +90,7 @@ export function ChatInput({ onSend, onAbort }: ChatInputProps) {
       recorder.start(250);
       recorderRef.current = recorder;
       setIsRecording(true);
+      signalBus.emit({ type: "INPUT_START" });
     } catch {
       // Mic permission denied or unavailable — silently ignore
     }

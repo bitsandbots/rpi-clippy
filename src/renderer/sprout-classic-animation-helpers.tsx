@@ -1,4 +1,7 @@
-import { SPROUT_ANIMATIONS as ANIMATIONS, Animation } from "./sprout-animations";
+import {
+  SPROUT_ANIMATIONS as ANIMATIONS,
+  Animation,
+} from "./sprout-classic-animations";
 
 export const ANIMATION_KEYS = Object.keys(ANIMATIONS);
 export const ANIMATION_KEYS_BRACKETS = ANIMATION_KEYS.map((k) => `[${k}]`);

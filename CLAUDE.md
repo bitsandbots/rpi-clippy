@@ -89,6 +89,7 @@ Flask app.py (port 5080, 0.0.0.0 for LAN access)
   ├─ /api/ollama/*      → Ollama connection status, URL config, discovery
   ├─ /api/llm/*         → LLM session + SSE streaming
   ├─ /api/voice/*       → Piper TTS + Faster-Whisper STT
+  ├─ /api/garden/*      → hydroMazing telemetry: state (GET), refresh (POST), stream (SSE)
   └─ /api/versions      → version info
 
 src/python/
@@ -97,7 +98,8 @@ src/python/
   ├─ settings_manager.py — SettingsManager: ~/.config/Sprout/settings.json
   │                     └ DebugSettingsManager (same file): debug flag (5s polling)
   ├─ tts_manager.py     — TTSManager: Piper TTS, lazy-loaded .onnx voices
-  └─ stt_manager.py     — STTManager: Faster-Whisper, lazy-loaded Whisper model
+  ├─ stt_manager.py     — STTManager: Faster-Whisper, lazy-loaded Whisper model
+  └─ garden_service.py  — GardenService: polls hydroMazing HTTP API, fans out to SSE subscribers
 ```
 
 ### Streaming
@@ -121,12 +123,28 @@ State is managed via React Context — no Redux or Zustand. Context files live i
 - `VoiceContext.tsx` — TTS/STT state, audio playback, mic recording
 - `DebugContext.tsx` — debug flag (5s polling)
 - `WindowContext.tsx` — window/panel resize and layout state
+- `GardenContext.tsx` — hydroMazing telemetry SSE subscriber; emits garden signals + aria-live alerts
 
 UI entry: `renderer.tsx` → `App.tsx` → CSS-positioned `BubbleWindow.tsx` / `Sprout.tsx`
 
-`src/renderer/sprout-animation-helpers.tsx` — sprite frame and timing logic for Sprout animations.
-`src/renderer/sprout-animations.tsx` — animation definitions (idle, wave, think, etc.).
+`src/renderer/sprout-classic-animation-helpers.tsx` — sprite frame and timing logic for classic Sprout.
+`src/renderer/sprout-classic-animations.tsx` — animation definitions for classic sprite-sheet character.
 `src/renderer/logging.tsx` — client-side debug logging utility.
+
+**Reactive character engine** (`src/renderer/sprout/`):
+- `engine/signals.ts` — `SignalBus` singleton + `SproutSignal` union type
+- `engine/stateMachine.ts` — `StateMachine`: BFS path-finding between 8 states
+- `engine/blendSpace.ts` — `BlendSpace2D`: IDW blend of 6 mood points → `ExpressionParams`
+- `engine/oneShot.ts` — `OneShotLayer`: fire-and-forget reaction overlays with track filters
+- `engine/tween.ts` — `Tween`: single-value interpolation with easing functions
+- `engine/loop.ts` — `AnimationLoop`: rAF driver, 30 fps cap, visibility + reduced-motion guards
+- `engine/brain.ts` — `SproutBrain`: singleton orchestrating all engine modules; writes SVG refs
+- `rig/SproutRig.tsx` — SVG plant figure; exposes `RigRefs` (13 named parts + root)
+- `rig/parts.ts` — anchor table (center, rotationOrigin, writableAttrs per part)
+- `config/expressions.ts` — 6 named `ExpressionParams` presets
+- `config/moods.ts` — 6 `MoodPoint` definitions on Vitality × Energy axes
+- `config/reactions.ts` — 11 `OneShotDef` reactions + `BRACKET_TOKEN_REACTIONS` map
+- `config/gardenMapping.ts` — sensor → mood/reaction thresholds; `mapGardenState()`
 
 IPC is gone. `sproutApi.tsx` is a shim re-exporting from `api.ts` — no call sites needed updating.
 
@@ -167,14 +185,14 @@ Custom dark theme in `src/renderer/components/css/SproutTheme.css`. Colors: navy
 
 | Package             | Purpose                                            |
 | ------------------- | -------------------------------------------------- |
-| `pytest>=8.0`       | Backend test runner (169 tests in `tests/`)        |
+| `pytest>=8.0`       | Backend test runner (196 tests in `tests/`)        |
 | `pytest-mock>=3.12` | Mock fixtures for unit tests                       |
 | `pytest-flask>=1.3` | Flask test client fixtures                         |
-| `vitest>=2.0`       | Frontend test runner (77 tests in `src/renderer/`) |
+| `vitest>=2.0`       | Frontend test runner (166 tests in `src/renderer/`) |
 
 ### Test Isolation
 
-`tests/conftest.py` has an `autouse=True` fixture that resets all module-level singletons (`_settings`, `_chat_manager`, `_tts`, `_stt`, `_service`) to `None` before each test, and redirects `XDG_CONFIG_HOME` to a `tmp_path` so no test touches `~/.config/Sprout`. `OllamaService._refresh_available_bg` is also patched to a no-op by default to prevent real Ollama network calls; use the `real_ollama_refresh` fixture to restore it. Frontend tests use `src/test/setup.ts` which provides a `MockEventSource` with `.emit()` / `.emitError()` helpers and resets global `fetch` mocks before each test.
+`tests/conftest.py` has an `autouse=True` fixture that resets all module-level singletons (`_settings`, `_chat_manager`, `_tts`, `_stt`, `_service`, `_garden`) to `None` before each test, and redirects `XDG_CONFIG_HOME` to a `tmp_path` so no test touches `~/.config/Sprout`. `OllamaService._refresh_available_bg` is also patched to a no-op by default to prevent real Ollama network calls; use the `real_ollama_refresh` fixture to restore it. Frontend tests use `src/test/setup.ts` which provides a `MockEventSource` with `.emit()` / `.emitError()` helpers and resets global `fetch` mocks before each test.
 
 ## Gotchas
 
@@ -183,7 +201,9 @@ Custom dark theme in `src/renderer/components/css/SproutTheme.css`. Colors: navy
 - **SSE abort**: `POST /api/llm/abort` sets a `threading.Event` checked per chunk — not a socket close. If adding new SSE endpoints, use the same pattern.
 - **sproutApi.tsx shim**: This file re-exports from `api.ts` for backward compat. New code should import from `api.ts` directly.
 - **Animation asset regeneration**: `tools/extract-animations.sh` rebuilds Sprout sprite frames from `assets/animations/sprout/` into `src/renderer/images/animations/sprout`. Run via `npm run extract-animations`. Only needed when updating animation source assets.
-- **Character system**: Only Sprout exists. Animations registered in `src/renderer/character-animations.tsx`. Sprite frames are in `src/renderer/images/animations/sprout/`. Assets generated by `python3 tools/generate-sprout-assets.py`.
+- **Character system**: Two characters — `"sprout"` (reactive SVG rig, default) and `"sprout-classic"` (sprite-sheet fallback). Registered in `src/renderer/character-animations.tsx`. Classic sprite frames live in `src/renderer/images/animations/sprout/`. To revert to classic: set `character: "sprout-classic"` in settings.
+- **hydroMazing field mapping**: `src/python/garden_service.py::HYDRO_FIELD_MAP` maps raw API keys to `GardenState` fields. Verify these key names against the actual hydroMazing response before first production deploy. Set `HYDROMAZING_URL` and `GARDEN_POLL_SEC` env vars to configure the adapter.
+- **Reactive rig reduced-motion**: When `prefers-reduced-motion: reduce` is set, idle motion (sway, blink, saccade, talking oscillation) is suppressed but state transitions and one-shot reactions still render. The loop continues running at 30 fps to keep mood smoothing active.
 - **Version sync**: `app.py` has a module-level `VERSION` string and `package.json` has a `version` field — they must be updated together. `/api/versions` returns the `app.py` value; mismatches will silently mislead the UI.
 - **Dual model catalog**: `src/models.ts` (frontend, 8 models, no quant suffixes) and `src/python/ollama_service.py` `BUILT_IN_MODELS` (backend, 11 models, with quant tags like `gemma3:4b-Q4_K_M`) are independent lists. Adding a new model requires updating both; the backend list is authoritative for what gets pulled.
 - **Ollama uses `/api/generate`, not `/api/chat`**: `OllamaService.prompt_streaming()` builds a manual `System: / User: / Assistant:` prompt string and calls `/api/generate`. This is intentional but non-standard — switching to `/api/chat` would require a larger refactor.

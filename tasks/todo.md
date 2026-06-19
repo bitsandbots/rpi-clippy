@@ -1,9 +1,11 @@
 # UI Refactor: Modern Layout + Horizontal Sprout
 
 ## Goal
+
 Replace the floating-window / Windows-dialog aesthetic with a full-viewport modern layout where the chat panel sits to the left and the Sprout animation anchors to the right.
 
 ## Constraints
+
 - No new npm dependencies — all styling stays in the existing CSS files
 - Offline-safe: system fonts only (`var(--sc-font)` stack already defined)
 - The Sprout sprite is a fixed 186px-wide PNG; it cannot be resized without regenerating assets
@@ -11,7 +13,8 @@ Replace the floating-window / Windows-dialog aesthetic with a full-viewport mode
 - Vitest frontend tests must still pass after the refactor
 
 ## Approach
-The Win95 CSS library was already removed; what remains is the *window-chrome metaphor* — a floating 450×650 dialog with a title bar, Chats/⚙/× buttons, and a close button. The fix has two parts:
+
+The Win95 CSS library was already removed; what remains is the _window-chrome metaphor_ — a floating 450×650 dialog with a title bar, Chats/⚙/× buttons, and a close button. The fix has two parts:
 
 1. **Layout:** Change `App.tsx:SproutLayout` from `flexDirection: "column"` (bubble above sprite) to `flexDirection: "row"` (chat left, Sprout right). Remove the fixed 450×650 pixel box and let the chat panel fill the viewport height.
 
@@ -40,6 +43,7 @@ Considered and rejected: keeping the bubble as a modal overlay that toggles — 
 - **Sprout sprite at right edge on small viewports:** The sprite is 186px fixed. On a 375px-wide phone screen the chat would only get ~190px — likely too narrow. For now the layout targets desktop/tablet LAN-access usage (Pi 5 use case). Add a `min-width: 320px` on the chat column as a safety floor.
 
 - **`isChatWindowOpen` state is read in other contexts:** `ChatContext` exposes `isChatWindowOpen` and it's read in `Sprout.tsx`. Grep for all call sites before deleting the toggle to avoid silent breakage.
+
   ```
   grep -r "isChatWindowOpen\|setIsChatWindowOpen" src/
   ```
@@ -47,6 +51,7 @@ Considered and rejected: keeping the bubble as a modal overlay that toggles — 
 - **`WindowContext.tsx`** manages resize state but is currently a no-op in web mode. It should not need changes, but confirm it does not assume a fixed panel size.
 
 ## Out of scope (explicitly)
+
 - Backend changes of any kind
 - Adding a new character or animation assets
 - Changing the color palette (`--sc-*` variables stay as-is)
