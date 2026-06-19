@@ -1,59 +1,71 @@
-# UI Refactor: Modern Layout + Horizontal Sprout
+# Sprout character — FULL REDESIGN (2026-06-19) — Phases 1-2 SHIPPED
 
-## Goal
+Goal: replace the "lollipop on a wire" rig with a cohesive plant character whose
+animation poses (mood + wave + droop) stay structurally intact. Driven by
+screenshots of all 6 live poses (harness/ below), which exposed structural bugs,
+not just proportion problems.
 
-Replace the floating-window / Windows-dialog aesthetic with a full-viewport modern layout where the chat panel sits to the left and the Sprout animation anchors to the right.
+## STATUS
+- DONE: head-detach bug fixed (body group), arms re-rigged as raised limbs,
+  proportions/collar/leaflets redesigned, brain+parts+tests synced, 6 poses
+  re-verified. 170 tests green, build clean.
+- DEFERRED: true wilt-BOW (stem currently leans rigidly about the base, which
+  reads acceptably as wilt now that the head stays attached + arms hang down — a
+  curving stem is a future polish, see Phase 3 below).
+- Verification: harness/capture.py re-run after each change; live DOM probe
+  confirmed face-center tracks the body lean (x 186→208→230 at lean 0→3→6°), so
+  the head provably no longer detaches.
 
-## Constraints
+## Findings (from harness/capture.py — 6 live poses)
+- BUG: head detaches from stem under any stemLean (wilting/tired/sleepy/alarmed).
+  Face+features are at fixed coords; only `stem` rotates about (100,249), so the
+  stem-top swings ~16px away from the head. Most visible in wilting.
+- BUG: arms collapse into an "X" under the chin; leaf-blades fly off-frame after
+  default ±25° + leafDroop. Never read as limbs.
+- BUG: wilt stem rigid-rotates (tilts) instead of bowing — a single rotate() about
+  the base can't bend the line.
+- Wave gesture has no visual read (arms barely visible).
+- Proportion: oversized head (r34) on thin (6px) over-long trunk; arms at "waist".
+- Accent leaflets float disconnected on the lower stem.
 
-- No new npm dependencies — all styling stays in the existing CSS files
-- Offline-safe: system fonts only (`var(--sc-font)` stack already defined)
-- The Sprout sprite is a fixed 186px-wide PNG; it cannot be resized without regenerating assets
-- Backend / context / streaming code is untouched — this is purely a frontend layout and styling task
-- Vitest frontend tests must still pass after the refactor
+## Tooling (DONE — keep for the iterate loop)
+- [x] harness/poses.html + poses.tsx — mounts real SproutRig + sproutBrain, exposes
+      window.brain / window.bus / window.settle for driving poses.
+- [x] harness/capture.py — Playwright (reduced-motion) screenshots 6 poses to /tmp.
+      Run: `node node_modules/.bin/vite --port 5173 &` then `python3 harness/capture.py`.
+- NOTE: harness/ is a dev-only tool; now in .gitignore (kept for the iterate loop).
 
-## Approach
+## Phase 1 — Fix structural coupling (these were bugs) — DONE
+- [x] Wrapped stem+arms+collar+head+bloom+leaflets in one `body` group; brain
+      rotates it about the pot base (100,250) for stemLean+sway, so head/stem/arms
+      move as one unit and the head can never detach. (Added `body` PartId + ref.)
+- [x] Re-rigged arms as shoulder-mounted raised limbs (rest ~35° up, baked into
+      geometry); recomputed shoulder (92/108,126) + wrist (66/134,108) pivots.
 
-The Win95 CSS library was already removed; what remains is the _window-chrome metaphor_ — a floating 450×650 dialog with a title bar, Chats/⚙/× buttons, and a close button. The fix has two parts:
+## Phase 2 — Redesign silhouette / proportions — DONE
+- [x] Head r 34→30, lowered (cy 81→90) onto a shorter, thicker trunk (6→9px);
+      neck gap closed (arms just below the head).
+- [x] Trunk heavier stroke + gentle S-curve.
+- [x] Collar reads as a green calyx seam (larger sepals, dark outline).
+- [x] Accent leaflets re-homed onto the stem as lower foliage.
 
-1. **Layout:** Change `App.tsx:SproutLayout` from `flexDirection: "column"` (bubble above sprite) to `flexDirection: "row"` (chat left, Sprout right). Remove the fixed 450×650 pixel box and let the chat panel fill the viewport height.
+## Phase 3 — Brain transforms — DONE (except wilt-bow)
+- [x] Updated every pivot (body 100,250; arms 92/108,126; blades 66/134,108),
+      eye origins (88), mouth baseline (104).
+- [x] Arm droop gain 3.2 + 88° cap so mild droop hangs arms, heavy droop can't
+      over-rotate; lowered `alarmed` leafDroop 10→5 so it raises arms (alert).
+- [x] Wave reads now that arms are visible/raised.
+- [ ] DEFERRED: wilt-BOW (curve the stem `d`) — current rigid lean reads OK.
 
-2. **Chrome:** Strip the title-bar look from `BubbleWindow.tsx`. Replace the header row (title + Chats/⚙/×) with a minimal top bar — settings gear and Chats button, no window title, no × close button. Convert the page background from `transparent` (Electron legacy) to opaque.
+## Phase 4 — Sync anchors + tests — DONE
+- [x] parts.ts PARTS anchors + `body` PartId updated to new geometry.
+- [x] brain.test.ts updated (body lean assertion, mouth baseline, body ref stub).
+- [x] `npm run build` green; `npm run test` 170/170 green; prettier applied.
 
-Considered and rejected: keeping the bubble as a modal overlay that toggles — this conflicts with the "Sprout always to the right" requirement and would require a separate trigger.
+## Phase 5 — Visual verification (gate) — DONE
+- [x] Re-ran harness/capture.py across all 6 poses: head attached, arms read as
+      limbs and stay in frame, wave distinct, proportions cohesive. DOM probe
+      confirmed face-center tracks body lean.
 
-## Steps
-
-- [x] 1. **Set opaque page background** — In `App.css`, replace `background: transparent` on `:root`, `html`, and `body` with `background: var(--sc-bg)` (navy `#0d1926`). — Verified by: dev server shows a solid dark page instead of a transparent/white flash.
-
-- [x] 2. **Refactor `SproutLayout` to a horizontal row** — In `App.tsx`, change the inner container from `flexDirection: "column"` to `flexDirection: "row"`, `alignItems: "stretch"`, `width: "100vw"`, `height: "100vh"`. Remove the hardcoded `width: "450px" height: "650px"` wrapper around `<Bubble />` — let it fill the available space via `flex: 1`. Keep the Sprout container at its natural 186px width with `alignSelf: "flex-end"` so it sits at the bottom-right. Remove the `isChatWindowOpen` guard — the chat panel is always rendered. — Verified by: page shows chat on the left and sprite on the right at all viewport sizes.
-
-- [x] 3. **Simplify `Sprout.tsx` click behavior** — With the chat always visible, `toggleChat` no longer needs to show/hide the panel. Change `onClick` to call `setIsChatWindowOpen(true)` only (no toggle), or repurpose the click to focus the text input (via a context callback). Remove the `isChatWindowOpen` read from `useChat` if it is no longer needed. The `position: absolute` drag/click overlay inside `<Sprout>` can stay as-is — it is relative to the sprite container, which is unchanged. — Verified by: clicking the sprite does not break anything; text input receives focus (or no-op is acceptable as a stub).
-
-- [x] 4. **Strip window chrome from `BubbleWindow.tsx`** — Remove the `.chat-panel-header` div (title + controls) entirely. Move the Chats and Settings buttons to a compact icon bar that sits inside the `chat-panel-body` area at the top, or repurpose the existing `BubbleWindowBottomBar`. The `btn-close` (×) button and the `.chat-panel-title` element are deleted. Keep `chat-panel--active` class for the blue-accent pulse. — Verified by: no title bar visible; Chats and Settings are still reachable.
-
-- [x] 5. **Update `.chat-panel` sizing in `SproutTheme.css`** — Remove any width/height assumptions (the component now fills `flex: 1`). Adjust `.chat-panel-header` — if a replacement minimal bar is used, add its styles here. Rename the class to something non-window-ish only if the rename doesn't break other class references. — Verified by: `npm run lint` passes; no visual overflow or scroll bleed.
-
-- [x] 6. **Verify tests pass** — Run `python3 -m pytest -q` and `npm run test` and confirm no regressions. — Verified by: both suites exit 0.
-
-## Risks / unknowns
-
-- **Chat-always-visible vs. toggle:** Steps 2 and 3 remove the show/hide toggle. If the user wants to keep the ability to collapse the chat (e.g., to see just Sprout), a collapse control needs to be added back — this is out of scope here but noted. Confirm with user before executing step 2.
-
-- **Sprout sprite at right edge on small viewports:** The sprite is 186px fixed. On a 375px-wide phone screen the chat would only get ~190px — likely too narrow. For now the layout targets desktop/tablet LAN-access usage (Pi 5 use case). Add a `min-width: 320px` on the chat column as a safety floor.
-
-- **`isChatWindowOpen` state is read in other contexts:** `ChatContext` exposes `isChatWindowOpen` and it's read in `Sprout.tsx`. Grep for all call sites before deleting the toggle to avoid silent breakage.
-
-  ```
-  grep -r "isChatWindowOpen\|setIsChatWindowOpen" src/
-  ```
-
-- **`WindowContext.tsx`** manages resize state but is currently a no-op in web mode. It should not need changes, but confirm it does not assume a fixed panel size.
-
-## Out of scope (explicitly)
-
-- Backend changes of any kind
-- Adding a new character or animation assets
-- Changing the color palette (`--sc-*` variables stay as-is)
-- Responsive/mobile breakpoints beyond the min-width safety floor
-- Accessibility audit (ARIA roles, keyboard nav)
+Verification: a phase is not done until `npm run test` passes AND the re-captured
+pose set shows the targeted fix (not "looks correct" — the screenshot proves it).

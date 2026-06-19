@@ -25,6 +25,16 @@ const SACCADE_Y_RANGE = 3;
 // Talking mouth: sinusoidal period in ms
 const TALK_PERIOD_MS = 200;
 
+// Leaf-tip wave: fast waggle while a "wave" overlay is active
+const WAVE_PERIOD_MS = 260;
+const WAVE_AMPLITUDE_DEG = 14;
+
+// Arms rest ~35° above horizontal. Droop is amplified so even mild droop swings
+// the arms toward hanging-down, clamped so heavy droop can't over-rotate them
+// behind the stem. Gain 3.2 + 88° cap → ~-53° below horizontal at full wilt.
+const ARM_DROOP_GAIN = 3.2;
+const ARM_DROOP_MAX_DEG = 88;
+
 export class SproutBrain {
   private sm = new StateMachine("Idle");
   private blendSpace = new BlendSpace2D(MOOD_POINTS);
@@ -54,6 +64,9 @@ export class SproutBrain {
 
   // Talking mouth oscillation
   private talkPhase = 0;
+
+  // Leaf-tip wave oscillation
+  private wavePhase = 0;
 
   // Idle timeout
   private lastInputMs = 0;
@@ -121,6 +134,8 @@ export class SproutBrain {
         const reactionKey = BRACKET_TOKEN_REACTIONS[key];
         if (reactionKey && REACTIONS[reactionKey]) {
           this.oneShot.fire(REACTIONS[reactionKey]);
+          // A greeting/goodbye also waves the leaves hello.
+          if (reactionKey === "greet") this.oneShot.fire(REACTIONS.wave);
         }
       }),
       signalBus.on("GARDEN_STATE_UPDATE", ({ state }) => {
@@ -188,7 +203,11 @@ export class SproutBrain {
     }
 
     // Eye saccade — suppressed under reduced-motion and when deeply focused
-    if (!reducedMotion && this.sm.state !== "Sleeping" && this.sm.state !== "Distressed") {
+    if (
+      !reducedMotion &&
+      this.sm.state !== "Sleeping" &&
+      this.sm.state !== "Distressed"
+    ) {
       this.saccadeTimer += deltaMs;
       if (this.saccadeTimer >= this.saccadeInterval) {
         this.saccadeTimer = 0;
@@ -209,6 +228,14 @@ export class SproutBrain {
       this.talkPhase = 0;
     }
 
+    // Leaf-tip wave phase — runs while a "wave" overlay is active. Under
+    // reduced-motion the tips still ease up (one-shot target) but don't waggle.
+    if (!reducedMotion && this.oneShot.isActive("wave")) {
+      this.wavePhase += deltaMs;
+    } else {
+      this.wavePhase = 0;
+    }
+
     // Advance overlays then write rig (state expression always written)
     this.oneShot.advance(deltaMs);
 
@@ -224,9 +251,11 @@ export class SproutBrain {
 
     const {
       root,
-      stem,
+      body,
       leafL,
       leafR,
+      leafBladeL,
+      leafBladeR,
       eyeL,
       eyeR,
       lidL,
@@ -247,25 +276,53 @@ export class SproutBrain {
       Math.sin((this.swayPhase / expr.swayPeriod) * Math.PI * 2) *
       expr.swayAmplitude;
 
-    // Stem
-    if (stem) {
-      stem.setAttribute(
+    // Whole body: lean + sway rotated about the pot base. This carries the
+    // stem, arms, and head together so the head can never detach from the stem.
+    if (body) {
+      body.setAttribute(
         "transform",
-        `rotate(${(expr.stemLean + swayAngle).toFixed(2)}, 100, 249)`,
+        `rotate(${(expr.stemLean + swayAngle).toFixed(2)}, 100, 250)`,
       );
     }
 
-    // Leaves
+    // Arms: rest angle is baked into the rig geometry, so the brain only adds
+    // droop (lowers the raised arms) and a gentle counter-sway lag. Signs are
+    // mirrored per side. Negative left / positive right lowers each arm.
+    const armDroop = Math.min(
+      expr.leafDroop * ARM_DROOP_GAIN,
+      ARM_DROOP_MAX_DEG,
+    );
     if (leafL) {
       leafL.setAttribute(
         "transform",
-        `rotate(${(-25 - expr.leafDroop + swayAngle * 0.5).toFixed(2)}, 94, 156)`,
+        `rotate(${(-armDroop - swayAngle * 0.5).toFixed(2)}, 92, 126)`,
       );
     }
     if (leafR) {
       leafR.setAttribute(
         "transform",
-        `rotate(${(25 + expr.leafDroop - swayAngle * 0.5).toFixed(2)}, 106, 156)`,
+        `rotate(${(armDroop + swayAngle * 0.5).toFixed(2)}, 108, 126)`,
+      );
+    }
+
+    // Leaf-blade tip curl at the wrist joint. Mirrored per side so positive
+    // values droop both tips; the wave overlay drives a fast symmetric waggle.
+    const waveOsc =
+      this.wavePhase > 0
+        ? Math.sin((this.wavePhase / WAVE_PERIOD_MS) * Math.PI * 2) *
+          WAVE_AMPLITUDE_DEG
+        : 0;
+    const tipCurl = expr.leafTipCurl + waveOsc;
+    if (leafBladeL) {
+      leafBladeL.setAttribute(
+        "transform",
+        `rotate(${(-tipCurl).toFixed(2)}, 66, 108)`,
+      );
+    }
+    if (leafBladeR) {
+      leafBladeR.setAttribute(
+        "transform",
+        `rotate(${tipCurl.toFixed(2)}, 134, 108)`,
       );
     }
 
@@ -277,13 +334,13 @@ export class SproutBrain {
     if (eyeL) {
       eyeL.setAttribute(
         "style",
-        `transform-origin: 86px 78px; transform: translate(${sx}px, ${sy}px) scaleY(${eyeScaleY})`,
+        `transform-origin: 88px 88px; transform: translate(${sx}px, ${sy}px) scaleY(${eyeScaleY})`,
       );
     }
     if (eyeR) {
       eyeR.setAttribute(
         "style",
-        `transform-origin: 114px 78px; transform: translate(${sx}px, ${sy}px) scaleY(${eyeScaleY})`,
+        `transform-origin: 112px 88px; transform: translate(${sx}px, ${sy}px) scaleY(${eyeScaleY})`,
       );
     }
 
@@ -314,11 +371,11 @@ export class SproutBrain {
         const talkCurve = Math.sin(
           (this.talkPhase / TALK_PERIOD_MS) * Math.PI * 2,
         );
-        cpY = 96 + talkCurve * 8 + 2; // bias slightly open
+        cpY = 104 + talkCurve * 8 + 2; // bias slightly open
       } else {
-        cpY = 96 + expr.mouthCurve * 10;
+        cpY = 104 + expr.mouthCurve * 10;
       }
-      mouth.setAttribute("d", `M88,96 Q100,${cpY.toFixed(1)} 112,96`);
+      mouth.setAttribute("d", `M88,104 Q100,${cpY.toFixed(1)} 112,104`);
     }
   }
 

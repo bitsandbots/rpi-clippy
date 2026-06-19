@@ -44,6 +44,11 @@ export class OneShotLayer {
     return this.active.length > 0;
   }
 
+  /** True while an overlay with the given key is still playing. */
+  isActive(key: string): boolean {
+    return this.active.some((o) => o.def.key === key);
+  }
+
   /**
    * Compose overlays onto a base expression. Later overlays win on conflict.
    * Only filteredTracks are written; the base value is preserved for others.

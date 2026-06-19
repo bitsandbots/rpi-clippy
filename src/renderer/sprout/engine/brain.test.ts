@@ -20,10 +20,13 @@ function makeEl() {
 function makeRefs() {
   return {
     root: makeEl() as unknown as SVGSVGElement,
+    body: makeEl(),
     pot: makeEl(),
     stem: makeEl(),
     leafL: makeEl(),
     leafR: makeEl(),
+    leafBladeL: makeEl(),
+    leafBladeR: makeEl(),
     face: makeEl(),
     eyeL: makeEl(),
     eyeR: makeEl(),
@@ -102,16 +105,41 @@ describe("SproutBrain", () => {
     expect(brain.state).toBe("Idle");
   });
 
-  it("tickOnce() writes stem transform to refs", () => {
+  it("tickOnce() writes body lean/sway transform to refs", () => {
     brain.tickOnce(33);
-    const stem = refs.stem as any;
-    expect(stem._attrs["transform"]).toMatch(/rotate/);
+    const body = refs.body as any;
+    expect(body._attrs["transform"]).toMatch(/rotate\(.*, 100, 250\)/);
   });
 
   it("tickOnce() writes mouth path to refs", () => {
     brain.tickOnce(33);
     const mouth = refs.mouth as any;
-    expect(mouth._attrs["d"]).toMatch(/^M88,96/);
+    expect(mouth._attrs["d"]).toMatch(/^M88,104/);
+  });
+
+  it("tickOnce() writes a rotate transform to both leaf blades", () => {
+    brain.tickOnce(33);
+    expect((refs.leafBladeL as any)._attrs["transform"]).toMatch(/rotate/);
+    expect((refs.leafBladeR as any)._attrs["transform"]).toMatch(/rotate/);
+  });
+
+  it("Greeting token fires both greet and wave overlays", () => {
+    const fireSpy = vi.spyOn((brain as any).oneShot, "fire");
+    signalBus.emit({ type: "ANIMATION_TOKEN", key: "Greeting" });
+    expect(fireSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ key: "greet" }),
+    );
+    expect(fireSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ key: "wave" }),
+    );
+  });
+
+  it("a non-greeting token does not fire the wave overlay", () => {
+    const fireSpy = vi.spyOn((brain as any).oneShot, "fire");
+    signalBus.emit({ type: "ANIMATION_TOKEN", key: "Congratulate" });
+    expect(fireSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ key: "wave" }),
+    );
   });
 
   it("blink fires a oneShot overlay after blinkInterval ticks", () => {

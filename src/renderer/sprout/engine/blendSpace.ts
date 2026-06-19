@@ -1,7 +1,8 @@
 // © CoreConduit Consulting Services — MIT License
 
 export type ExpressionParams = {
-  leafDroop: number; // 0–40 deg
+  leafDroop: number; // 0–40 deg (whole-arm droop at the shoulder)
+  leafTipCurl: number; // -15 to +25 deg (leaf blade curl at the wrist joint)
   stemLean: number; // -10 to +10 deg
   colorSaturation: number; // 0.3–1.0
   swayAmplitude: number; // 0–6 deg
@@ -29,6 +30,7 @@ function lerpExpr(
 ): ExpressionParams {
   return {
     leafDroop: lerp(a.leafDroop, b.leafDroop, t),
+    leafTipCurl: lerp(a.leafTipCurl, b.leafTipCurl, t),
     stemLean: lerp(a.stemLean, b.stemLean, t),
     colorSaturation: lerp(a.colorSaturation, b.colorSaturation, t),
     swayAmplitude: lerp(a.swayAmplitude, b.swayAmplitude, t),
@@ -76,6 +78,7 @@ export class BlendSpace2D {
 
     const result: ExpressionParams = {
       leafDroop: 0,
+      leafTipCurl: 0,
       stemLean: 0,
       colorSaturation: 0,
       swayAmplitude: 0,
@@ -89,6 +92,7 @@ export class BlendSpace2D {
       const t = weights[i] / weightSum;
       const expr = this.points[i].expression;
       result.leafDroop += expr.leafDroop * t;
+      result.leafTipCurl += expr.leafTipCurl * t;
       result.stemLean += expr.stemLean * t;
       result.colorSaturation += expr.colorSaturation * t;
       result.swayAmplitude += expr.swayAmplitude * t;
