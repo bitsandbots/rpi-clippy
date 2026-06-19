@@ -27,7 +27,7 @@ DEFAULT_SETTINGS = {
     "defaultFont": "Tahoma",
     "defaultFontSize": 16,
     "uiTheme": "refined",
-    "character": "clippy",
+    "character": "sprout",
     "selectedModel": None,
     "ollamaUrl": "http://localhost:11434",
     "ttsEnabled": False,

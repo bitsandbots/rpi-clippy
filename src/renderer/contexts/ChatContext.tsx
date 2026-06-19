@@ -367,7 +367,7 @@ function getPreviewFromMessages(messages: Message[]): string {
     return "";
   }
 
-  if (messages[0].sender === "clippy") {
+  if (messages[0].sender === "sprout") {
     return "Welcome to Sprout!";
   }
 
@@ -378,7 +378,7 @@ function getPreviewFromMessages(messages: Message[]): string {
 function messagesToInitialPrompts(messages: Message[]): LanguageModelPrompt[] {
   return messages.map((message) => ({
     role:
-      message.sender === "clippy"
+      message.sender === "sprout"
         ? ("assistant" as LanguageModelPromptRole)
         : ("user" as LanguageModelPromptRole),
     type: "text" as LanguageModelPromptType,
