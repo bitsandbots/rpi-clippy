@@ -61,13 +61,19 @@ export function Bubble() {
     >
       <div className="chat-nav-bar">
         <button
-          className={currentView === "chats" ? "chat-nav-btn active" : "chat-nav-btn"}
+          className={
+            currentView === "chats" ? "chat-nav-btn active" : "chat-nav-btn"
+          }
           onClick={handleChatsClick}
         >
           Chats
         </button>
         <button
-          className={currentView.startsWith("settings") ? "chat-nav-btn active" : "chat-nav-btn"}
+          className={
+            currentView.startsWith("settings")
+              ? "chat-nav-btn active"
+              : "chat-nav-btn"
+          }
           onClick={handleSettingsClick}
           aria-label="Settings"
           title="Settings"

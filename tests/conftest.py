@@ -41,6 +41,7 @@ def isolate_config(tmp_path, monkeypatch):
     import tts_manager
     import stt_manager
     import ollama_service
+    import garden_service
 
     monkeypatch.setattr(settings_manager, "_settings", None)
     monkeypatch.setattr(settings_manager, "_debug", None)
@@ -48,6 +49,7 @@ def isolate_config(tmp_path, monkeypatch):
     monkeypatch.setattr(tts_manager, "_tts", None)
     monkeypatch.setattr(stt_manager, "_stt", None)
     monkeypatch.setattr(ollama_service, "_service", None)
+    monkeypatch.setattr(garden_service, "_garden", None)
 
     yield
 

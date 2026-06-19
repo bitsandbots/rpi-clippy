@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SPROUT_ANIMATIONS } from "./sprout-animations";
+import { SPROUT_ANIMATIONS } from "./sprout-classic-animations";
 
 describe("SPROUT_ANIMATIONS", () => {
   const entries = Object.entries(SPROUT_ANIMATIONS);
@@ -51,5 +51,4 @@ describe("SPROUT_ANIMATIONS", () => {
       expect(anim.length, `${key}.length`).toBeLessThanOrEqual(30_000);
     }
   });
-
 });

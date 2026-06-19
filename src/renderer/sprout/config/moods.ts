@@ -1,0 +1,96 @@
+// © CoreConduit Consulting Services — MIT License
+
+import type { MoodPoint } from "../engine/blendSpace";
+
+export const MOOD_POINTS: MoodPoint[] = [
+  {
+    label: "thriving",
+    vitality: 1.0,
+    energy: 1.0,
+    expression: {
+      leafDroop: 0,
+      stemLean: 0,
+      colorSaturation: 1.0,
+      swayAmplitude: 5,
+      swayPeriod: 2500,
+      eyeOpenness: 1.0,
+      browOffsetY: -2,
+      mouthCurve: 0.9,
+    },
+  },
+  {
+    label: "content",
+    vitality: 0.8,
+    energy: 0.5,
+    expression: {
+      leafDroop: 4,
+      stemLean: 0,
+      colorSaturation: 0.9,
+      swayAmplitude: 2.5,
+      swayPeriod: 3200,
+      eyeOpenness: 0.9,
+      browOffsetY: 0,
+      mouthCurve: 0.3,
+    },
+  },
+  {
+    label: "sleepy",
+    vitality: 0.6,
+    energy: 0.1,
+    expression: {
+      leafDroop: 15,
+      stemLean: 3,
+      colorSaturation: 0.65,
+      swayAmplitude: 1,
+      swayPeriod: 5000,
+      eyeOpenness: 0.3,
+      browOffsetY: 2,
+      mouthCurve: -0.1,
+    },
+  },
+  {
+    label: "tired",
+    vitality: 0.4,
+    energy: 0.2,
+    expression: {
+      leafDroop: 25,
+      stemLean: 4,
+      colorSaturation: 0.5,
+      swayAmplitude: 1,
+      swayPeriod: 4500,
+      eyeOpenness: 0.55,
+      browOffsetY: 2,
+      mouthCurve: -0.3,
+    },
+  },
+  {
+    label: "wilting",
+    vitality: 0.1,
+    energy: 0.2,
+    expression: {
+      leafDroop: 38,
+      stemLean: 6,
+      colorSaturation: 0.3,
+      swayAmplitude: 0.5,
+      swayPeriod: 5000,
+      eyeOpenness: 0.5,
+      browOffsetY: 3,
+      mouthCurve: -0.7,
+    },
+  },
+  {
+    label: "alarmed",
+    vitality: 0.2,
+    energy: 0.8,
+    expression: {
+      leafDroop: 10,
+      stemLean: -1,
+      colorSaturation: 0.55,
+      swayAmplitude: 2,
+      swayPeriod: 2000,
+      eyeOpenness: 1.0,
+      browOffsetY: -3,
+      mouthCurve: -0.5,
+    },
+  },
+];

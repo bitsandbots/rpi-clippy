@@ -75,6 +75,41 @@ export class MockEventSource {
 vi.stubGlobal("EventSource", MockEventSource);
 
 // ---------------------------------------------------------------------------
+// matchMedia stub (jsdom does not implement it)
+// ---------------------------------------------------------------------------
+
+if (typeof window !== "undefined" && !window.matchMedia) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// requestAnimationFrame stub (jsdom does not implement it)
+// ---------------------------------------------------------------------------
+
+if (typeof window !== "undefined" && !window.requestAnimationFrame) {
+  Object.defineProperty(window, "requestAnimationFrame", {
+    writable: true,
+    value: (cb: FrameRequestCallback) => setTimeout(() => cb(Date.now()), 16),
+  });
+  Object.defineProperty(window, "cancelAnimationFrame", {
+    writable: true,
+    value: (id: number) => clearTimeout(id),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Global fetch mock — reset before each test
 // ---------------------------------------------------------------------------
 

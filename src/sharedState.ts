@@ -2,7 +2,7 @@ import { HybridModelState } from "./models";
 
 export type DefaultFont = "Sans-serif" | "Serif" | "Monospace";
 export type DefaultFontSize = number;
-export type CharacterId = "sprout";
+export type CharacterId = "sprout" | "sprout-classic";
 
 export interface SettingsState {
   selectedModel?: string;

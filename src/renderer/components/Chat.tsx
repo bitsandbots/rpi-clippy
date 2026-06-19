@@ -5,7 +5,7 @@ import { ChatInput } from "./ChatInput";
 import {
   ANIMATION_KEYS,
   ANIMATION_KEYS_BRACKETS,
-} from "../sprout-animation-helpers";
+} from "../sprout-classic-animation-helpers";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
 import { electronAi } from "../sproutApi";

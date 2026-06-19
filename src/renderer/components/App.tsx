@@ -8,6 +8,7 @@ import { SharedStateProvider } from "../contexts/SharedStateContext";
 import { BubbleViewProvider } from "../contexts/BubbleViewContext";
 import { DebugProvider } from "../contexts/DebugContext";
 import { VoiceProvider } from "../contexts/VoiceContext";
+import { GardenProvider } from "../contexts/GardenContext";
 import { useSharedState } from "../contexts/SharedStateContext";
 
 function SproutLayout() {
@@ -21,10 +22,24 @@ function SproutLayout() {
         height: "100vh",
       }}
     >
-      <div style={{ flex: 1, minWidth: "320px", display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          flex: 1,
+          minWidth: "320px",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <Bubble />
       </div>
-      <div style={{ width: "372px", flexShrink: 0, display: "flex", alignItems: "flex-end" }}>
+      <div
+        style={{
+          width: "372px",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
         <Sprout />
       </div>
     </div>
@@ -54,11 +69,13 @@ export function App() {
       <SharedStateProvider>
         <ChatProvider>
           <VoiceProvider>
-            <BubbleViewProvider>
-              <SproutRoot>
-                <SproutLayout />
-              </SproutRoot>
-            </BubbleViewProvider>
+            <GardenProvider>
+              <BubbleViewProvider>
+                <SproutRoot>
+                  <SproutLayout />
+                </SproutRoot>
+              </BubbleViewProvider>
+            </GardenProvider>
           </VoiceProvider>
         </ChatProvider>
       </SharedStateProvider>

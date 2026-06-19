@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { filterMessageContent } from "./Chat";
-import { ANIMATION_KEYS, ANIMATION_KEYS_BRACKETS } from "../sprout-animation-helpers";
+import {
+  ANIMATION_KEYS,
+  ANIMATION_KEYS_BRACKETS,
+} from "../sprout-classic-animation-helpers";
 
 // ---------------------------------------------------------------------------
 // filterMessageContent

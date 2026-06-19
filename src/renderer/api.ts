@@ -331,3 +331,15 @@ export async function getVersions(): Promise<Record<string, string>> {
   const r = await fetch(`${API}/versions`);
   return r.json();
 }
+
+// ---------------------------------------------------------------------------
+// Garden telemetry
+// ---------------------------------------------------------------------------
+
+import type { GardenState } from "./sprout/engine/signals";
+
+export async function fetchGardenState(): Promise<GardenState | null> {
+  const r = await fetch(`${API}/garden/state`);
+  if (!r.ok) return null;
+  return r.json();
+}

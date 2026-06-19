@@ -1,0 +1,66 @@
+// © CoreConduit Consulting Services — MIT License
+
+import type { ExpressionParams } from "../engine/blendSpace";
+
+export const EXPRESSIONS: Record<string, ExpressionParams> = {
+  neutral: {
+    leafDroop: 5,
+    stemLean: 0,
+    colorSaturation: 0.85,
+    swayAmplitude: 2,
+    swayPeriod: 3500,
+    eyeOpenness: 0.9,
+    browOffsetY: 0,
+    mouthCurve: 0.1,
+  },
+  happy: {
+    leafDroop: 0,
+    stemLean: 0,
+    colorSaturation: 1.0,
+    swayAmplitude: 4,
+    swayPeriod: 2500,
+    eyeOpenness: 1.0,
+    browOffsetY: -2,
+    mouthCurve: 0.9,
+  },
+  sleepy: {
+    leafDroop: 15,
+    stemLean: 3,
+    colorSaturation: 0.65,
+    swayAmplitude: 1,
+    swayPeriod: 5000,
+    eyeOpenness: 0.3,
+    browOffsetY: 2,
+    mouthCurve: -0.1,
+  },
+  surprised: {
+    leafDroop: 0,
+    stemLean: -2,
+    colorSaturation: 0.9,
+    swayAmplitude: 0,
+    swayPeriod: 3000,
+    eyeOpenness: 1.0,
+    browOffsetY: -4,
+    mouthCurve: -0.2,
+  },
+  concerned: {
+    leafDroop: 20,
+    stemLean: 2,
+    colorSaturation: 0.6,
+    swayAmplitude: 1,
+    swayPeriod: 4000,
+    eyeOpenness: 0.7,
+    browOffsetY: 3,
+    mouthCurve: -0.6,
+  },
+  thirsty: {
+    leafDroop: 35,
+    stemLean: 5,
+    colorSaturation: 0.4,
+    swayAmplitude: 0.5,
+    swayPeriod: 5000,
+    eyeOpenness: 0.5,
+    browOffsetY: 2,
+    mouthCurve: -0.4,
+  },
+};
