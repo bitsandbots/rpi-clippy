@@ -1,6 +1,6 @@
 import Markdown from "react-markdown";
 import questionIcon from "../images/icons/question.png";
-import defaultSproutIcon from "../images/animations/sprout/Default.png";
+import defaultSproutIcon from "../images/animations/sprout_flower_preview.png";
 import { MessageRecord } from "../../types/interfaces";
 
 export interface Message extends MessageRecord {

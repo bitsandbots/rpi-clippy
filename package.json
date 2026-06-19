@@ -9,8 +9,7 @@
     "build": "node node_modules/.bin/vite build",
     "lint": "node node_modules/prettier/bin/prettier.cjs --write --ext .ts,.tsx .",
     "test": "node node_modules/vitest/dist/cli.js run",
-    "test:watch": "node node_modules/vitest/dist/cli.js",
-    "extract-animations": "./tools/extract-animations.sh -j ./assets/animations/sprout/animations.json -s ./assets/animations/sprout/map.png -o src/renderer/images/animations/sprout"
+    "test:watch": "node node_modules/vitest/dist/cli.js"
   },
   "keywords": [],
   "author": {

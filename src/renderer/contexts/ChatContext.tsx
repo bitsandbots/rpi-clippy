@@ -13,7 +13,7 @@ import { areAnyModelsReadyOrDownloading } from "../../helpers/model-helpers";
 import { WelcomeMessageContent } from "../components/WelcomeMessageContent";
 import { ChatRecord, MessageRecord } from "../../types/interfaces";
 import { useDebugState } from "./DebugContext";
-import { ANIMATION_KEYS_BRACKETS } from "../sprout-classic-animation-helpers";
+import { ANIMATION_KEYS_BRACKETS } from "../animation-keys";
 import { ErrorLoadModelMessageContent } from "../components/ErrorLoadModelMessageContent";
 import { randomUUID } from "../helpers/uuid";
 

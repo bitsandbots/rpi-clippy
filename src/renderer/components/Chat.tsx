@@ -2,10 +2,7 @@ import { useState } from "react";
 
 import { Message } from "./Message";
 import { ChatInput } from "./ChatInput";
-import {
-  ANIMATION_KEYS,
-  ANIMATION_KEYS_BRACKETS,
-} from "../sprout-classic-animation-helpers";
+import { ANIMATION_KEYS, ANIMATION_KEYS_BRACKETS } from "../animation-keys";
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
 import { electronAi } from "../sproutApi";

@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { filterMessageContent } from "./Chat";
-import {
-  ANIMATION_KEYS,
-  ANIMATION_KEYS_BRACKETS,
-} from "../sprout-classic-animation-helpers";
+import { ANIMATION_KEYS, ANIMATION_KEYS_BRACKETS } from "../animation-keys";
 
 // ---------------------------------------------------------------------------
 // filterMessageContent
@@ -29,14 +26,12 @@ describe("filterMessageContent — sentinel / partial bracket", () => {
     expect(animationKey).toBe("");
   });
 
-  it("strips a full word inside brackets when no trailing content", () => {
-    const { text, animationKey } = filterMessageContent("[Thinking]");
-    // The regex only matches when there is NO trailing text — this is the
-    // mid-stream case before the rest of the message has arrived.
-    // "[Thinking]" without trailing text matches /^\[[A-Za-z]*$/ after
-    // stripping the closing bracket... actually this is handled by the
-    // bracket-key loop below. Verify whichever branch fires.
-    // Either: animationKey="Thinking", text="" — or text="" via partial match.
+  it("strips a registered key in brackets when no trailing content", () => {
+    // Mid-stream case: a recognized animation token arrives with nothing after
+    // it. The bracket-key loop matches it and leaves empty display text.
+    const key = ANIMATION_KEYS[0];
+    const { text, animationKey } = filterMessageContent(`[${key}]`);
+    expect(animationKey).toBe(key);
     expect(text).toBe("");
   });
 });
