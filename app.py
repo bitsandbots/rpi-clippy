@@ -32,7 +32,7 @@ from garden_service import get_garden_service
 
 PORT = 5080
 DIST_DIR = Path(__file__).parent / "dist"
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 
 app = Flask(__name__, static_folder=None)
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # reject bodies >20 MB before route handlers run
