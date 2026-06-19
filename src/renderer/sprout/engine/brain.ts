@@ -29,6 +29,16 @@ const TALK_PERIOD_MS = 200;
 const WAVE_PERIOD_MS = 260;
 const WAVE_AMPLITUDE_DEG = 14;
 
+// Wavy-stem flex. Idle sway is distributed across the nested stem chain
+// (segLower → segUpper → headBob) as a travelling wave so the stalk bends in an
+// S instead of leaning rigidly. Weights are fractions of swayAmplitude per
+// joint; SEG_LAG (radians) offsets each joint up the stem so the wave travels.
+// The head weight is negative — it counter-rotates (bobble) so the face stays
+// readable while the stalk whips. Pivots match the rig joints: segLower
+// (100,218), segUpper (100,150), headBob (100,120).
+const SEG_WEIGHTS = { lower: 0.7, upper: 0.6, head: -0.4 };
+const SEG_LAG = 0.5;
+
 // Arms rest ~35° above horizontal. Droop is amplified so even mild droop swings
 // the arms toward hanging-down, clamped so heavy droop can't over-rotate them
 // behind the stem. Gain 3.2 + 88° cap → ~-53° below horizontal at full wilt.
@@ -252,6 +262,9 @@ export class SproutBrain {
     const {
       root,
       body,
+      segLower,
+      segUpper,
+      headBob,
       leafL,
       leafR,
       leafBladeL,
@@ -272,17 +285,36 @@ export class SproutBrain {
       root.style.filter = `saturate(${expr.colorSaturation.toFixed(3)})`;
     }
 
-    const swayAngle =
-      Math.sin((this.swayPhase / expr.swayPeriod) * Math.PI * 2) *
-      expr.swayAmplitude;
+    // Sway is gated to zero under reduced-motion (amp = 0 collapses every
+    // sway-derived term below to a still pose). swayPhase is also frozen
+    // upstream, so this is belt-and-suspenders.
+    const amp = this.loop.isReducedMotion ? 0 : expr.swayAmplitude;
+    const phase = (this.swayPhase / expr.swayPeriod) * Math.PI * 2;
+    const swayAngle = amp * Math.sin(phase);
 
-    // Whole body: lean + sway rotated about the pot base. This carries the
-    // stem, arms, and head together so the head can never detach from the stem.
+    // Body now carries only the slow mood lean about the pot base. The per-frame
+    // sway lives on the nested stem chain (segLower → segUpper → headBob).
     if (body) {
       body.setAttribute(
         "transform",
-        `rotate(${(expr.stemLean + swayAngle).toFixed(2)}, 100, 250)`,
+        `rotate(${expr.stemLean.toFixed(2)}, 100, 250)`,
       );
+    }
+
+    // Stem flex chain: a phase-lagged sine per joint makes the wave travel up
+    // the stalk. Each group pivots on the joint it shares with its parent, so
+    // the head (nested in headBob) stays attached at the neck.
+    if (segLower) {
+      const a = amp * SEG_WEIGHTS.lower * Math.sin(phase);
+      segLower.setAttribute("transform", `rotate(${a.toFixed(2)}, 100, 218)`);
+    }
+    if (segUpper) {
+      const a = amp * SEG_WEIGHTS.upper * Math.sin(phase - SEG_LAG);
+      segUpper.setAttribute("transform", `rotate(${a.toFixed(2)}, 100, 150)`);
+    }
+    if (headBob) {
+      const a = amp * SEG_WEIGHTS.head * Math.sin(phase - 2 * SEG_LAG);
+      headBob.setAttribute("transform", `rotate(${a.toFixed(2)}, 100, 120)`);
     }
 
     // Arms: rest angle is baked into the rig geometry, so the brain only adds

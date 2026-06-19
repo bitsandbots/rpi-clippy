@@ -8,6 +8,9 @@ export type PartId =
   | "body"
   | "pot"
   | "stem"
+  | "segLower"
+  | "segUpper"
+  | "headBob"
   | "leafL"
   | "leafR"
   | "leafBladeL"
@@ -52,6 +55,27 @@ export const PARTS: Record<PartId, PartDef> = {
     center: [50, 61],
     rotationOrigin: [50, 83],
     writableAttrs: ["stroke"],
+  },
+  // Stem flex chain — nested pivot groups rotated per-frame to bend the stalk
+  // in a travelling S-wave. Each pivots on the joint it shares with its parent
+  // (segLower @ soil, segUpper @ mid, headBob @ neck) so the head never detaches.
+  segLower: {
+    id: "segLower",
+    center: [50, 62],
+    rotationOrigin: [50, 73], // SVG (100,218) — near the soil line
+    writableAttrs: ["transform"],
+  },
+  segUpper: {
+    id: "segUpper",
+    center: [50, 47],
+    rotationOrigin: [50, 50], // SVG (100,150) — mid-stem joint
+    writableAttrs: ["transform"],
+  },
+  headBob: {
+    id: "headBob",
+    center: [50, 30],
+    rotationOrigin: [50, 40], // SVG (100,120) — neck joint below the head
+    writableAttrs: ["transform"],
   },
   leafL: {
     id: "leafL",
