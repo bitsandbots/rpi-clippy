@@ -4,10 +4,13 @@
 // Changes vs. the previous version:
 //   1. STEM CHAIN. The stem is now a chain of nested pivot groups so the stalk
 //      can BEND in a travelling S-wave (a "dance") instead of leaning rigidly:
-//        body (lean about pot 100,250)
-//          └─ segLower (pivot 100,218) — lower stem + foliage
+//        body (lean about the soil line 100,220)
+//          └─ segLower (pivot 100,218) — lower stem + arm-leaves
 //               └─ segUpper (pivot 100,150) — upper stem
-//                    └─ headBob (pivot 100,120) — arms, petals, face, features
+//                    └─ headBob (pivot 100,120) — petals, face, features
+//      Arms live on segLower (not the head) so they grow from the visible stalk
+//      and bend with the lower stem. The base sinks to y=226 and a FIXED soil
+//      mound is drawn last, so lean/sway can never unroot the plant.
 //      The head is NESTED inside the top group, so it can never detach: each
 //      joint rotates about the point it shares with its parent. The brain writes
 //      one rotate() per group (see brain.ts writeRig); sway now lives on this
@@ -20,9 +23,9 @@
 //      disc reads as the flower's center. Petals are static (no refs) and
 //      yellow-orange (marigold); recolor via the #gPetal stops + PETAL_EDGE.
 //
-// Every brain-referenced anchor is unchanged (eyes 88,88/112,88 · mouth
-// 88,104/112,104 · shoulders 92,126/108,126 · blades 66,108/134,108 · bloom
-// 100,54): nesting only ADDS parent transforms, child-local coords are intact.
+// Brain-referenced anchors (face features unchanged): eyes 88,88/112,88 · mouth
+// 88,104/112,104 · bloom 100,54. Arms re-homed onto the stalk: shoulders
+// 98,172 (L) / 102,166 (R) · blade wrists 74,156 (L) / 126,150 (R).
 //
 // Depth is gradients only — NO blur/drop-shadow filters on the moving body —
 // so per-frame re-rasterization stays cheap on Pi / edge nodes.
@@ -188,64 +191,26 @@ export const SproutRig = forwardRef<
       {/* Grounding shadow — static + filter-free (costs nothing per frame). */}
       <ellipse cx="101" cy="268" rx="52" ry="7" fill="#000000" opacity="0.16" />
 
-      {/* Pot — raised ~30 to shorten the stem. Planted; stays fixed while the
-          body above sways. */}
-      <path
-        ref={potRef}
-        d="M68,220 L62,256 Q62,266 100,266 Q138,266 138,256 L132,220 Z"
-        fill="url(#gPot)"
-        stroke={OUTLINE}
-        strokeWidth="2.4"
-      />
-      <path
-        d="M70,222 Q100,228 130,222 L129,228 Q100,233 71,228 Z"
-        fill="#ffffff"
-        opacity="0.18"
-      />
-      <rect
-        x="58"
-        y="214"
-        width="84"
-        height="11"
-        rx="4"
-        fill="url(#gPot)"
-        stroke={OUTLINE}
-        strokeWidth="2"
-      />
-      <rect
-        x="60"
-        y="215.5"
-        width="80"
-        height="3"
-        rx="1.5"
-        fill="#ffffff"
-        opacity="0.22"
-      />
-      <ellipse cx="100" cy="217" rx="36" ry="6" fill={EARTH} />
-      <ellipse cx="100" cy="218" rx="30" ry="4" fill={EARTH_DK} opacity="0.7" />
-
-      {/* Everything above the soil. `body` carries the slow mood stemLean
-          (pivot 100,250 to match brain.ts); the per-frame sway wave lives on
-          the nested segLower → segUpper → headBob chain below. */}
-      <g ref={bodyRef} style={{ transformOrigin: "100px 250px" }}>
+      {/* The plant is drawn BEFORE the pot so the lower stem sits behind it; the
+          pot + soil are drawn last (below) to hide the base. `body` carries the
+          slow mood stemLean
+          (pivot 100,220 — the soil line — to match brain.ts, so leaning pivots
+          about the planted base instead of swinging it sideways over the soil);
+          the per-frame sway wave lives on the nested segLower → segUpper →
+          headBob chain below. */}
+      {/* No transform-origin here: the brain writes rotate(a, cx, cy) with an
+          explicit pivot, and a CSS transform-origin would DOUBLE-offset it (the
+          two centers compound). Same for every brain-rotated group below. */}
+      <g ref={bodyRef}>
         {/* Lower stem segment — pivots near the soil (100,218). Carries the
             lower stem layers + foliage, and nests the rest of the plant. */}
-        <g ref={segLowerRef} style={{ transformOrigin: "100px 218px" }}>
-          {/* Lower foliage — small leaflets, drawn behind the stem. */}
-          <g
-            fill="url(#gLeaf)"
-            stroke={OUTLINE}
-            strokeWidth="1.3"
-            strokeLinejoin="round"
-          >
-            <path d="M100,188 Q92,186 82,190 Q92,194 100,190 Z" />
-            <path d="M100,162 Q108,160 118,164 Q108,168 100,164 Z" />
-          </g>
-
+        <g ref={segLowerRef}>
           {/* Lower stem — outline underlay + gradient core + left highlight.
-              Path split at the on-curve midpoint (100,150). Ref on the core. */}
+              Base sunk to y=226 so it buries into the soil; the fixed soil
+              mound (drawn after the body group) covers the junction. Path split
+              at the on-curve midpoint (100,150). Ref on the core. */}
           <path
-            d="M100,220 C97,198 103,172 100,150"
+            d="M100,226 C97,200 103,172 100,150"
             fill="none"
             stroke={OUTLINE}
             strokeWidth="11"
@@ -253,14 +218,14 @@ export const SproutRig = forwardRef<
           />
           <path
             ref={stemRef}
-            d="M100,220 C97,198 103,172 100,150"
+            d="M100,226 C97,200 103,172 100,150"
             fill="none"
             stroke="url(#gStem)"
             strokeWidth="8"
             strokeLinecap="round"
           />
           <path
-            d="M98.5,218 C95,198 102.5,172 98.5,150"
+            d="M98.5,224 C95,200 102.5,172 98.5,150"
             fill="none"
             stroke={STEM_HI}
             strokeWidth="1.6"
@@ -268,8 +233,108 @@ export const SproutRig = forwardRef<
             opacity="0.55"
           />
 
+          {/* Arm-leaves — re-homed onto the lower stalk (not the neck) so they
+              read as leaves growing FROM the body. Drawn after the stem so the
+              branch base sits on the stalk; nested in segLower so they bend with
+              the lower stem. Left sits slightly lower than right (alternate). */}
+          <g ref={leafLRef}>
+            <path
+              d="M98,172 Q86,164 74,156"
+              fill="none"
+              stroke={OUTLINE}
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M98,172 Q86,164 74,156"
+              fill="none"
+              stroke={ARM_HI}
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.5"
+            />
+            <g ref={leafBladeLRef}>
+              <path
+                d="M74,156 Q62,140 46,142 Q54,156 74,158 Z"
+                fill="url(#gLeaf)"
+                stroke={OUTLINE}
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M72,156 L50,144"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="1.1"
+                strokeLinecap="round"
+              />
+              <path
+                d="M64,150 L58,145"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+              />
+              <path
+                d="M66,153 L58,151"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+              />
+            </g>
+          </g>
+
+          <g ref={leafRRef}>
+            <path
+              d="M102,166 Q114,158 126,150"
+              fill="none"
+              stroke={OUTLINE}
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M102,166 Q114,158 126,150"
+              fill="none"
+              stroke={ARM_HI}
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.5"
+            />
+            <g ref={leafBladeRRef}>
+              <path
+                d="M126,150 Q138,134 154,136 Q146,150 126,152 Z"
+                fill="url(#gLeaf)"
+                stroke={OUTLINE}
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M128,150 L150,138"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="1.1"
+                strokeLinecap="round"
+              />
+              <path
+                d="M136,144 L142,139"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+              />
+              <path
+                d="M134,147 L142,145"
+                fill="none"
+                stroke={VEIN}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+              />
+            </g>
+          </g>
+
           {/* Upper stem segment — pivots at the mid joint (100,150). */}
-          <g ref={segUpperRef} style={{ transformOrigin: "100px 150px" }}>
+          <g ref={segUpperRef}>
             <path
               d="M100,150 C98,135 100,128 100,118"
               fill="none"
@@ -288,12 +353,9 @@ export const SproutRig = forwardRef<
             {/* Head cluster — pivots at the neck (100,120). Counter-bobs so the
                 face stays readable while the stalk whips. Nested here so the
                 head can never detach from the stem top. */}
-            <g ref={headBobRef} style={{ transformOrigin: "100px 120px" }}>
+            <g ref={headBobRef}>
               {/* Bloom (initially hidden) — above the head, behind the face. */}
-              <g
-                ref={bloomRef}
-                style={{ transformOrigin: "100px 54px", opacity: 0 }}
-              >
+              <g ref={bloomRef} style={{ opacity: 0 }}>
                 <circle cx="100" cy="54" r="9" fill="url(#gBloom)" />
                 {[0, 60, 120, 180, 240, 300].map((angle) => {
                   const rad = (angle * Math.PI) / 180;
@@ -311,105 +373,6 @@ export const SproutRig = forwardRef<
                     />
                   );
                 })}
-              </g>
-
-              {/* Left arm: branch → pointed veined leaf. Pivots at the shoulder
-                  (92,126); brain rotates it for droop/sway/gesture. */}
-              <g ref={leafLRef} style={{ transformOrigin: "92px 126px" }}>
-                <path
-                  d="M92,126 Q80,118 66,108"
-                  fill="none"
-                  stroke={OUTLINE}
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M92,126 Q80,118 66,108"
-                  fill="none"
-                  stroke={ARM_HI}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  opacity="0.5"
-                />
-                <g ref={leafBladeLRef} style={{ transformOrigin: "66px 108px" }}>
-                  <path
-                    d="M66,108 Q54,92 38,94 Q46,108 66,110 Z"
-                    fill="url(#gLeaf)"
-                    stroke={OUTLINE}
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M64,108 L42,96"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="1.1"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M56,102 L50,97"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="0.8"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M58,105 L50,103"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="0.8"
-                    strokeLinecap="round"
-                  />
-                </g>
-              </g>
-
-              {/* Right arm: mirror of the left, pivot at (108,126). */}
-              <g ref={leafRRef} style={{ transformOrigin: "108px 126px" }}>
-                <path
-                  d="M108,126 Q120,118 134,108"
-                  fill="none"
-                  stroke={OUTLINE}
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M108,126 Q120,118 134,108"
-                  fill="none"
-                  stroke={ARM_HI}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  opacity="0.5"
-                />
-                <g ref={leafBladeRRef} style={{ transformOrigin: "134px 108px" }}>
-                  <path
-                    d="M134,108 Q146,92 162,94 Q154,108 134,110 Z"
-                    fill="url(#gLeaf)"
-                    stroke={OUTLINE}
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M136,108 L158,96"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="1.1"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M144,102 L150,97"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="0.8"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M142,105 L150,103"
-                    fill="none"
-                    stroke={VEIN}
-                    strokeWidth="0.8"
-                    strokeLinecap="round"
-                  />
-                </g>
               </g>
 
               {/* Crown collar (calyx) — sepals cupping the flower base. Static. */}
@@ -552,6 +515,53 @@ export const SproutRig = forwardRef<
           </g>
         </g>
       </g>
+
+      {/* Pot + soil — drawn LAST (in front of the plant) and OUTSIDE the body
+          group, so the lower stem is hidden behind the pot and the stalk reads
+          as emerging from the soil. Fixed, so lean/sway never exposes the base. */}
+      <path
+        ref={potRef}
+        d="M68,220 L62,256 Q62,266 100,266 Q138,266 138,256 L132,220 Z"
+        fill="url(#gPot)"
+        stroke={OUTLINE}
+        strokeWidth="2.4"
+      />
+      <path
+        d="M70,222 Q100,228 130,222 L129,228 Q100,233 71,228 Z"
+        fill="#ffffff"
+        opacity="0.18"
+      />
+      <rect
+        x="58"
+        y="214"
+        width="84"
+        height="11"
+        rx="4"
+        fill="url(#gPot)"
+        stroke={OUTLINE}
+        strokeWidth="2"
+      />
+      <rect
+        x="60"
+        y="215.5"
+        width="80"
+        height="3"
+        rx="1.5"
+        fill="#ffffff"
+        opacity="0.22"
+      />
+      <ellipse cx="100" cy="217" rx="36" ry="6" fill={EARTH} />
+      <ellipse cx="100" cy="218" rx="30" ry="4" fill={EARTH_DK} opacity="0.7" />
+      {/* Small raised mound where the stalk emerges — rounds off the soil line. */}
+      <ellipse cx="100" cy="214.5" rx="15" ry="4" fill={EARTH} />
+      <ellipse
+        cx="100"
+        cy="215"
+        rx="10"
+        ry="2.6"
+        fill={EARTH_DK}
+        opacity="0.7"
+      />
     </svg>
   );
 });
