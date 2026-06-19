@@ -13,6 +13,7 @@ const makePoint = (
   energy,
   expression: {
     leafDroop: 0,
+    leafTipCurl: 0,
     stemLean: 0,
     colorSaturation: 1,
     swayAmplitude: 0,

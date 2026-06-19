@@ -107,3 +107,6 @@ __pycache__/
 session-*.md
 *command-message*
 2026-*.txt
+
+# Throwaway visual-regression harness for the SVG rig (dev only)
+harness/

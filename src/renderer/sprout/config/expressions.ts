@@ -5,6 +5,7 @@ import type { ExpressionParams } from "../engine/blendSpace";
 export const EXPRESSIONS: Record<string, ExpressionParams> = {
   neutral: {
     leafDroop: 5,
+    leafTipCurl: 0,
     stemLean: 0,
     colorSaturation: 0.85,
     swayAmplitude: 2,
@@ -15,6 +16,7 @@ export const EXPRESSIONS: Record<string, ExpressionParams> = {
   },
   happy: {
     leafDroop: 0,
+    leafTipCurl: -4,
     stemLean: 0,
     colorSaturation: 1.0,
     swayAmplitude: 4,
@@ -25,6 +27,7 @@ export const EXPRESSIONS: Record<string, ExpressionParams> = {
   },
   sleepy: {
     leafDroop: 15,
+    leafTipCurl: 8,
     stemLean: 3,
     colorSaturation: 0.65,
     swayAmplitude: 1,
@@ -35,6 +38,7 @@ export const EXPRESSIONS: Record<string, ExpressionParams> = {
   },
   surprised: {
     leafDroop: 0,
+    leafTipCurl: -3,
     stemLean: -2,
     colorSaturation: 0.9,
     swayAmplitude: 0,
@@ -45,6 +49,7 @@ export const EXPRESSIONS: Record<string, ExpressionParams> = {
   },
   concerned: {
     leafDroop: 20,
+    leafTipCurl: 8,
     stemLean: 2,
     colorSaturation: 0.6,
     swayAmplitude: 1,
@@ -55,6 +60,7 @@ export const EXPRESSIONS: Record<string, ExpressionParams> = {
   },
   thirsty: {
     leafDroop: 35,
+    leafTipCurl: 14,
     stemLean: 5,
     colorSaturation: 0.4,
     swayAmplitude: 0.5,

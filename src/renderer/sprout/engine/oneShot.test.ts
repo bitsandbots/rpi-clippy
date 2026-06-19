@@ -5,6 +5,7 @@ import type { ExpressionParams } from "./blendSpace";
 
 const BASE: ExpressionParams = {
   leafDroop: 0,
+  leafTipCurl: 0,
   stemLean: 0,
   colorSaturation: 1,
   swayAmplitude: 3,
@@ -32,6 +33,21 @@ describe("OneShotLayer", () => {
   it("hasActive is false before any overlay is fired", () => {
     const layer = new OneShotLayer();
     expect(layer.hasActive).toBe(false);
+  });
+
+  it("isActive reflects whether a specific key is playing", () => {
+    const layer = new OneShotLayer();
+    expect(layer.isActive("wave")).toBe(false);
+    layer.fire({
+      key: "wave",
+      durationMs: 100,
+      filteredTracks: ["leafTipCurl"],
+      target: { leafTipCurl: -12 },
+    });
+    expect(layer.isActive("wave")).toBe(true);
+    expect(layer.isActive("blink")).toBe(false);
+    layer.advance(150); // expire it
+    expect(layer.isActive("wave")).toBe(false);
   });
 
   it("hasActive is true after fire()", () => {

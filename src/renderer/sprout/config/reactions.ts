@@ -78,6 +78,14 @@ export const REACTIONS: Record<string, OneShotDef> = {
     filteredTracks: ["stemLean", "browOffsetY", "eyeOpenness"],
     target: { stemLean: -1, browOffsetY: -2, eyeOpenness: 1.0 },
   },
+  wave: {
+    key: "wave",
+    durationMs: 1600,
+    // Perks the leaf tips up; brain.ts adds a fast waggle oscillation on top
+    // while this overlay is active. swayAmplitude bump gives a friendly bob.
+    filteredTracks: ["leafTipCurl", "swayAmplitude"],
+    target: { leafTipCurl: -12, swayAmplitude: 5 },
+  },
   "grow-leaf": {
     key: "grow-leaf",
     durationMs: 3000,

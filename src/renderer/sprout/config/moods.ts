@@ -9,6 +9,7 @@ export const MOOD_POINTS: MoodPoint[] = [
     energy: 1.0,
     expression: {
       leafDroop: 0,
+      leafTipCurl: -4,
       stemLean: 0,
       colorSaturation: 1.0,
       swayAmplitude: 5,
@@ -24,6 +25,7 @@ export const MOOD_POINTS: MoodPoint[] = [
     energy: 0.5,
     expression: {
       leafDroop: 4,
+      leafTipCurl: -1,
       stemLean: 0,
       colorSaturation: 0.9,
       swayAmplitude: 2.5,
@@ -39,6 +41,7 @@ export const MOOD_POINTS: MoodPoint[] = [
     energy: 0.1,
     expression: {
       leafDroop: 15,
+      leafTipCurl: 6,
       stemLean: 3,
       colorSaturation: 0.65,
       swayAmplitude: 1,
@@ -54,6 +57,7 @@ export const MOOD_POINTS: MoodPoint[] = [
     energy: 0.2,
     expression: {
       leafDroop: 25,
+      leafTipCurl: 10,
       stemLean: 4,
       colorSaturation: 0.5,
       swayAmplitude: 1,
@@ -69,6 +73,7 @@ export const MOOD_POINTS: MoodPoint[] = [
     energy: 0.2,
     expression: {
       leafDroop: 38,
+      leafTipCurl: 16,
       stemLean: 6,
       colorSaturation: 0.3,
       swayAmplitude: 0.5,
@@ -83,7 +88,8 @@ export const MOOD_POINTS: MoodPoint[] = [
     vitality: 0.2,
     energy: 0.8,
     expression: {
-      leafDroop: 10,
+      leafDroop: 5,
+      leafTipCurl: -2,
       stemLean: -1,
       colorSaturation: 0.55,
       swayAmplitude: 2,
