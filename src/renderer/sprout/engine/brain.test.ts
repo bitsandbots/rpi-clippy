@@ -23,6 +23,9 @@ function makeRefs() {
     body: makeEl(),
     pot: makeEl(),
     stem: makeEl(),
+    segLower: makeEl(),
+    segUpper: makeEl(),
+    headBob: makeEl(),
     leafL: makeEl(),
     leafR: makeEl(),
     leafBladeL: makeEl(),
@@ -105,10 +108,66 @@ describe("SproutBrain", () => {
     expect(brain.state).toBe("Idle");
   });
 
-  it("tickOnce() writes body lean/sway transform to refs", () => {
+  it("tickOnce() writes body lean transform about the pot base", () => {
     brain.tickOnce(33);
     const body = refs.body as any;
     expect(body._attrs["transform"]).toMatch(/rotate\(.*, 100, 250\)/);
+  });
+
+  describe("wavy-stem flex", () => {
+    // Read the numeric angle out of a `rotate(<angle>, cx, cy)` transform.
+    const angleOf = (el: any): number =>
+      parseFloat((el._attrs["transform"] as string).match(/rotate\(([-\d.]+)/)![1]);
+
+    it("writes a rotate about the correct joint to each segment group", () => {
+      brain.setMoodDebug(1.0, 1.0); // energetic → swayAmplitude > 0
+      brain.tickOnce(33);
+      expect((refs.segLower as any)._attrs["transform"]).toMatch(
+        /rotate\(.*, 100, 218\)/,
+      );
+      expect((refs.segUpper as any)._attrs["transform"]).toMatch(
+        /rotate\(.*, 100, 150\)/,
+      );
+      expect((refs.headBob as any)._attrs["transform"]).toMatch(
+        /rotate\(.*, 100, 120\)/,
+      );
+    });
+
+    it("body carries only lean (no sway): constant while segments oscillate", () => {
+      brain.setMoodDebug(1.0, 1.0);
+      brain.tickOnce(400); // advance the wave to a nonzero phase
+      const body1 = (refs.body as any)._attrs["transform"];
+      const segLo1 = angleOf(refs.segLower);
+      brain.tickOnce(400); // advance further along the cycle
+      const body2 = (refs.body as any)._attrs["transform"];
+      const segLo2 = angleOf(refs.segLower);
+
+      expect(body2).toBe(body1); // lean unchanged → body has no sway term
+      expect(segLo2).not.toBe(segLo1); // the stem chain is what moves
+    });
+
+    it("produces a nonzero stem bend somewhere over a full cycle", () => {
+      brain.setMoodDebug(1.0, 1.0);
+      let maxBend = 0;
+      for (let i = 0; i < 60; i++) {
+        brain.tickOnce(50);
+        maxBend = Math.max(maxBend, Math.abs(angleOf(refs.segLower)));
+      }
+      expect(maxBend).toBeGreaterThan(0.1);
+    });
+
+    it("reduced-motion freezes the flex (all segment angles 0) but keeps lean", () => {
+      (brain as any).loop.reducedMotion = true;
+      brain.setMoodDebug(1.0, 1.0);
+      brain.tickOnce(400);
+      expect(angleOf(refs.segLower)).toBe(0);
+      expect(angleOf(refs.segUpper)).toBe(0);
+      expect(angleOf(refs.headBob)).toBe(0);
+      // Body lean still written.
+      expect((refs.body as any)._attrs["transform"]).toMatch(
+        /rotate\(.*, 100, 250\)/,
+      );
+    });
   });
 
   it("tickOnce() writes mouth path to refs", () => {
