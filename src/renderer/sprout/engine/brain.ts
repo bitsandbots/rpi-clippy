@@ -59,6 +59,9 @@ export class SproutBrain {
   private lastInputMs = 0;
   private idleTimeoutFired = false;
 
+  // Last-written saturate value — skip DOM write when change < threshold
+  private lastSaturate = -1;
+
   private refs: RigRefs | null = null;
   private unsubscribers: Array<() => void> = [];
 
@@ -233,8 +236,10 @@ export class SproutBrain {
       mouth,
     } = this.refs;
 
-    // Color saturation via CSS filter on root SVG
-    if (root) {
+    // Color saturation — only write when value shifts enough to avoid
+    // forcing GPU recomposition every frame on slow hardware (Pi 5).
+    if (root && Math.abs(expr.colorSaturation - this.lastSaturate) > 0.005) {
+      this.lastSaturate = expr.colorSaturation;
       root.style.filter = `saturate(${expr.colorSaturation.toFixed(3)})`;
     }
 
@@ -283,7 +288,6 @@ export class SproutBrain {
     }
 
     // Lids: follow saccade + droop downward as openness decreases
-    const lidDropY = ((1 - expr.eyeOpenness) * 5).toFixed(2);
     if (lidL) {
       lidL.setAttribute(
         "style",
