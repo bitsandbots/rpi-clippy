@@ -251,6 +251,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     settings.temperature,
   ]);
 
+  // Leave the initial "welcome" status once a model is ready to chat. Without
+  // this the app stays in "welcome" forever and handleSendMessage (which only
+  // proceeds when status === "idle") silently drops every send. The welcome
+  // message itself is gated on messages.length, not status, so it stays visible
+  // until the first send.
+  useEffect(() => {
+    if (status === "welcome" && isModelLoaded) {
+      setStatus("idle");
+    }
+  }, [status, isModelLoaded]);
+
   // If selectedModel is undefined or not available, set it to the first downloaded model
   useEffect(() => {
     if (
