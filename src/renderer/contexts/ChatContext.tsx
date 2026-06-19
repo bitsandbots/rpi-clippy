@@ -42,8 +42,6 @@ export type ChatContextType = {
   status: SproutNamedStatus;
   setStatus: (status: SproutNamedStatus) => void;
   isModelLoaded: boolean;
-  isChatWindowOpen: boolean;
-  setIsChatWindowOpen: (isChatWindowOpen: boolean) => void;
   chatRecords: Record<string, ChatRecord>;
   currentChatRecord: ChatRecord;
   selectChat: (chatId: string) => void;
@@ -72,7 +70,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const { settings, models } = useContext(SharedStateContext);
   const debug = useDebugState();
-  const [isChatWindowOpen, setIsChatWindowOpen] = useState(false);
   const [hasPerformedStartupCheck, setHasPerformedStartupCheck] =
     useState(false);
 
@@ -341,8 +338,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     status,
     setStatus,
     isModelLoaded,
-    isChatWindowOpen,
-    setIsChatWindowOpen,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
