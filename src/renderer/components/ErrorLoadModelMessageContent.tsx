@@ -31,10 +31,10 @@ export const ErrorLoadModelMessageContent: React.FC<
         issue with Sprout itself, the selected model, or your system. You can
         report this error at{" "}
         <a
-          href="https://github.com/felixrieseberg/clippy/issues"
+          href="https://github.com/bitsandbots/rpi-clippy/issues"
           target="_blank"
         >
-          github.com/felixrieseberg/clippy/issues
+          github.com/bitsandbots/rpi-clippy/issues
         </a>
         . Please include both the error message and the debug information.
       </p>

@@ -114,7 +114,7 @@ export const SettingsModel: React.FC = () => {
         the more powerful the chat, but the slower it will be - and the more
         memory it will use. Sprout uses models in the GGUF format.{" "}
         <a
-          href="https://github.com/felixrieseberg/clippy?tab=readme-ov-file#downloading-more-models"
+          href="https://github.com/bitsandbots/rpi-clippy#downloading-more-models"
           target="_blank"
         >
           More information.
