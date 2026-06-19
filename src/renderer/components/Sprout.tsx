@@ -1,143 +1,17 @@
 // © CoreConduit Consulting Services — MIT License (reactive rig)
-// Original sprite-sheet driver: Felix Rieseberg / rpi-clippy contributors
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useChat } from "../contexts/ChatContext";
 import { useVoice } from "../contexts/VoiceContext";
-import { log } from "../logging";
 import { useDebugState } from "../contexts/DebugContext";
-import { useSharedState } from "../contexts/SharedStateContext";
-import { CHARACTERS, DEFAULT_CHARACTER } from "../character-animations";
 
-// Reactive rig imports
 import { SproutRig, type SproutRigHandle } from "../sprout/rig/SproutRig";
 import { sproutBrain } from "../sprout/engine/brain";
 import { signalBus } from "../sprout/engine/signals";
 
-// Classic sprite imports
-import { type Animation } from "../sprout-classic-animations";
-import {
-  EMPTY_ANIMATION,
-  getRandomIdleAnimation,
-} from "../sprout-classic-animation-helpers";
-
-const WAIT_TIME = 6000;
-
 // ---------------------------------------------------------------------------
-// Classic sprite-sheet driver (used when character.reactive !== true)
-// ---------------------------------------------------------------------------
-
-function SproutClassic() {
-  const { animationKey, status, setStatus } = useChat();
-  const { enableDragDebug } = useDebugState();
-  const { settings } = useSharedState();
-  const character =
-    CHARACTERS[settings.character || DEFAULT_CHARACTER] ||
-    CHARACTERS[DEFAULT_CHARACTER];
-  const animations = character.animations;
-  const [animation, setAnimation] = useState<Animation>(EMPTY_ANIMATION);
-  const animationTimeoutRef = useRef<number | undefined>(undefined);
-
-  const playAnimation = useCallback(
-    (key: string) => {
-      if (animations[key]) {
-        log(`Playing animation`, { key, character: character.id });
-        if (animationTimeoutRef.current)
-          window.clearTimeout(animationTimeoutRef.current);
-        setAnimation(animations[key]);
-        animationTimeoutRef.current = window.setTimeout(() => {
-          animationTimeoutRef.current = undefined;
-          setAnimation(animations.Default);
-        }, animations[key].length + 200);
-      } else {
-        log(`Animation not found`, { key, character: character.id });
-      }
-    },
-    [animations, character.id],
-  );
-
-  useEffect(() => {
-    const playRandomIdleAnimation = () => {
-      if (status !== "idle") return;
-      const randomIdleAnimation = getRandomIdleAnimation(animation, animations);
-      setAnimation(randomIdleAnimation);
-      animationTimeoutRef.current = window.setTimeout(() => {
-        setAnimation(animations.Default);
-        animationTimeoutRef.current = window.setTimeout(
-          playRandomIdleAnimation,
-          WAIT_TIME,
-        );
-      }, randomIdleAnimation.length);
-    };
-
-    if (status === "welcome" && animation === EMPTY_ANIMATION) {
-      setAnimation(animations.Show);
-      setTimeout(() => setStatus("idle"), animations.Show.length + 200);
-    } else if (status === "idle") {
-      if (!animationTimeoutRef.current) playRandomIdleAnimation();
-    }
-
-    return () => {
-      if (animationTimeoutRef.current) {
-        window.clearTimeout(animationTimeoutRef.current);
-        animationTimeoutRef.current = undefined;
-      }
-    };
-  }, [status, animations]);
-
-  useEffect(() => {
-    if (animationTimeoutRef.current) {
-      window.clearTimeout(animationTimeoutRef.current);
-      animationTimeoutRef.current = undefined;
-    }
-    setAnimation(animations.Default);
-  }, [character.id, animations]);
-
-  useEffect(() => {
-    log(`New animation key`, { animationKey, character: character.id });
-    playAnimation(animationKey);
-  }, [animationKey, playAnimation]);
-
-  return (
-    <div>
-      <div
-        className="app-drag"
-        style={{
-          position: "absolute",
-          height: "420px",
-          width: "372px",
-          backgroundColor: enableDragDebug ? "blue" : "transparent",
-          opacity: 0.5,
-          zIndex: 5,
-        }}
-      >
-        <div
-          className="app-no-drag"
-          style={{
-            position: "absolute",
-            height: "360px",
-            width: "204px",
-            backgroundColor: enableDragDebug ? "red" : "transparent",
-            zIndex: 10,
-            right: "180px",
-            top: "9px",
-          }}
-        />
-      </div>
-      <img
-        className="app-no-select"
-        src={animation.src}
-        draggable={false}
-        alt={character.name}
-        style={{ width: "372px" }}
-      />
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Reactive SVG rig driver (character.reactive === true)
+// Reactive SVG rig driver
 // ---------------------------------------------------------------------------
 
 function SproutReactive() {
@@ -293,17 +167,9 @@ function SproutReactive() {
 }
 
 // ---------------------------------------------------------------------------
-// Public export — picks reactive vs classic based on character registry flag
+// Public export — Sprout is the reactive SVG rig.
 // ---------------------------------------------------------------------------
 
 export function Sprout() {
-  const { settings } = useSharedState();
-  const character =
-    CHARACTERS[settings.character || DEFAULT_CHARACTER] ||
-    CHARACTERS[DEFAULT_CHARACTER];
-
-  if (character.reactive) {
-    return <SproutReactive />;
-  }
-  return <SproutClassic />;
+  return <SproutReactive />;
 }

@@ -127,11 +127,11 @@ State is managed via React Context — no Redux or Zustand. Context files live i
 
 UI entry: `renderer.tsx` → `App.tsx` → CSS-positioned `BubbleWindow.tsx` / `Sprout.tsx`
 
-`src/renderer/sprout-classic-animation-helpers.tsx` — sprite frame and timing logic for classic Sprout.
-`src/renderer/sprout-classic-animations.tsx` — animation definitions for classic sprite-sheet character.
+`src/renderer/animation-keys.ts` — animation-token vocabulary (`ANIMATION_KEYS` / `ANIMATION_KEYS_BRACKETS`) shared by the chat layer and the reactive rig; sourced from `sprout/config/reactions.ts::BRACKET_TOKEN_REACTIONS`.
 `src/renderer/logging.tsx` — client-side debug logging utility.
 
 **Reactive character engine** (`src/renderer/sprout/`):
+
 - `engine/signals.ts` — `SignalBus` singleton + `SproutSignal` union type
 - `engine/stateMachine.ts` — `StateMachine`: BFS path-finding between 8 states
 - `engine/blendSpace.ts` — `BlendSpace2D`: IDW blend of 6 mood points → `ExpressionParams`
@@ -183,11 +183,11 @@ Custom dark theme in `src/renderer/components/css/SproutTheme.css`. Colors: navy
 
 ### Dev Dependencies
 
-| Package             | Purpose                                            |
-| ------------------- | -------------------------------------------------- |
-| `pytest>=8.0`       | Backend test runner (196 tests in `tests/`)        |
-| `pytest-mock>=3.12` | Mock fixtures for unit tests                       |
-| `pytest-flask>=1.3` | Flask test client fixtures                         |
+| Package             | Purpose                                             |
+| ------------------- | --------------------------------------------------- |
+| `pytest>=8.0`       | Backend test runner (196 tests in `tests/`)         |
+| `pytest-mock>=3.12` | Mock fixtures for unit tests                        |
+| `pytest-flask>=1.3` | Flask test client fixtures                          |
 | `vitest>=2.0`       | Frontend test runner (166 tests in `src/renderer/`) |
 
 ### Test Isolation
@@ -200,8 +200,7 @@ Custom dark theme in `src/renderer/components/css/SproutTheme.css`. Colors: navy
 - **Payload limits**: `app.py` enforces a 10MB body cap and 1000-message limit on chat writes (HTTP 413 on violation). Don't bypass `_validate_chat_payload()`.
 - **SSE abort**: `POST /api/llm/abort` sets a `threading.Event` checked per chunk — not a socket close. If adding new SSE endpoints, use the same pattern.
 - **sproutApi.tsx shim**: This file re-exports from `api.ts` for backward compat. New code should import from `api.ts` directly.
-- **Animation asset regeneration**: `tools/extract-animations.sh` rebuilds Sprout sprite frames from `assets/animations/sprout/` into `src/renderer/images/animations/sprout`. Run via `npm run extract-animations`. Only needed when updating animation source assets.
-- **Character system**: Two characters — `"sprout"` (reactive SVG rig, default) and `"sprout-classic"` (sprite-sheet fallback). Registered in `src/renderer/character-animations.tsx`. Classic sprite frames live in `src/renderer/images/animations/sprout/`. To revert to classic: set `character: "sprout-classic"` in settings.
+- **Character system**: One character — `"sprout"`, the reactive SVG rig (`src/renderer/sprout/`), registered in `src/renderer/character-animations.tsx`. The old `"sprout-classic"` sprite-sheet character and its assets/extract tooling were removed; `CharacterId` is now `"sprout"` only. The animation-token vocabulary the LLM may emit lives in `src/renderer/animation-keys.ts` (derived from the rig's `BRACKET_TOKEN_REACTIONS`), not from a sprite list.
 - **hydroMazing field mapping**: `src/python/garden_service.py::HYDRO_FIELD_MAP` maps raw API keys to `GardenState` fields. Verify these key names against the actual hydroMazing response before first production deploy. Set `HYDROMAZING_URL` and `GARDEN_POLL_SEC` env vars to configure the adapter.
 - **Reactive rig reduced-motion**: When `prefers-reduced-motion: reduce` is set, idle motion (sway, blink, saccade, talking oscillation) is suppressed but state transitions and one-shot reactions still render. The loop continues running at 30 fps to keep mood smoothing active.
 - **Version sync**: `app.py` has a module-level `VERSION` string and `package.json` has a `version` field — they must be updated together. `/api/versions` returns the `app.py` value; mismatches will silently mislead the UI.

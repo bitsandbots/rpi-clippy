@@ -1,71 +1,48 @@
-# Sprout character — FULL REDESIGN (2026-06-19) — Phases 1-2 SHIPPED
+# Cleanup: keep reactive gesture rig, remove classic sprite character
 
-Goal: replace the "lollipop on a wire" rig with a cohesive plant character whose
-animation poses (mood + wave + droop) stay structurally intact. Driven by
-screenshots of all 6 live poses (harness/ below), which exposed structural bugs,
-not just proportion problems.
+Goal: Keep the reactive SVG gesture character (commit `d1abd28` state, now in the
+working tree). Remove the superseded classic sprite-sheet character
+(`sprout-classic`) and all its assets/tooling. Preserve the shared animation-key
+logic the reactive path still imports from the classic-named helper.
 
-## STATUS
-- DONE: head-detach bug fixed (body group), arms re-rigged as raised limbs,
-  proportions/collar/leaflets redesigned, brain+parts+tests synced, 6 poses
-  re-verified. 170 tests green, build clean.
-- DEFERRED: true wilt-BOW (stem currently leans rigidly about the base, which
-  reads acceptably as wilt now that the head stays attached + arms hang down — a
-  curving stem is a future polish, see Phase 3 below).
-- Verification: harness/capture.py re-run after each change; live DOM probe
-  confirmed face-center tracks the body lean (x 186→208→230 at lean 0→3→6°), so
-  the head provably no longer detaches.
+## Key coupling (the reason this is a refactor, not a delete)
 
-## Findings (from harness/capture.py — 6 live poses)
-- BUG: head detaches from stem under any stemLean (wilting/tired/sleepy/alarmed).
-  Face+features are at fixed coords; only `stem` rotates about (100,249), so the
-  stem-top swings ~16px away from the head. Most visible in wilting.
-- BUG: arms collapse into an "X" under the chin; leaf-blades fly off-frame after
-  default ±25° + leafDroop. Never read as limbs.
-- BUG: wilt stem rigid-rotates (tilts) instead of bowing — a single rotate() about
-  the base can't bend the line.
-- Wave gesture has no visual read (arms barely visible).
-- Proportion: oversized head (r34) on thin (6px) over-long trunk; arms at "waist".
-- Accent leaflets float disconnected on the lower stem.
+- `Chat.tsx` + `ChatContext.tsx` import `ANIMATION_KEYS` / `ANIMATION_KEYS_BRACKETS`
+  from `sprout-classic-animation-helpers.tsx`. These feed the LLM system prompt
+  (the bracket tokens the model may emit). They are currently derived from the
+  classic sprite `ANIMATIONS` (~30 keys), but the reactive rig only maps 8 via
+  `config/reactions.ts::BRACKET_TOKEN_REACTIONS`.
+- So the keys must be re-sourced from the reactive token map before the classic
+  files can go, or the LLM contract breaks.
 
-## Tooling (DONE — keep for the iterate loop)
-- [x] harness/poses.html + poses.tsx — mounts real SproutRig + sproutBrain, exposes
-      window.brain / window.bus / window.settle for driving poses.
-- [x] harness/capture.py — Playwright (reduced-motion) screenshots 6 poses to /tmp.
-      Run: `node node_modules/.bin/vite --port 5173 &` then `python3 harness/capture.py`.
-- NOTE: harness/ is a dev-only tool; now in .gitignore (kept for the iterate loop).
+## Decisions (confirm before executing)
 
-## Phase 1 — Fix structural coupling (these were bugs) — DONE
-- [x] Wrapped stem+arms+collar+head+bloom+leaflets in one `body` group; brain
-      rotates it about the pot base (100,250) for stemLean+sway, so head/stem/arms
-      move as one unit and the head can never detach. (Added `body` PartId + ref.)
-- [x] Re-rigged arms as shoulder-mounted raised limbs (rest ~35° up, baked into
-      geometry); recomputed shoulder (92/108,126) + wrist (66/134,108) pivots.
+- D1: Single character `sprout` (reactive). Drop `sprout-classic` entirely,
+  including the documented settings fallback.
+- D2: New neutral module `src/renderer/animation-keys.ts` exporting
+  `ANIMATION_KEYS` / `ANIMATION_KEYS_BRACKETS` from `BRACKET_TOKEN_REACTIONS`
+  (LLM is told only about reactive-supported tokens).
+- D3: Land on branch `chore/remove-classic-character` -> PR (main is protected).
 
-## Phase 2 — Redesign silhouette / proportions — DONE
-- [x] Head r 34→30, lowered (cy 81→90) onto a shorter, thicker trunk (6→9px);
-      neck gap closed (arms just below the head).
-- [x] Trunk heavier stroke + gentle S-curve.
-- [x] Collar reads as a green calyx seam (larger sepals, dark outline).
-- [x] Accent leaflets re-homed onto the stem as lower foliage.
+## Steps — COMPLETE
 
-## Phase 3 — Brain transforms — DONE (except wilt-bow)
-- [x] Updated every pivot (body 100,250; arms 92/108,126; blades 66/134,108),
-      eye origins (88), mouth baseline (104).
-- [x] Arm droop gain 3.2 + 88° cap so mild droop hangs arms, heavy droop can't
-      over-rotate; lowered `alarmed` leafDroop 10→5 so it raises arms (alert).
-- [x] Wave reads now that arms are visible/raised.
-- [ ] DEFERRED: wilt-BOW (curve the stem `d`) — current rigid lean reads OK.
+- [x] 1. Commit the kept gesture code as its own commit (18d03af).
+- [x] 2. Add `src/renderer/animation-keys.ts` (keys from reactive token map).
+- [x] 3. Repoint `Chat.tsx` + `Chat.test.ts` + `ChatContext.tsx` imports to it.
+- [x] 4. `Sprout.tsx` -> reactive-only (removed `SproutClassic` + selector branch).
+- [x] 5. `character-animations.tsx` -> single reactive entry; test rewritten.
+- [x] 6. `src/sharedState.ts`: `CharacterId = "sprout"` (backend has no classic ref).
+- [x] 7. Deleted `sprout-classic-animations.tsx(+test)`, `sprout-classic-animation-helpers.tsx(+test)`.
+- [x] 8. Deleted assets: `images/animations/sprout/` (2.5MB), `assets/animations/sprout/`,
+       `tools/extract-animations.sh`, `package.json` `extract-animations` script.
+- [x] 8b. Fixed fallout: `Message.tsx` avatar repointed from the deleted classic
+       `Default.png` to the reactive `sprout_flower_preview.png`.
+- [x] 9. Updated `CLAUDE.md` (character-system + file map). Historical docs/ ADR/spec
+       left as point-in-time records.
+- [x] 10. Verified: build green, 156 frontend + 200 backend tests green, prettier clean.
 
-## Phase 4 — Sync anchors + tests — DONE
-- [x] parts.ts PARTS anchors + `body` PartId updated to new geometry.
-- [x] brain.test.ts updated (body lean assertion, mouth baseline, body ref stub).
-- [x] `npm run build` green; `npm run test` 170/170 green; prettier applied.
+## Verification gate — PASSED
 
-## Phase 5 — Visual verification (gate) — DONE
-- [x] Re-ran harness/capture.py across all 6 poses: head attached, arms read as
-      limbs and stay in frame, wave distinct, proportions cohesive. DOM probe
-      confirmed face-center tracks body lean.
-
-Verification: a phase is not done until `npm run test` passes AND the re-captured
-pose set shows the targeted fix (not "looks correct" — the screenshot proves it).
+Build green; 156 frontend + 200 backend tests green; reactive rig source byte-identical
+to the approved gesture state (d1abd28), so the character renders unchanged; LLM is
+advertised the 8 reactive-supported tokens via `animation-keys.ts`.
