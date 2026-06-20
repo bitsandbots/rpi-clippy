@@ -159,6 +159,48 @@ def test_get_model_state_no_orphan_duplicates():
     assert "gemma3:1b" not in orphan_names
 
 
+def test_resolve_tag_respects_size_boundary():
+    """gemma3:1b must not satisfy the 4B/12B catalog entries (size boundary)."""
+    svc = make_service()
+    assert svc._tag_matches("gemma3:1b", "gemma3:1b") is True
+    assert svc._tag_matches("gemma3:12b", "gemma3:1b") is False
+    assert svc._tag_matches("gemma3:4b-Q4_K_M", "gemma3:1b") is False
+    # Variant suffix and implicit :latest still match.
+    assert svc._tag_matches("llama3.2:3b", "llama3.2:3b-instruct-q4_K_M") is True
+    assert svc._tag_matches("phi4-mini", "phi4-mini:latest") is True
+
+
+def test_model_state_other_sizes_not_downloaded_with_only_1b():
+    """Only gemma3:1b installed: the 4B/12B entries are NOT marked downloaded
+    and keep their own tag (regression for the base-name collision bug)."""
+    svc = make_service()
+    svc._available = {"gemma3:1b"}
+    catalog = svc.get_model_state()["catalog"]
+
+    assert catalog["Gemma 3 (1B)"]["downloaded"] is True
+    assert catalog["Gemma 3 (1B)"]["actualTag"] == "gemma3:1b"
+
+    for name in ("Gemma 3 (4B)", "Gemma 3 (12B)"):
+        entry = catalog[name]
+        assert entry["downloaded"] is False, f"{name} falsely downloaded"
+        assert entry["actualTag"] == entry["ollamaTag"], f"{name} resolved to a sibling"
+
+
+def test_model_state_variant_satisfies_catalog_entry():
+    """An installed quant/instruct variant satisfies the base catalog entry."""
+    svc = make_service()
+    svc._available = {"llama3.2:3b-instruct-q4_K_M", "phi4-mini:latest"}
+    catalog = svc.get_model_state()["catalog"]
+
+    llama = catalog["Llama 3.2 (3B Instruct)"]
+    assert llama["downloaded"] is True
+    assert llama["actualTag"] == "llama3.2:3b-instruct-q4_K_M"
+
+    phi = catalog["Phi-4 Mini (3.8B)"]
+    assert phi["downloaded"] is True
+    assert phi["actualTag"] == "phi4-mini:latest"
+
+
 def test_get_model_state_orphans_have_minimal_fields():
     svc = make_service()
     svc._available = {"nomic-embed-text"}

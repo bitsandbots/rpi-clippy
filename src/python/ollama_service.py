@@ -252,20 +252,49 @@ class OllamaService:
         """Synchronously refresh the available model cache after an explicit URL change."""
         self._refresh_available_bg(clear_on_failure=True)
 
-    def _resolve_tag(self, tag: str, available: set[str] | None = None) -> str:
-        """Return the actual installed tag matching the given tag prefix.
+    @staticmethod
+    def _tag_matches(catalog_tag: str, installed: str) -> bool:
+        """Return whether an installed Ollama tag satisfies a catalog tag.
 
-        If the exact tag exists, return it. Otherwise search available models
-        for one starting with the same base name. Falls back to the given tag.
+        Matches the exact tag, a variant that appends a quant/instruct suffix
+        (``llama3.2:3b`` <- ``llama3.2:3b-instruct-q4_K_M``), or an implicit
+        registry tag (``phi4-mini`` <- ``phi4-mini:latest``). The size boundary
+        is respected, so ``gemma3:1b`` never matches ``gemma3:12b``.
+
+        Args:
+            catalog_tag: The built-in catalog ``ollamaTag``.
+            installed: A tag reported by Ollama's ``/api/tags``.
+
+        Returns:
+            True if ``installed`` represents ``catalog_tag`` (exact or variant).
+        """
+        return (
+            installed == catalog_tag
+            or installed.startswith(catalog_tag + "-")
+            or installed.startswith(catalog_tag + ":")
+        )
+
+    def _resolve_tag(self, tag: str, available: set[str] | None = None) -> str:
+        """Return the actual installed tag satisfying the given catalog tag.
+
+        Prefers an exact match; otherwise returns the first installed variant
+        that satisfies ``tag`` per :meth:`_tag_matches` (sorted for a
+        deterministic choice). Falls back to ``tag`` when nothing is installed.
+
+        Args:
+            tag: The catalog ``ollamaTag`` to resolve.
+            available: Installed tags to search; defaults to ``self._available``.
+
+        Returns:
+            The matching installed tag, or ``tag`` if none is installed.
         """
         if available is None:
             with self._available_lock:
                 available = set(self._available)
         if tag in available:
             return tag
-        base = tag.split(":")[0]
-        for m in available:
-            if m.startswith(base):
+        for m in sorted(available):
+            if self._tag_matches(tag, m):
                 return m
         return tag
 
@@ -297,12 +326,13 @@ class OllamaService:
                 "actualTag": actual_tag,
                 "downloaded": is_downloaded,
             }
-            # Track all tags consumed by catalog (the actual tag and the base
-            # prefix) so we don't show them as orphans.
+            # Mark the resolved tag and any installed variants of THIS catalog
+            # entry as consumed so they don't also appear as orphans. (Matching
+            # the full tag, not just the base name, keeps a different size like
+            # gemma3:1b from being swallowed by the gemma3:12b entry.)
             matched_tags.add(actual_tag)
-            base = suggested_tag.split(":")[0]
             for t in available:
-                if t.startswith(base):
+                if self._tag_matches(suggested_tag, t):
                     matched_tags.add(t)
 
         orphans: list[dict] = []
